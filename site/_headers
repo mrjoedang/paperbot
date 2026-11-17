@@ -1,0 +1,7 @@
+# Cloudflare static assets: cache rules (file names aren't content-hashed, so keep revalidation short for code)
+/assets/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+/fonts/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=604800
+/vendor/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=604800

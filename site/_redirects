@@ -1,0 +1,2 @@
+# The CLI installer lives on the app: curl -fsSL https://paperbot.ca/install | sh (curl -L follows this).
+/install https://app.paperbot.ca/install 302

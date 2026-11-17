@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>paperbot accounts mock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;550;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Mock of the planned sign-in, setup, research and connections screens, in the web app's current tokens
+   (server/public/style.css, "calm surfaces" redesign). Standalone: nothing here talks to a server. */
+:root {
+  --paper: #fafaf8; --paper-hi: #fff; --paper-lo: #efefeb; --ink: #262823; --ink-2: #777a72;
+  --line: #e6e7e1; --line-2: #d6d8cf; --red: #a84b39; --ok: #5f7656;
+  --f-body: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r-s: 4px; --r-c: 8px; --r-p: 12px; --r-o: 16px; --shadow: 0 8px 28px #00000014;
+  --bezel: #2a2b2f; --epaper: #e9e6dc;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --paper: #171815; --paper-hi: #20211d; --paper-lo: #292b25; --ink: #e7e9e0; --ink-2: #9b9e92;
+    --line: #30332b; --line-2: #44483b; --red: #e08a76; --ok: #9db18f; --shadow: 0 16px 48px #0006; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --paper: #171815; --paper-hi: #20211d; --paper-lo: #292b25; --ink: #e7e9e0; --ink-2: #9b9e92;
+  --line: #30332b; --line-2: #44483b; --red: #e08a76; --ok: #9db18f; --shadow: 0 16px 48px #0006; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+body { font: 15px/1.5 var(--f-body); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ink-2); outline-offset: 2px; }
+.mono { font-family: var(--f-mono); }
+.muted { color: var(--ink-2); }
+[hidden] { display: none !important; }
+
+/* ---------- mock chrome (not part of the app) ---------- */
+.mockbar { position: sticky; top: 0; z-index: 60; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 16px; background: var(--ink); color: var(--paper); font-size: 13px; }
+.mockbar strong { font-weight: 550; margin-right: 4px; }
+.mockbar nav { display: flex; gap: 2px; flex-wrap: wrap; }
+.mockbar nav button { border: 0; background: none; color: inherit; opacity: .7; padding: 6px 10px; border-radius: var(--r-c); }
+.mockbar nav button:hover { opacity: 1; }
+.mockbar nav button[aria-current="page"] { opacity: 1; background: color-mix(in srgb, var(--paper) 16%, transparent); }
+.mockbar .spacer { flex: 1; }
+.mockbar .theme { border: 1px solid color-mix(in srgb, var(--paper) 30%, transparent); background: none; color: inherit; border-radius: var(--r-c); padding: 5px 10px; }
+.note { max-width: 800px; margin: 16px auto 0; padding: 0 24px; font-size: 13px; color: var(--ink-2); }
+.note b { color: var(--ink); font-weight: 550; }
+
+/* ---------- app frame ---------- */
+.top { max-width: 800px; margin: 0 auto; padding: 28px 24px; display: flex; align-items: center; justify-content: space-between; }
+.wordmark { margin: 0; font-size: 23px; font-weight: 550; letter-spacing: -.04em; }
+.top-actions { display: flex; align-items: center; gap: 2px; }
+.conn { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-2); padding: 0 12px; }
+.conn i { width: 5px; height: 5px; border-radius: 50%; background: var(--ok); }
+.icon-btn { width: 40px; height: 40px; display: grid; place-items: center; border: 0; background: none; border-radius: var(--r-c); color: var(--ink); }
+.icon-btn:hover { background: var(--paper-lo); }
+.icon-btn svg { width: 20px; height: 20px; }
+main { max-width: 800px; margin: 0 auto; padding: 0 24px 96px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 16px; border-radius: var(--r-c);
+  border: 1px solid var(--ink); background: var(--ink); color: var(--paper); font-weight: 500; }
+.btn:hover { opacity: .88; }
+.btn.secondary { background: none; color: var(--ink); border-color: var(--line-2); }
+.btn.secondary:hover { background: var(--paper-lo); opacity: 1; }
+.btn.small { min-height: 32px; padding: 0 10px; font-size: 13px; }
+.btn.danger { background: none; color: var(--red); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.cmd { display: flex; align-items: center; gap: 8px; background: var(--paper-lo); border-radius: var(--r-c); padding: 6px 6px 6px 14px; font: 13.5px/1.4 var(--f-mono); }
+.cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; }
+.copy { flex: none; border: 1px solid var(--line-2); background: var(--paper-hi); border-radius: 6px; padding: 5px 10px; font-size: 12.5px; }
+.copy.done { color: var(--ok); }
+
+/* ---------- sign in ---------- */
+.auth { max-width: 380px; margin: 10vh auto 0; padding: 0 24px; }
+.auth h2 { font-size: 28px; font-weight: 550; letter-spacing: -.03em; line-height: 1.15; margin: 28px 0 8px; }
+.auth p { margin: 0 0 24px; color: var(--ink-2); }
+.auth .btn { width: 100%; min-height: 48px; }
+.auth .stack { display: grid; gap: 10px; }
+.auth .fine { font-size: 13px; margin-top: 20px; }
+
+/* ---------- setup card ---------- */
+.setup { display: grid; grid-template-columns: 1fr auto; gap: 28px; padding: 28px; border: 1px solid var(--line); border-radius: var(--r-p); background: var(--paper-hi); }
+.setup h2 { margin: 0 0 6px; font-size: 22px; font-weight: 550; letter-spacing: -.02em; }
+.setup > div > p { margin: 0 0 22px; color: var(--ink-2); }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 26px 1fr; gap: 12px; counter-increment: s; }
+.steps li::before { content: counter(s); width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line-2); display: grid; place-items: center;
+  font-size: 13px; color: var(--ink-2); }
+.steps li.done::before { content: "✓"; background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.steps b { font-weight: 550; display: block; margin-bottom: 6px; }
+.steps .muted { font-size: 13.5px; }
+.status { display: flex; align-items: center; gap: 8px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; color: var(--ink-2); }
+.status i { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); }
+.status.wait i { background: var(--ink-2); animation: blink 1.6s ease-in-out infinite; }
+.status.ok { color: var(--ink); } .status.ok i { background: var(--ok); }
+@keyframes blink { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .status.wait i { animation: none; } }
+
+/* the board, as on the desk: bezel + e-paper frame from the simulator */
+.board { width: 188px; padding: 14px; border-radius: 18px; background: var(--bezel); box-shadow: inset 0 0 0 2px #3a3c41; align-self: start; }
+.board img { display: block; width: 160px; height: 160px; image-rendering: pixelated; background: var(--epaper); border-radius: 3px; }
+.board figcaption { margin-top: 10px; font-size: 12px; color: #b9bbb1; text-align: center; }
+
+/* ---------- link ---------- */
+.code-in { width: 100%; text-align: center; font: 500 34px/1 var(--f-mono); letter-spacing: .14em; padding: 16px 10px; border: 1px solid var(--line-2);
+  border-radius: var(--r-p); background: var(--paper-hi); text-transform: uppercase; }
+.code-in:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 12%, transparent); }
+.found { margin: 16px 0 18px; padding: 14px 16px; border-radius: var(--r-c); background: var(--paper-lo); font-size: 14px; }
+.found b { font-weight: 550; }
+.err { color: var(--red); font-size: 14px; margin: 10px 0 0; }
+
+/* ---------- inbox ---------- */
+.tools { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
+.search { flex: 1; height: 44px; border: 1px solid var(--line-2); border-radius: var(--r-c); background: var(--paper-hi); padding: 0 14px; color: var(--ink-2); display: flex; align-items: center; gap: 10px; }
+.chips { display: flex; gap: 4px; margin-bottom: 18px; flex-wrap: wrap; }
+.chip { font-size: 13px; color: var(--ink-2); padding: 5px 10px; border-radius: 6px; }
+.chip[aria-pressed="true"] { background: var(--paper-lo); color: var(--ink); }
+.chip span { opacity: .6; margin-left: 4px; }
+.sec { font-size: 13px; color: var(--ink-2); margin: 26px 0 6px; }
+.card { display: grid; grid-template-columns: 22px 1fr auto; column-gap: 18px; padding: 20px 0; border-top: 1px solid var(--line); }
+.tick { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--line-2); margin-top: 24px; background: none; padding: 0; }
+.kind { font-size: 12.5px; color: var(--ink-2); }
+.title { font-size: 18px; letter-spacing: -.01em; margin: 2px 0 0; }
+.when { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+.due { font-size: 14px; margin-top: 6px; }
+.research { margin-top: 12px; padding: 12px 14px; border-radius: var(--r-c); background: var(--paper-lo); font-size: 14px; }
+.research .h { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.research .h b { font-weight: 550; }
+.research ul { margin: 8px 0 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); }
+.research ul li { padding: 2px 0; }
+.research p { margin: 6px 0 0; }
+.research .row { margin-top: 10px; }
+.via { font-size: 12.5px; color: var(--ink-2); margin-top: 6px; }
+.answer { margin-top: 8px; color: var(--ink-2); font-size: 15px; }
+
+/* ---------- drawers ---------- */
+.drawer { position: fixed; inset: var(--mockbar-h, 0px) 0 0 0; z-index: 50; }
+.scrim { position: absolute; inset: 0; background: #0000002e; }
+.panel { position: absolute; top: 0; right: 0; bottom: 0; width: min(560px, 100vw); background: var(--paper); border-left: 1px solid var(--line);
+  border-radius: var(--r-p) 0 0 var(--r-p); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+.panel-h { display: flex; align-items: center; justify-content: space-between; padding: 14px 14px 14px 24px; border-bottom: 1px solid var(--line); }
+.panel-h h2 { margin: 0; font-size: 16px; font-weight: 550; }
+.panel-b { overflow-y: auto; overflow-x: hidden; padding: 8px 24px 80px; }
+.group { padding: 22px 0; border-bottom: 1px solid var(--line); }
+.group:last-child { border-bottom: 0; }
+.group h3 { margin: 0 0 4px; font-size: 15px; font-weight: 550; }
+.group > p { margin: 0 0 14px; font-size: 14px; color: var(--ink-2); }
+
+.choice { display: block; border: 1px solid var(--line); border-radius: var(--r-c); padding: 14px 16px; margin-top: 8px; background: var(--paper-hi); }
+.choice:has(input:checked) { border-color: var(--ink); }
+.choice > label { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 12px; align-items: start; cursor: pointer; }
+.choice input[type="radio"] { margin: 3px 0 0; accent-color: var(--ink); width: 16px; height: 16px; }
+.choice .t { font-weight: 550; }
+.choice .d { display: block; font-size: 13.5px; color: var(--ink-2); font-weight: 400; margin-top: 2px; }
+.tag { font-size: 11.5px; color: var(--ink-2); border: 1px solid var(--line-2); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.tag.ok { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 50%, transparent); }
+.more { margin: 14px 0 2px 30px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; font-size: 14px; min-width: 0; }
+.choice:not(:has(input:checked)) .more { display: none; }
+.field { display: grid; gap: 6px; }
+.field > span { font-size: 13px; color: var(--ink-2); }
+.input, select.input { height: 40px; border: 1px solid var(--line-2); border-radius: var(--r-c); background: var(--paper); padding: 0 12px; width: 100%; }
+.keyrow { display: grid; grid-template-columns: 140px 1fr; gap: 8px; }
+.result { font-size: 13.5px; }
+.result.ok { color: var(--ok); }
+.meter { height: 6px; border-radius: 3px; background: var(--paper-lo); overflow: hidden; margin: 8px 0 6px; }
+.meter i { display: block; height: 100%; width: 40%; background: var(--ink); border-radius: 3px; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; font-size: 14px; }
+.kv dd { margin: 0; color: var(--ink-2); text-align: right; }
+.kv dt { margin: 0; }
+
+.item { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+.item:first-of-type { border-top: 0; }
+.item .n { font-weight: 500; }
+.item .s { font-size: 13px; color: var(--ink-2); }
+.dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; }
+
+@media (max-width: 640px) {
+  .more { margin-left: 0; }
+  .top { padding: 20px 16px; } main { padding: 0 16px 80px; } .note { padding: 0 16px; }
+  .setup { grid-template-columns: 1fr; padding: 20px; } .board { justify-self: center; order: -1; }
+  .panel { inset: 8px; width: auto; border: 1px solid var(--line); border-radius: var(--r-o); }
+  .keyrow { grid-template-columns: 1fr; }
+  .card { column-gap: 12px; } .when { grid-column: 2; grid-row: 1; justify-self: end; }
+}
+</style>
+</head>
+<body>
+
+<div class="mockbar" role="banner">
+  <strong>Mock</strong>
+  <nav aria-label="Mock screens">
+    <button data-go="signin">Sign in</button>
+    <button data-go="setup">First visit</button>
+    <button data-go="link">Link a device</button>
+    <button data-go="inbox">Inbox</button>
+    <button data-go="settings">Settings</button>
+    <button data-go="connections">Connections</button>
+  </nav>
+  <span class="spacer"></span>
+  <button class="theme" id="theme" type="button">Dark</button>
+</div>
+<p class="note" id="note"></p>
+
+<!-- ============ Sign in ============ -->
+<section data-screen="signin">
+  <div class="auth">
+    <h1 class="wordmark">paperbot</h1>
+    <h2>Sign in to see your memos</h2>
+    <p>Your memos, recordings and Wi-Fi stay in your own account.</p>
+    <div class="stack">
+      <button class="btn" data-go="setup" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z"/><path fill="currentColor" opacity=".75" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z"/><path fill="currentColor" opacity=".55" d="M6.4 14c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2L6.4 14z"/><path fill="currentColor" opacity=".9" d="M12 6c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.4L6.4 10C7.2 7.7 9.4 6 12 6z"/></svg>
+        Continue with Google</button>
+      <button class="btn secondary" data-go="setup" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-3.9 3.1-7 7-7 1.4 0 2.6.4 3.7 1"/><circle cx="18" cy="15" r="2.5"/><path d="M18 17.5V22m0-2h2"/></svg>
+        Sign in with a passkey</button>
+    </div>
+    <p class="fine muted">New here? Signing in creates your account. No password to remember.</p>
+  </div>
+</section>
+
+<!-- ============ App header (all signed-in screens) ============ -->
+<header class="top" data-app>
+  <h1 class="wordmark">paperbot</h1>
+  <div class="top-actions">
+    <span class="conn" id="conn"><i></i><span>Live</span></span>
+    <button class="icon-btn" data-go="connections" aria-label="Connections" title="Connections">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M2 9a15 15 0 0 1 20 0M5.5 12.5a10 10 0 0 1 13 0M9 16a5 5 0 0 1 6 0"/><circle cx="12" cy="19.5" r="1" fill="currentColor"/></svg></button>
+    <button class="icon-btn" data-go="settings" aria-label="Settings" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+</header>
+
+<!-- ============ First visit: set up ============ -->
+<main data-screen="setup">
+  <div class="setup">
+    <div>
+      <h2>Set up your paperbot</h2>
+      <p>About two minutes, with the board plugged into your Mac.</p>
+      <ol class="steps">
+        <li id="st1"><div><b>Install the setup tool</b>
+          <div class="cmd"><code>curl -fsSL https://pocketbot.ca/install | sh</code><button class="copy" data-copy>Copy</button></div></div></li>
+        <li id="st2"><div><b>Plug in your paperbot and run the setup</b>
+          <div class="cmd"><code>pocketbot setup</code><button class="copy" data-copy>Copy</button></div>
+          <div class="muted" style="margin-top:6px">It installs the firmware, gives the board your Mac's Wi-Fi, and shows a code.</div></div></li>
+        <li id="st3"><div><b>Enter the code from your terminal</b>
+          <button class="btn small secondary" data-go="link" type="button">Enter code</button></div></li>
+      </ol>
+      <div class="status wait" id="setupStatus"><i></i><span>Waiting for your paperbot</span></div>
+    </div>
+    <figure class="board" style="margin:0">
+      <img id="boardImg" alt="paperbot's screen" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQAAAACFI5MzAAACOUlEQVR42u2XvW4TQRDH/7u2Lo5kcn4AR+ciD+CCIg3KiSfgDaCEjgpS4XXPA0BD8gR5gSC4AimULkFCcERW4iqxJSu6yHc3FLm97O7dyifFKJF1U0yxP83s7Mx+zDKCRTjunwRW0rOSTolRwjoAXblkyNlmQpfE0YxMi+sw4HNwNGKThFcBAI6ZMMn3PwIAx88vJnn89Sa2z88LoaV+2kYTad8E7SYxdwoSEyoVDv+9NTsnlvQQJbmDoe4NzFqfW3K80mr/spJXVvLUSnoPbfeukiCrU5gPbGQjLDvBSvlI86aecKGR1MvrHwUaiV/kJk6oRTBVNo2b7x0AmCnz7Gve1GX5FXMwVoa6a1LTUwDfSkkPQCJKyDUA4LCETBwA/XEJ6e0C2FLc3RRug2JGRETCo9BVKwfAAQC8LvG2CwDYQsHbrRS8Jb5Uprf5SCqTTCOpVpHrMJaqkJ2mVKuYp9OSyiTtvlTV87Yed9VDIa7aCTSm9xYbMWEhqdbhqGSOkW0ess0zk9dugXD4FtLNzrdGusrQuOJKU2UoqPhitJQrqqPZxMrLtKfZ8L9MSitb1NIXEMqrCd2mPiU1uRshcUqicv8m5dNA6byX2Jx5Q0rf7Q8OosFSG0kWJ4kAHHrpVF+PAwATsA//uYc9Px8SfYy8g8hbup76nN6V0HykXoAKYS39F533RHThYvF2+9GOX7DhAD15Niru6/RocbkIf8d75fvajRuiEAE7evMDvJ0EdbVrUpN1IP8AJH2yzFBEJOkAAAAASUVORK5CYII=">
+      <figcaption id="boardCap">Not set up yet</figcaption>
+    </figure>
+  </div>
+  <p class="muted" style="font-size:14px;margin-top:20px">Work memos can be researched by your own AI. <button class="btn small secondary" data-go="settings" type="button">Choose how</button></p>
+</main>
+
+<!-- ============ Link a device ============ -->
+<main data-screen="link">
+  <div class="auth" style="margin-top:4vh">
+    <h2>Link your paperbot</h2>
+    <p>Type the code shown in your terminal. Only enter a code from your own setup.</p>
+    <form id="linkForm" autocomplete="off">
+      <label class="sr-only" for="code">Code</label>
+      <input class="code-in" id="code" inputmode="text" maxlength="9" placeholder="XXXX-XXXX" spellcheck="false" aria-describedby="codeHelp">
+      <div id="codeHelp" class="muted" style="font-size:13px;margin-top:8px">8 letters and numbers. Codes expire after 15 minutes.</div>
+      <div class="found" id="found" hidden>
+        <b>paperbot 5100c0ffee01</b> wants to join <b>sam@example.com</b>.
+        <div class="muted" style="margin-top:4px">Started from this Mac 1 minute ago.</div>
+      </div>
+      <p class="err" id="codeErr" hidden>That code doesn't match a setup. Check the terminal and try again.</p>
+      <div style="margin-top:16px"><button class="btn" id="linkBtn" type="submit" disabled>Link paperbot</button></div>
+    </form>
+    <div id="linked" hidden>
+      <div class="status ok" style="border:0;padding:0;margin:0 0 12px"><i></i><span>Linked to sam@example.com</span></div>
+      <p>Your terminal finishes the setup on its own. You can close this tab or go to your inbox.</p>
+      <button class="btn" data-go="inbox" type="button">Go to inbox</button>
+    </div>
+  </div>
+</main>
+
+<!-- ============ Inbox ============ -->
+<main data-screen="inbox">
+  <div class="tools">
+    <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Search memos</div>
+  </div>
+  <div class="chips" role="group" aria-label="Filter by kind">
+    <span class="chip" aria-pressed="true">All<span>5</span></span><span class="chip">Todo<span>1</span></span><span class="chip">Reminder<span>1</span></span>
+    <span class="chip">Work<span>2</span></span><span class="chip">Note<span>1</span></span>
+  </div>
+
+  <div class="sec">Today</div>
+  <article class="card">
+    <button class="tick" aria-label="Mark done"></button>
+    <div><div class="kind">work</div><h3 class="title">Compare small travel routers that do 2.4 GHz</h3>
+      <div id="workA"></div></div>
+    <div class="when">4m ago</div>
+  </article>
+  <article class="card">
+    <button class="tick" aria-label="Mark done"></button>
+    <div><div class="kind">todo</div><h3 class="title">Buy AA batteries</h3></div>
+    <div class="when">1h ago</div>
+  </article>
+  <article class="card">
+    <button class="tick" aria-label="Mark done"></button>
+    <div><div class="kind">reminder</div><h3 class="title">Call the dentist</h3><div class="due">⏰ tomorrow 9:00</div></div>
+    <div class="when">2h ago</div>
+  </article>
+  <div class="sec">Earlier</div>
+  <article class="card">
+    <button class="tick" aria-label="Mark done"></button>
+    <div><div class="kind">work</div><h3 class="title">Best bitmap fonts for a 200 px e-paper screen</h3>
+      <div class="answer">Spleen 6×12 for body text, Terminus for numbers; both are free.</div>
+      <div class="via" id="viaB"></div></div>
+    <div class="when">yesterday</div>
+  </article>
+  <article class="card">
+    <button class="tick" aria-label="Mark done"></button>
+    <div><div class="kind">note</div><h3 class="title">Bolt should wink when a memo is saved</h3></div>
+    <div class="when">yesterday</div>
+  </article>
+</main>
+
+<!-- ============ Settings drawer ============ -->
+<div class="drawer" data-drawer="settings" hidden>
+  <div class="scrim" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="setH">
+    <div class="panel-h"><h2 id="setH">Settings</h2><button class="icon-btn" data-close aria-label="Close">✕</button></div>
+    <div class="panel-b">
+      <section class="group">
+        <h3>Research</h3>
+        <p>When you record a work memo, paperbot can look things up and send the answer back to your board.</p>
+
+        <div class="choice"><label><input type="radio" name="rmode" value="key"><span><span class="t">Use my API key</span>
+          <span class="d">Automatic. Each memo costs about 3¢ on your key.</span></span><span class="tag" id="keyTag">Not set</span></label>
+          <div class="more">
+            <div class="keyrow">
+              <label class="field"><span>Provider</span><select class="input"><option>Anthropic</option><option>OpenAI</option></select></label>
+              <label class="field"><span>API key</span><input class="input mono" id="apiKey" type="password" placeholder="sk-…" autocomplete="off"></label>
+            </div>
+            <div class="row"><button class="btn small" id="testKey" type="button">Save and test key</button><span class="result" id="keyRes" role="status"></span></div>
+            <div id="keyUsage" hidden>
+              <div class="kv"><dt>Researched this month</dt><dd>41 memos</dd><dt>Spent on your key</dt><dd>$1.27</dd></div>
+              <div class="row" style="margin-top:10px"><button class="btn small danger" id="rmKey" type="button">Remove key</button></div>
+            </div>
+            <div class="muted" style="font-size:13px">Stored encrypted. paperbot never shows it again.</div>
+          </div>
+        </div>
+
+        <div class="choice"><label><input type="radio" name="rmode" value="chatgpt"><span><span class="t">Use my ChatGPT plan</span>
+          <span class="d">Automatic. Uses your Plus or Pro allowance instead of a key.</span></span><span class="tag">Coming soon</span></label>
+          <div class="more">
+            <button class="btn small" type="button" disabled>Sign in with ChatGPT</button>
+            <div class="muted" style="font-size:13px">Waiting for OpenAI to approve paperbot. You'll be able to cap how much of your plan it uses in ChatGPT's settings.</div>
+          </div>
+        </div>
+
+        <div class="choice"><label><input type="radio" name="rmode" value="assistant"><span><span class="t">Ask my assistant</span>
+          <span class="d">Free with Claude or ChatGPT. Memos wait until you ask it to check paperbot.</span></span><span class="tag ok">Connected</span></label>
+          <div class="more">
+            <div class="field"><span>Claude Code: run on your Mac</span><div class="cmd"><code>pocketbot claude</code><button class="copy" data-copy>Copy</button></div></div>
+            <div class="field"><span>claude.ai or ChatGPT: add a connector with this address</span><div class="cmd"><code>https://pocketbot.ca/v1/mcp</code><button class="copy" data-copy>Copy</button></div></div>
+            <div class="field"><span>Then ask</span><div class="cmd"><code>Check my paperbot work memos and research them</code><button class="copy" data-copy>Copy</button></div></div>
+          </div>
+        </div>
+
+        <div class="choice"><label><input type="radio" name="rmode" value="off"><span><span class="t">Off</span>
+          <span class="d">Work memos are saved like to-dos. You can research one later.</span></span></label></div>
+      </section>
+
+      <section class="group">
+        <h3>Recording</h3>
+        <p>Transcription is free up to 30 minutes of audio a day.</p>
+        <div class="meter" role="meter" aria-valuenow="12" aria-valuemin="0" aria-valuemax="30" aria-label="Audio used today"><i></i></div>
+        <div class="muted" style="font-size:13.5px">12 of 30 minutes used today. Resets at midnight.</div>
+      </section>
+
+      <section class="group">
+        <h3>Account</h3>
+        <div class="kv" style="margin:10px 0 16px"><dt>Signed in as</dt><dd>sam@example.com</dd><dt>Time zone</dt><dd>America/Toronto</dd></div>
+        <div class="row"><button class="btn small secondary" type="button">Download my data</button><button class="btn small secondary" type="button">Sign out</button>
+          <button class="btn small danger" type="button">Delete account</button></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Connections drawer ============ -->
+<div class="drawer" data-drawer="connections" hidden>
+  <div class="scrim" data-close></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="conH">
+    <div class="panel-h"><h2 id="conH">Connections</h2><button class="icon-btn" data-close aria-label="Close">✕</button></div>
+    <div class="panel-b">
+      <section class="group">
+        <h3>Devices</h3>
+        <p>Boards linked to your account.</p>
+        <div class="item"><div><div class="n"><span class="dot"></span>paperbot 5100c0ffee01</div><div class="s">Online 2 minutes ago, firmware 1.1.0, battery 82%</div></div>
+          <button class="btn small danger" type="button">Remove</button></div>
+        <div class="row" style="margin-top:12px"><button class="btn small secondary" data-go="setup" type="button">Set up another</button></div>
+      </section>
+      <section class="group">
+        <h3>Wi-Fi</h3>
+        <p>Your paperbot tries these in order. Changes reach it the next time it's online.</p>
+        <div class="item"><div><div class="n">Home</div><div class="s">From setup</div></div><button class="btn small secondary" type="button">Edit</button></div>
+        <div class="item"><div><div class="n">Sam’s iPhone</div><div class="s">Fallback: used when nothing else is in range</div></div><button class="btn small secondary" type="button">Edit</button></div>
+        <div class="row" style="margin-top:12px"><button class="btn small secondary" type="button">Add network</button></div>
+      </section>
+      <section class="group">
+        <h3>Assistants</h3>
+        <p>Apps that can read your memos and send back research.</p>
+        <div class="item"><div><div class="n">Claude Code on Sam’s MacBook</div><div class="s">Added Nov 14, last used today</div></div><button class="btn small danger" type="button">Disconnect</button></div>
+        <div class="item"><div><div class="n">ChatGPT</div><div class="s">Connector added Nov 15, last used yesterday</div></div><button class="btn small danger" type="button">Disconnect</button></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const BOLT = { nowifi: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQAAAACFI5MzAAACOUlEQVR42u2XvW4TQRDH/7u2Lo5kcn4AR+ciD+CCIg3KiSfgDaCEjgpS4XXPA0BD8gR5gSC4AimULkFCcERW4iqxJSu6yHc3FLm97O7dyifFKJF1U0yxP83s7Mx+zDKCRTjunwRW0rOSTolRwjoAXblkyNlmQpfE0YxMi+sw4HNwNGKThFcBAI6ZMMn3PwIAx88vJnn89Sa2z88LoaV+2kYTad8E7SYxdwoSEyoVDv+9NTsnlvQQJbmDoe4NzFqfW3K80mr/spJXVvLUSnoPbfeukiCrU5gPbGQjLDvBSvlI86aecKGR1MvrHwUaiV/kJk6oRTBVNo2b7x0AmCnz7Gve1GX5FXMwVoa6a1LTUwDfSkkPQCJKyDUA4LCETBwA/XEJ6e0C2FLc3RRug2JGRETCo9BVKwfAAQC8LvG2CwDYQsHbrRS8Jb5Uprf5SCqTTCOpVpHrMJaqkJ2mVKuYp9OSyiTtvlTV87Yed9VDIa7aCTSm9xYbMWEhqdbhqGSOkW0ess0zk9dugXD4FtLNzrdGusrQuOJKU2UoqPhitJQrqqPZxMrLtKfZ8L9MSitb1NIXEMqrCd2mPiU1uRshcUqicv8m5dNA6byX2Jx5Q0rf7Q8OosFSG0kWJ4kAHHrpVF+PAwATsA//uYc9Px8SfYy8g8hbup76nN6V0HykXoAKYS39F533RHThYvF2+9GOX7DhAD15Niru6/RocbkIf8d75fvajRuiEAE7evMDvJ0EdbVrUpN1IP8AJH2yzFBEJOkAAAAASUVORK5CYII=", sending: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQAAAACFI5MzAAAB0UlEQVR42u2XwU7CQBCGZ0uVxpC0RxJJqO/gwZM0PokP4YHEA8WTr8DJR2GP3NQncGswHC1IjCW166Fsmd12k0WDMdg9/IH9+KfT2eluIRw0w4L9IZ/EqySzI8JZJUkYtZaVhL1TzXUmT6GGnI61uWVB1gK7ArRsTtyYGK3PFCYaYoOvIewm1RAHPHwhvhn38Ia+7XDlhjrSvljqPL7O44FjdKd/ua/FKrBiormeER1C0G+laLiDQolk3WItP6hE0svCcsikDGLUAK7UB3N0nb4UDd9WYFiDKZrq7N+OZErmnhCVPCyFqIRmQvDKxU3OCeO5MFd5gnlbiBKNgx3mUs46RC2FSQYWzUXNIA2yXi6lDIjSxBtyXoh53dQaWOhDkEvJw1Ihat3cmOdSyvrqUYjqoQ2eS8nj20LUDDpnQtRoxShF+z/PwrbEpWiqEe84A07CH0bDbwHyuf/LFe1IrxZmHrTdADU8MZxNxbgneVJ0MvUkjxURMZxArpX2BAR0albWt35+alITAFitvhHtECDyjT3RwBkN/OfV7Tg09oyvF6/HkzZfbPGuzPrkbpQkScK6xv9YuifrbaxrntvwxYEDZxZCxAw89b5Tk5rUZF/JF7G8Xc6wozyaAAAAAElFTkSuQmCC", ready: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQAAAACFI5MzAAACD0lEQVR42u2XvW7bMBDH/yQF2C4MyEOHDgHsd2iHdDKRuU+QJ+lWeepjOFOfoEO3sGiBdCniN4iCBkGGoJVhw7UASddBtnyURCdAkgJCxEGA+MPxPng8HgXBMSQaSkx1NhUDgDKfSuO6l9IfksjWZYk4NHIJiSQpk3BlAEjcVLT8uAgASIRZmbw5zW0z1WhnOuvDq/Gk75HwI1AAqh0S2hmDkXAgvsDEXs01BLl+nnBPJ05y5CSjhmfvZLRHZrtzYTHRISKiabFzO/djWw/fsgAAhVuSDYv9XxtLz/pDQbIhEcVEGxKxpPFzslltzvS8B/C7sIC7pffEIJZfCnLF5g/2yHSuL+8RtzNm9a9kOHVkvDoBUHsacSocFlDg1PNKuPSEbn+yR8+33Laow2wL/TtOfSMICRHknwes5lm1jRe4hkfn2ROfdwIqemILaJeGD83E8kX7vyN6wKau7inDex77LinfGLu6091FjAaWTMJuprElIy/FdnS1HSvW9JBtNbs1a+Pbnp+WPCNyUiFLINXQAJabJm0ws2SWx3WrKYC/nYxdxV7UWDD4CnyH9xI/4SGdzTWguR5aV14fc/UOSNVH/fZzDwrazJC+vsNTlVt3KDalaK7x1/JHdF3RSW6BGYD0wqBnkdWq0lctFibxzXgRUzJWRN8iX52PeV/V/+R8gU3t91xbkVrSkpY0m/wD8eCU6NP/4vkAAAAASUVORK5CYII=" };
+const NOTES = {
+  signin: "Anyone can sign up: no invite list. Google or a passkey, so there are no passwords to reset.",
+  setup: "<b>First visit.</b> The steps tick themselves off as the setup tool reports in; the board preview mirrors the real screen. Click the steps area to simulate progress.",
+  link: "<b>Typed, not clicked.</b> The code is never pre-filled from a link (the review's phishing fix). Try any 8 characters.",
+  inbox: "<b>Work memos show who is researching.</b> Change the choice in Settings → Research and watch the first work memo change.",
+  settings: "<b>One research choice per account.</b> Your key is stored encrypted and never shown again.",
+  connections: "<b>Everything that can reach your account, with a way to cut it off.</b>",
+};
+let mode = "assistant", keySaved = false, setupStep = 0;
+
+let base = "signin";
+function go(screen) {
+  const drawer = screen === "settings" || screen === "connections";
+  if (!drawer) base = screen; else if (base === "signin") base = "inbox";
+  for (const el of $$("[data-screen]")) el.hidden = el.dataset.screen !== base;
+  $("[data-app]").hidden = base === "signin";
+  for (const d of $$("[data-drawer]")) d.hidden = d.dataset.drawer !== screen;
+  $$(".mockbar [data-go]").forEach((b) => (b.dataset.go === screen ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
+  $("#note").innerHTML = NOTES[screen] ?? "";
+  if (drawer) $(`[data-drawer="${screen}"] .panel-h button`).focus();
+}
+function closeDrawers() { if ($$("[data-drawer]").some((d) => !d.hidden)) go(base); }
+document.addEventListener("click", (e) => {
+  const g = e.target.closest("[data-go]");
+  if (g) { e.preventDefault(); go(g.dataset.go); return; }
+  if (e.target.closest("[data-close]")) { closeDrawers(); return; }
+  const c = e.target.closest("[data-copy]");
+  if (c) { navigator.clipboard?.writeText(c.previousElementSibling.textContent).catch(() => {}); c.textContent = "Copied"; c.classList.add("done");
+    setTimeout(() => { c.textContent = "Copy"; c.classList.remove("done"); }, 1400); }
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeDrawers(); });
+
+// ---- first visit: simulated progress (click the steps) ----
+$(".steps").addEventListener("click", (e) => {
+  if (e.target.closest("button")) return;
+  setupStep = Math.min(3, setupStep + 1);
+  ["#st1", "#st2", "#st3"].forEach((s, i) => $(s).classList.toggle("done", i < setupStep));
+  const st = $("#setupStatus");
+  if (setupStep === 3) { st.className = "status ok"; st.lastElementChild.textContent = "paperbot 5100c0ffee01 is online"; $("#boardImg").src = BOLT.ready; $("#boardCap").textContent = "Ready: hold ☀ and talk"; }
+  else if (setupStep === 2) { st.lastElementChild.textContent = "Setup tool connected, waiting for the code"; $("#boardImg").src = BOLT.sending; $("#boardCap").textContent = "Installing"; }
+  else { st.lastElementChild.textContent = "Setup tool installed, waiting for your paperbot"; }
+});
+
+// ---- link: typed code ----
+const code = $("#code");
+code.addEventListener("input", () => {
+  let v = code.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+  code.value = v.length > 4 ? `${v.slice(0, 4)}-${v.slice(4)}` : v;
+  const full = v.length === 8, bad = full && /0|O|1|I|L/.test(v);
+  $("#found").hidden = !full || bad; $("#codeErr").hidden = !bad; $("#linkBtn").disabled = !full || bad;
+});
+$("#linkForm").addEventListener("submit", (e) => { e.preventDefault(); $("#linkForm").hidden = true; $("#linked").hidden = false; });
+
+// ---- research mode drives the inbox ----
+function renderWork() {
+  const a = $("#workA"), via = $("#viaB");
+  const html = {
+    key: keySaved
+      ? `<div class="research"><div class="h"><b>Researching with your API key</b><span class="muted">$0.02 so far</span></div>
+         <ul><li>Searched “travel router 2.4 GHz WPA2 small”</li><li>Reading gl-inet.com/products</li><li>Comparing 3 models</li></ul></div>`
+      : `<div class="research"><div class="h"><b>Waiting for your API key</b></div><p class="muted">Add a key in Settings and this memo is researched right away.</p>
+         <div class="row"><button class="btn small" data-go="settings" type="button">Add key</button></div></div>`,
+    chatgpt: `<div class="research"><div class="h"><b>Waiting for your ChatGPT plan</b></div><p class="muted">Sign in with ChatGPT isn't available yet. Until then, ask your assistant or add an API key.</p></div>`,
+    assistant: `<div class="research"><div class="h"><b>Waiting for your assistant</b><span class="muted">1 memo waiting</span></div>
+      <p class="muted">Ask Claude or ChatGPT to check paperbot. The answer shows up here and on your board.</p>
+      <div class="cmd" style="margin-top:10px"><code>Check my paperbot work memos and research them</code><button class="copy" data-copy>Copy</button></div></div>`,
+    off: `<div class="research"><div class="h"><b>Saved as a to-do</b></div><p class="muted">Research is off.</p>
+      <div class="row"><button class="btn small secondary" data-go="settings" type="button">Research this</button></div></div>`,
+  };
+  a.innerHTML = html[mode];
+  via.textContent = { key: "Researched with your API key, 3¢", chatgpt: "Researched with your ChatGPT plan", assistant: "Researched by Claude, via your connector", off: "Researched by Claude, via your connector" }[mode];
+  $("#keyTag").textContent = keySaved ? "Key saved" : "Not set"; $("#keyTag").classList.toggle("ok", keySaved);
+}
+for (const r of $$('input[name="rmode"]')) {
+  r.checked = r.value === mode;
+  r.addEventListener("change", () => { mode = r.value; renderWork(); });
+}
+$("#testKey").addEventListener("click", () => {
+  const v = $("#apiKey").value.trim(), res = $("#keyRes");
+  if (v.length < 12) { res.className = "result"; res.style.color = "var(--red)"; res.textContent = "That doesn't look like an API key. Paste the whole key."; return; }
+  res.style.color = ""; res.className = "result"; res.textContent = "Testing…";
+  setTimeout(() => { keySaved = true; res.className = "result ok"; res.textContent = "Key works. Researching with Claude Sonnet."; $("#apiKey").value = "";
+    $("#apiKey").placeholder = "sk-ant-…••••3f9a"; $("#keyUsage").hidden = false; renderWork(); }, 700);
+});
+$("#rmKey").addEventListener("click", () => { keySaved = false; $("#keyUsage").hidden = true; $("#keyRes").textContent = "Key removed."; $("#apiKey").placeholder = "sk-…"; renderWork(); });
+
+// ---- theme ----
+$("#theme").addEventListener("click", () => {
+  const dark = document.documentElement.dataset.theme !== "dark" && !(matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light");
+  document.documentElement.dataset.theme = dark ? "dark" : "light"; $("#theme").textContent = dark ? "Light" : "Dark";
+});
+
+const mb = () => document.documentElement.style.setProperty("--mockbar-h", `${$(".mockbar").offsetHeight}px`);
+addEventListener("resize", mb); mb();
+renderWork();
+go(new URLSearchParams(location.search).get("screen") || "signin");
+if (new URLSearchParams(location.search).get("theme")) document.documentElement.dataset.theme = new URLSearchParams(location.search).get("theme");
+</script>
+<style>.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
+</body>
+</html>

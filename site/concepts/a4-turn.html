@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../assets/favicon-64.png" type="image/png">
+<title>paperbot · Object 4: Turn</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,250..700&display=swap" rel="stylesheet">
+<script>self.ModelViewerElement = { meshoptDecoderLocation: "../vendor/meshopt_decoder.js" };</script>
+<script type="module" src="../vendor/model-viewer.min.js"></script>
+<style>
+/* Bricolage Grotesque: friendly ink-trap grotesk; condensed and huge for the words behind the device. */
+:root {
+  --bg: #f7f5f0; --ghost: #ebe7dd; --ink: #3a3934; --ink-2: #8a877e; --line: #e6e2d8; --charcoal: #3a3934; --on: #f7f5f0;
+  --f: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif; --gutter: clamp(20px, 5vw, 64px);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--f); font-variation-settings: "opsz" 14; -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+.bar { position: fixed; inset: 0 0 auto; z-index: 5; display: flex; justify-content: space-between; align-items: center; padding: 20px var(--gutter); font-size: 14px; color: var(--ink-2); }
+.wordmark { font-size: 23px; font-weight: 640; letter-spacing: -.03em; color: var(--ink); font-variation-settings: "opsz" 40; }
+
+/* scroll scene: 4 beats, one sticky stage */
+.scene { height: 520vh; position: relative; }
+.sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; display: grid; place-items: center; }
+.words { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+.word {
+  grid-area: 1 / 1; font-size: clamp(110px, 33vw, 560px); line-height: .8; letter-spacing: -.05em; font-weight: 660;
+  font-variation-settings: "opsz" 96, "wdth" 88; color: var(--ghost); white-space: nowrap;
+  opacity: 0; transform: translateY(6%) scale(.97); transition: opacity .6s, transform .9s cubic-bezier(.2, .8, .2, 1);
+}
+.word.on { opacity: 1; transform: none; }
+.stage { position: relative; width: min(92vw, 560px); height: min(58vh, 560px); }
+model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
+.caption { position: absolute; left: 0; right: 0; bottom: 6vh; text-align: center; padding: 0 var(--gutter); }
+.caption .stack > * { margin: 0 auto; max-width: 30rem; font-size: 18px; color: var(--ink-2); grid-area: 1 / 1; opacity: 0; visibility: hidden; transition: opacity .5s, visibility .5s; }
+.caption .stack > .on { opacity: 1; visibility: visible; }
+.try-cap { display: grid; justify-items: center; }
+.try-cap .out { color: var(--ink); }
+.caption .stack { display: grid; }
+.intro { position: absolute; top: 15vh; left: 0; right: 0; text-align: center; transition: opacity .5s; }
+.intro h1 { margin: 0; font-size: clamp(30px, 3.4vw, 46px); font-weight: 560; letter-spacing: -.03em; line-height: 1.1; font-variation-settings: "opsz" 48; }
+.scrolled .intro { opacity: 0; }
+.progress { position: absolute; right: var(--gutter); top: 50%; translate: 0 -50%; display: grid; gap: 10px; }
+.progress i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); transition: background .3s, transform .3s; }
+.progress i.on { background: var(--ink); transform: scale(1.3); }
+
+/* try it */
+.try { min-height: 90vh; display: grid; justify-items: center; align-content: center; text-align: center; padding: 80px var(--gutter); }
+.try h2 { margin: 0; font-size: clamp(40px, 6vw, 80px); line-height: 1; letter-spacing: -.04em; font-weight: 600; font-variation-settings: "opsz" 96, "wdth" 85; }
+.try p { margin: 18px 0 0; color: var(--ink-2); max-width: 28rem; }
+.hold {
+  margin-top: 0; height: 60px; padding: 0 30px; border: 0; border-radius: 999px; cursor: pointer; background: var(--charcoal); color: var(--on);
+  font: 600 17px var(--f); user-select: none; -webkit-user-select: none; touch-action: none;
+  transition: transform .18s cubic-bezier(.3, 1.6, .5, 1), padding .3s;
+}
+.hold:hover { transform: translateY(-2px); }
+.hold.down { transform: scale(.95); padding: 0 42px; }
+.out { margin-top: 22px; min-height: 3em; font-size: 20px; letter-spacing: -.01em; }
+.out small { display: block; font-size: 14px; color: var(--ink-2); margin-top: 4px; }
+
+.foot { max-width: 1000px; margin: 0 auto; padding: 26px var(--gutter) 40px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 13.5px; color: var(--ink-2); }
+@media (max-width: 720px) { .progress { display: none; } .stage { height: 56vh; } }
+</style>
+</head>
+<body>
+<header class="bar"><span class="wordmark">paperbot</span><span>Not for sale yet</span></header>
+
+<section class="scene" id="scene" aria-label="How paperbot works">
+  <div class="sticky">
+    <div class="words" aria-hidden="true">
+      <span class="word on">Hold.</span><span class="word">Talk.</span><span class="word">Let go.</span><span class="word">Done.</span><span class="word">Your turn.</span>
+    </div>
+    <div class="intro"><h1>A little robot that remembers<br>what you meant to remember.</h1></div>
+    <div class="stage">
+      <model-viewer id="mv" src="../assets/paperbot.glb" alt="paperbot, a small white device with an e-paper screen"
+        disable-zoom disable-pan interaction-prompt="none"
+        camera-orbit="-30deg 80deg 0.2m" field-of-view="22deg" max-camera-orbit="auto auto 0.35m" interpolation-decay="60"
+        tone-mapping="neutral" exposure="1" shadow-intensity="0.35" shadow-softness="1"></model-viewer>
+    </div>
+    <div class="caption"><div class="stack">
+      <p class="on">Scroll, and it'll show you how it works.</p>
+      <p>Hold the button on the side. It wakes up and listens straight away.</p>
+      <p>Let go. Your words go to your own server and are written down in about two seconds.</p>
+      <p>It's filed as a note, a todo, a reminder or a question, and the screen tells you which.</p>
+      <div class="cap try-cap"><button class="hold" id="hold" type="button">Hold to talk</button><div class="out" id="out" aria-live="polite">Press and hold, then let go.</div></div>
+    </div></div>
+    <div class="progress" aria-hidden="true"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+  </div>
+</section>
+
+
+
+<footer class="foot"><span>pocketbot.ca</span><span>A small e-paper robot, built on Waveshare hardware.</span></footer>
+
+<script type="module">
+import { screen, holdable, beep } from './screen.js';
+const mv = document.getElementById('mv'), scene = document.getElementById('scene');
+const s = screen(mv);
+s.preload(['ready', 'rec', 'sending', 'note', 'todo', 'reminder', 'tooshort']);
+const words = [...document.querySelectorAll('.word')], caps = [...document.querySelectorAll('.caption .stack > *')], dots = [...document.querySelectorAll('.progress i')];
+const SCREENS = ['ready', 'rec', 'sending', 'note', 'ready'];
+let beat = -1, raf = 0;
+function onScroll() {
+  raf = 0;
+  const r = scene.getBoundingClientRect();
+  const p = Math.min(Math.max(-r.top / (r.height - innerHeight), 0), 1);
+  document.body.classList.toggle('scrolled', p > 0.02);
+  const turn = Math.min(p / 0.8, 1);                       // one full turn over the first four beats, then face front
+  mv.cameraOrbit = `${-30 + turn * 390}deg ${80 + Math.sin(turn * Math.PI) * 4}deg 0.2m`;
+  const b = Math.min(4, Math.floor(p * 5));
+  if (b === beat) return;
+  beat = b;
+  words.forEach((w, i) => w.classList.toggle('on', i === b));
+  caps.forEach((c, i) => c.classList.toggle('on', i === b));
+  dots.forEach((d, i) => d.classList.toggle('on', i === b));
+  s.show(SCREENS[b], { flash: b > 0 });
+}
+addEventListener('scroll', () => { raf ||= requestAnimationFrame(onScroll); }, { passive: true });
+onScroll();
+
+// the last beat: try it on the same device
+const out = document.getElementById('out');
+const MEMOS = [['todo', 'Buy AA batteries', 'Filed as a todo'], ['reminder', 'Call the dentist', 'Reminder for Oct 18 at 9:00'], ['note', 'Idea: a robot face for the voice gadget', 'Filed as a note']];
+let n = 0, t;
+holdable(document.getElementById('hold'), {
+  onStart() { clearTimeout(t); beep(); s.show('rec', 0); out.textContent = 'Listening…'; },
+  onTick(sec) { s.show('rec', sec); out.textContent = `Listening… ${sec}s`; },
+  onEnd(ms) {
+    if (ms < 600) { s.show('tooshort', { flash: true }); out.textContent = 'Too short. Hold a little longer.'; return; }
+    out.textContent = 'Sending…'; s.show('sending');
+    const [frame, title, kind] = MEMOS[n++ % MEMOS.length];
+    t = setTimeout(() => { s.show(frame, { flash: true }); out.innerHTML = '<span></span><small></small>'; out.firstChild.textContent = `“${title}”`; out.lastChild.textContent = kind; }, 1000);
+  },
+});
+</script>
+</body>
+</html>

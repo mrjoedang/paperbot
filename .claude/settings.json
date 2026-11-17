@@ -1,0 +1,10 @@
+{
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [{ "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/tools/hooks/worktree-setup.sh\"", "timeout": 180 }] }
+    ],
+    "SubagentStart": [
+      { "hooks": [{ "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/tools/hooks/worktree-setup.sh\"", "timeout": 180 }] }
+    ]
+  }
+}

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f1d1a">
+<title>paperbot</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f6f4ef; --fg: #1f1d1a; --muted: #6f6a60; --card: #ece8df; --hover: #e3ded2; --accent: #2f6f4f; --due: #8a5a00; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #161513; --fg: #ece8df; --muted: #9a948a; --card: #23211e; --hover: #2d2a26; --accent: #7cc49b; --due: #e0b25c; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.4 system-ui, -apple-system, sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 16px; }
+  form { display: flex; gap: 8px; margin-bottom: 20px; }
+  input[type=text] { flex: 1; min-width: 0; font: inherit; padding: 10px 12px; border: 0; border-radius: 10px; background: var(--card); color: var(--fg); }
+  button { font: inherit; border: 0; border-radius: 10px; padding: 10px 14px; background: var(--fg); color: var(--bg); cursor: pointer; }
+  button:hover { opacity: .88; } button:active { transform: scale(.97); } button:disabled { opacity: .5; cursor: default; }
+  h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 22px 0 6px; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; }
+  li:hover { background: var(--hover); }
+  li.done .t { text-decoration: line-through; color: var(--muted); }
+  .t { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .due { font-size: 13px; color: var(--due); white-space: nowrap; }
+  input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--accent); flex: none; }
+  .x { background: none; color: var(--muted); padding: 4px 8px; font-size: 18px; line-height: 1; }
+  .x:hover { background: var(--card); opacity: 1; }
+  .empty { color: var(--muted); padding: 24px 0; }
+  details summary { cursor: pointer; color: var(--muted); font-size: 13px; margin: 22px 0 6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>paperbot</h1>
+  <form id="add"><input id="text" type="text" placeholder="Add a todo" autocomplete="off"><button id="go">Add</button></form>
+  <div id="lists"></div>
+</main>
+<script type="module">
+  import { db } from "/sdk.js"
+  const items = db.collection("items")
+  const LISTS = [["reminder", "Reminders"], ["todo", "Todo"], ["shopping", "Shopping"], ["note", "Notes"]]
+  const el = (tag, props = {}, ...kids) => { const e = Object.assign(document.createElement(tag), props); e.append(...kids); return e }
+  const when = (due) => {
+    if (!due) return ""
+    const d = new Date(due.length > 10 ? due : due + "T00:00")
+    if (isNaN(d)) return due
+    const opts = due.length > 10 ? { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" } : { weekday: "short", month: "short", day: "numeric" }
+    return d.toLocaleString(undefined, opts)
+  }
+  const row = (doc) => {
+    const box = el("input", { type: "checkbox", checked: !!doc.data.done, onchange: () => items.update(doc.id, { done: box.checked }) })
+    return el("li", { className: doc.data.done ? "done" : "" }, box,
+      el("span", { className: "t", textContent: doc.data.title ?? "" }),
+      el("span", { className: "due", textContent: when(doc.data.due) }),
+      el("button", { className: "x", title: "Delete", textContent: "×", onclick: () => items.delete(doc.id) }))
+  }
+  items.watch((docs) => {
+    const root = document.getElementById("lists")
+    root.replaceChildren()
+    const open = docs.filter((d) => !d.data.done), done = docs.filter((d) => d.data.done)
+    for (const [key, label] of LISTS) {
+      const mine = open.filter((d) => (LISTS.some(([k]) => k === d.data.list) ? d.data.list : "note") === key)
+        .sort((a, b) => (a.data.due ?? "9").localeCompare(b.data.due ?? "9"))
+      if (mine.length) root.append(el("h2", { textContent: label }), el("ul", {}, ...mine.map(row)))
+    }
+    if (!open.length) root.append(el("p", { className: "empty", textContent: "Nothing open. Hold the button on your paperbot and say what to remember." }))
+    if (done.length) {
+      const det = el("details", {}, el("summary", { textContent: `Done (${done.length})` }), el("ul", {}, ...done.slice(0, 50).map(row)))
+      root.append(det)
+    }
+  })
+  document.getElementById("add").onsubmit = async (e) => {
+    e.preventDefault()
+    const input = document.getElementById("text"), go = document.getElementById("go")
+    const title = input.value.trim()
+    if (!title) return
+    go.disabled = true; go.textContent = "Adding…"
+    try { await items.add({ list: "todo", title, due: null, done: false }); input.value = "" }
+    finally { go.disabled = false; go.textContent = "Add" }
+  }
+</script>
+</body>
+</html>

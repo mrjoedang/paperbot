@@ -1,0 +1,1030 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bolt Variations</title>
+<style>
+:root{
+  --bg:#f6f5f1; --fg:#1d1d1f; --muted:#6b6a66; --card:#ffffff; --line:#e2e0da;
+  --accent:#d0451b; --bezel:#2a2b2f; --bezel-hi:#3a3c41; --nav:rgba(246,245,241,.92);
+  --star:#e0a100;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16171a; --fg:#ecebe7; --muted:#9a9993; --card:#1f2024; --line:#2e3036;
+    --accent:#ff7a4d; --bezel:#0d0e10; --bezel-hi:#26282d; --nav:rgba(22,23,26,.92);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16171a; --fg:#ecebe7; --muted:#9a9993; --card:#1f2024; --line:#2e3036;
+  --accent:#ff7a4d; --bezel:#0d0e10; --bezel-hi:#26282d; --nav:rgba(22,23,26,.92);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header.top{max-width:1400px;margin:0 auto;padding:28px 16px 8px}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0;max-width:820px}
+.controls{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:14px;font-size:14px}
+.controls label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--fg);padding:5px 10px;font:inherit;cursor:pointer}
+.seg button.on{background:var(--fg);color:var(--bg)}
+nav{position:sticky;top:0;z-index:5;background:var(--nav);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line)}
+nav .in{max-width:1400px;margin:0 auto;padding:8px 16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+nav a{white-space:nowrap;text-decoration:none;color:var(--fg);padding:5px 10px;border-radius:999px;
+  border:1px solid var(--line);font-size:14px}
+nav a:hover{border-color:var(--fg)}
+nav a .s{color:var(--star)}
+main{max-width:1400px;margin:0 auto;padding:8px 16px 60px}
+section.concept{padding:28px 0 18px;border-bottom:1px solid var(--line)}
+.chead{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:flex-start;justify-content:space-between}
+.chead h2{margin:0;font-size:22px}
+.chead h2 .num{color:var(--muted);font-weight:500;margin-right:6px}
+.why{margin:4px 0 2px;max-width:760px}
+.font{margin:0;color:var(--muted);font-size:13px}
+.pick{display:flex;gap:10px;align-items:center}
+.star{font-size:15px;border:1px solid var(--line);background:var(--card);color:var(--fg);
+  border-radius:999px;padding:6px 14px;cursor:pointer;font-family:inherit}
+.star.on{border-color:var(--star);background:var(--star);color:#1d1d1f}
+textarea{width:100%;max-width:760px;min-height:44px;margin-top:10px;background:var(--card);color:var(--fg);
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:14px;resize:vertical}
+.grid{display:grid;gap:22px 18px;margin-top:18px;
+  grid-template-columns:repeat(auto-fill,minmax(calc(var(--scr) + 36px),1fr))}
+.cell{display:flex;flex-direction:column;align-items:center;min-width:0}
+.device{position:relative;padding:16px;border-radius:20px;max-width:100%;
+  background:linear-gradient(160deg,var(--bezel-hi),var(--bezel));
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 6px 18px rgba(0,0,0,.18)}
+.device::after{content:"";position:absolute;right:-5px;top:38%;width:5px;height:30px;border-radius:0 3px 3px 0;
+  background:var(--bezel-hi)}
+.device canvas{display:block;width:var(--scr);max-width:100%;height:auto;aspect-ratio:1;
+  image-rendering:pixelated;image-rendering:crisp-edges;border-radius:2px;cursor:pointer}
+.cap{margin-top:8px;font-size:13px;color:var(--muted);text-align:center}
+.cap b{color:var(--fg);font-weight:600}
+.tag{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:4px}
+footer{max-width:1400px;margin:0 auto;padding:10px 16px 60px;color:var(--muted);font-size:13px}
+footer pre{white-space:pre-wrap;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--fg)}
+button.plain{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:5px 10px;font:inherit;cursor:pointer}
+body.small .device{padding:8px;border-radius:12px}
+.group{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:36px 0 0;padding-top:12px;border-top:2px solid var(--fg)}
+.navsep{align-self:center;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 2px 0 8px}
+.cell.sheet{grid-column:1/-1;align-items:flex-start}
+.sheetwrap{background:linear-gradient(160deg,var(--bezel-hi),var(--bezel));padding:12px;border-radius:12px;max-width:100%}
+.sheetwrap canvas{display:block;max-width:100%;height:auto;image-rendering:pixelated;cursor:pointer}
+.note{margin:10px 0 0;font-size:13px;color:var(--muted);max-width:820px}
+select{font:inherit;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Bolt: variations + hybrids</h1>
+  <p class="sub">You picked Bolt, so here are 8 Bolt variants plus 4 hybrids with Pip and Poster. Every screen is a real 200×200 black/white buffer, the same as the panel. Each Bolt variant ends with an expression sheet showing exactly which face parts (bitmaps) it needs. Click any screen to download a 1-bit PNG. Star favourites and add notes; they're saved in this browser.</p>
+  <div class="controls">
+    <label><input type="checkbox" id="anim" checked> Animate (500 ms/frame)</label>
+    <span>Size <span class="seg" id="size"><button data-s="actual">Actual ~28mm</button><button data-s="1">1×</button><button data-s="2" class="on">2×</button></span></span>
+    <label>Battery <select id="bat"><option value="85">85%</option><option value="40">40%</option><option value="12">12%</option><option value="off">hidden</option></select></label>
+    <label><input type="checkbox" id="tint" checked> Paper tint</label>
+  </div>
+  <p class="note"><b>Animation rule:</b> the screen only animates while the device is awake and busy (the recording seconds counter and sending/thinking). <i>Ready</i> is light sleep: one frozen frame with zero refreshes. Results, queued, too-short and no-SD are single static frames before it sleeps again. A result may flash once on arrival; that one-off flash isn't simulated here.</p>
+</header>
+<nav><div class="in" id="nav"></div></nav>
+<main id="main"></main>
+<footer>
+  <p><button class="plain" id="copy">Copy my picks + notes</button> <span id="copied"></span></p>
+  <pre id="summary"></pre>
+  <p>Device fonts: a classic 5×7 bitmap font at integer scales, plus (Poster hybrids and Glyph Bolt) a heavy sans run through a hard 1-bit threshold. Icons are 16×16 1-bit sprites scaled by whole numbers.</p>
+</footer>
+
+<script>
+"use strict";
+/* ---------------- 1-bit bitmap + primitives ---------------- */
+class B{
+  constructor(w=200,h=200){this.w=w;this.h=h;this.d=new Uint8Array(w*h);}
+  px(x,y,c=1){x=Math.floor(x);y=Math.floor(y);if(x<0||y<0||x>=this.w||y>=this.h)return;this.d[y*this.w+x]=c;}
+  get(x,y){return(x<0||y<0||x>=this.w||y>=this.h)?0:this.d[y*this.w+x];}
+  rect(x,y,w,h,c=1){for(let j=0;j<h;j++)for(let i=0;i<w;i++)this.px(x+i,y+j,c);}
+  frame(x,y,w,h,t=1,c=1){this.rect(x,y,w,t,c);this.rect(x,y+h-t,w,t,c);this.rect(x,y,t,h,c);this.rect(x+w-t,y,t,h,c);}
+  fill(c=1){this.d.fill(c);}
+  inRR(px,py,x,y,w,h,r){
+    if(px<x||py<y||px>=x+w||py>=y+h)return false;
+    const cx=px<x+r?x+r:(px>=x+w-r?x+w-r:px), cy=py<y+r?y+r:(py>=y+h-r?y+h-r:py);
+    const dx=px+.5-cx, dy=py+.5-cy; return cx===px||cy===py||dx*dx+dy*dy<=r*r;
+  }
+  rrect(x,y,w,h,r,c=1){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(this.inRR(i,j,x,y,w,h,r))this.px(i,j,c);}
+  rframe(x,y,w,h,r,t=2,c=1){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)
+    if(this.inRR(i,j,x,y,w,h,r)&&!this.inRR(i,j,x+t,y+t,w-2*t,h-2*t,Math.max(0,r-t)))this.px(i,j,c);}
+  line(x0,y0,x1,y1,t=1,c=1){
+    x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);
+    const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let e=dx+dy;const o=Math.floor((t-1)/2);
+    for(;;){this.rect(x0-o,y0-o,t,t,c);if(x0===x1&&y0===y1)break;const e2=2*e;if(e2>=dy){e+=dy;x0+=sx;}if(e2<=dx){e+=dx;y0+=sy;}}
+  }
+  pline(pts,t=1,c=1){for(let i=0;i<pts.length-1;i++)this.line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],t,c);}
+  ellipse(cx,cy,rx,ry,c=1){for(let y=Math.floor(cy-ry-1);y<=cy+ry+1;y++)for(let x=Math.floor(cx-rx-1);x<=cx+rx+1;x++){
+    const dx=(x+.5-cx)/rx,dy=(y+.5-cy)/ry;if(dx*dx+dy*dy<=1)this.px(x,y,c);}}
+  circle(cx,cy,r,c=1){this.ellipse(cx,cy,r,r,c);}
+  ring(cx,cy,r,t,c=1,a0=0,a1=360){
+    for(let y=Math.floor(cy-r-1);y<=cy+r+1;y++)for(let x=Math.floor(cx-r-1);x<=cx+r+1;x++){
+      const dx=x+.5-cx,dy=y+.5-cy,d=Math.hypot(dx,dy);if(d>r||d<r-t)continue;
+      if(a0!==0||a1!==360){let a=Math.atan2(dy,dx)*180/Math.PI;if(a<0)a+=360;
+        if(a0<=a1?(a<a0||a>a1):(a<a0&&a>a1))continue;}
+      this.px(x,y,c);}
+  }
+  poly(pts,c=1){
+    let y0=Infinity,y1=-Infinity;for(const p of pts){y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);}
+    for(let y=Math.floor(y0);y<=Math.ceil(y1);y++){const yc=y+.5,xs=[];
+      for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];
+        if((a[1]<=yc&&b[1]>yc)||(b[1]<=yc&&a[1]>yc))xs.push(a[0]+(yc-a[1])/(b[1]-a[1])*(b[0]-a[0]));}
+      xs.sort((p,q)=>p-q);for(let k=0;k+1<xs.length;k+=2)for(let x=Math.ceil(xs[k]-.5);x<xs[k+1]-.5;x++)this.px(x,y,c);}
+  }
+  dots(x,y,w,h,step=4,c=1,off=0){for(let j=0;j<h;j+=step)for(let i=((j/step)%2?step/2:0)+off;i<w;i+=step)this.px(x+i,y+j,c);}
+  hdots(x,y,w,gap=2,c=1){for(let i=0;i<w;i+=gap)this.px(x+i,y,c);}
+  invert(x,y,w,h){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)this.px(i,j,this.get(i,j)?0:1);}
+  blit(src,x,y,s=1,c=1,bg=null){for(let j=0;j<src.h;j++)for(let i=0;i<src.w;i++){const v=src.d[j*src.w+i];
+    if(v)this.rect(x+i*s,y+j*s,s,s,c);else if(bg!==null)this.rect(x+i*s,y+j*s,s,s,bg);}}
+  /* pixel font */
+  text(str,x,y,s=1,c=1){str=String(str);let cx=x;for(const ch of str){const g=glyph(ch);
+      for(let col=0;col<5;col++){const bits=g[col];for(let r=0;r<8;r++)if(bits&(1<<r))this.rect(cx+col*s,y+r*s,s,s,c);}
+      cx+=6*s;}return cx-x-s;}
+  ctext(str,y,s=1,c=1,cx=100){const w=tw(str,s);return this.text(str,Math.round(cx-w/2),y,s,c);}
+  /* heavy sans, thresholded to 1-bit */
+  tt(str,x,y,px,o={}){const m=ttMask(str,px,o.weight||900);let X=x;
+    if(o.align==="center")X=Math.round(x-m.w/2);else if(o.align==="right")X=x-m.w;
+    const c=o.c===undefined?1:o.c;for(let j=0;j<m.h;j++)for(let i=0;i<m.w;i++)if(m.d[j*m.w+i])this.px(X+i,y+j,c);return m.w;}
+}
+const tw=(s,k=1)=>String(s).length*6*k-k;
+
+/* classic 5x7 font, column-major, LSB = top row (ASCII 32..126) */
+const FONT_HEX=
+"0000000000"+"00005f0000"+"0007000700"+"147f147f14"+"242a7f2a12"+"2313086462"+"3649562050"+"0000070000"+"001c224100"+"0041221c00"+
+"14083e0814"+"08083e0808"+"0050300000"+"0808080808"+"0060600000"+"2010080402"+
+"3e5149453e00427f400042615149462141454b311814127f1027454545393c4a49493001710905033649494936064949291e"+
+"0036360000"+"0056360000"+"0814224100"+"1414141414"+"0041221408"+"0201510906"+"324979413e"+
+"7e1111117e7f494949363e414141227f4141221c7f494949417f090909013e4149497a7f0808087f00417f41002040413f01"+
+"7f081422417f404040407f020c027f7f0408107f3e4141413e7f090909063e4151215e7f0919294646494949310101 7f0101".replace(/ /g,"")+
+"3f4040403f1f2040201f3f4038403f63140814630708700807615149454300 7f41410002040810200041417f0004020102044040404040".replace(/ /g,"")+
+"0001020400"+"2054545478"+"7f48444438"+"3844444420"+"384444487f"+"3854545418"+"087e090102"+"0c5252523e"+
+"7f08040478"+"00447d4000"+"2040443d00"+"7f10284400"+"00417f4000"+"7c04180478"+"7c08040478"+"3844444438"+
+"7c14141408"+"081414187c"+"7c08040408"+"4854545420"+"043f444020"+"3c4040207c"+"1c2040201c"+"3c4030403c"+
+"4428102844"+"0c5050503c"+"4464544c44"+"0008364100"+"00007f0000"+"0041360800"+"0804081008";
+const FONT=[];for(let i=0;i<FONT_HEX.length;i+=2)FONT.push(parseInt(FONT_HEX.substr(i,2),16));
+function glyph(ch){let k=ch.charCodeAt(0);if(k<32||k>126)k=63;const i=(k-32)*5;return FONT.slice(i,i+5);}
+
+/* thresholded heavy sans */
+const TT_FAMILY='"Arial Black","Helvetica Neue",Helvetica,Arial,sans-serif';
+const ttCache=new Map();const ttCanvas=document.createElement("canvas");const ttCtx=ttCanvas.getContext("2d",{willReadFrequently:true});
+function ttWidth(str,px,weight=900){ttCtx.font=`${weight} ${px}px ${TT_FAMILY}`;return Math.ceil(ttCtx.measureText(str).width);}
+function ttMask(str,px,weight){const key=str+"|"+px+"|"+weight;if(ttCache.has(key))return ttCache.get(key);
+  ttCtx.font=`${weight} ${px}px ${TT_FAMILY}`;const mt=ttCtx.measureText(str);
+  const asc=Math.ceil(mt.actualBoundingBoxAscent||px*.8),des=Math.ceil(mt.actualBoundingBoxDescent||px*.2);
+  const left=Math.ceil(mt.actualBoundingBoxLeft||0),w=Math.max(1,Math.ceil(mt.actualBoundingBoxRight||mt.width)+left),h=Math.max(1,asc+des);
+  ttCanvas.width=w+2;ttCanvas.height=h+2;ttCtx.font=`${weight} ${px}px ${TT_FAMILY}`;ttCtx.textBaseline="alphabetic";
+  ttCtx.clearRect(0,0,w+2,h+2);ttCtx.fillStyle="#000";ttCtx.fillText(str,left+1,asc+1);
+  const id=ttCtx.getImageData(1,1,w,h).data;const d=new Uint8Array(w*h);for(let i=0;i<w*h;i++)d[i]=id[i*4+3]>120?1:0;
+  const m={w,h,d};ttCache.set(key,m);return m;}
+function ttWrap(str,px,maxW,weight=900){const words=str.split(" ");const lines=[];let cur="";
+  for(const w of words){const t=cur?cur+" "+w:w;if(ttWidth(t,px,weight)<=maxW)cur=t;else{if(cur)lines.push(cur);cur=w;}}if(cur)lines.push(cur);return lines;}
+
+function wrap(str,maxChars){const words=str.split(" ");const lines=[];let cur="";
+  for(let w of words){while(w.length>maxChars){if(cur){lines.push(cur);cur="";}lines.push(w.slice(0,maxChars));w=w.slice(maxChars);}
+    const t=cur?cur+" "+w:w;if(t.length<=maxChars)cur=t;else{lines.push(cur);cur=w;}}if(cur)lines.push(cur);return lines;}
+function textBlock(b,str,x,y,s,maxW,lh,maxLines,o={}){const n=Math.floor((maxW+s)/(6*s));let L=wrap(str,n);
+  if(L.length>maxLines){L=L.slice(0,maxLines);L[maxLines-1]=L[maxLines-1].slice(0,n-2)+"..";}
+  L.forEach((ln,i)=>{if(o.center)b.ctext(ln,y+i*lh,s,o.c??1,o.cx??100);else b.text(ln,x,y+i*lh,s,o.c??1);});return y+L.length*lh;}
+
+/* ---------------- 16x16 icons ---------------- */
+const ICONS={};
+function mk(w,h,fn){const b=new B(w,h);fn(b);return b;}
+ICONS.todo=mk(16,16,b=>{b.frame(0,0,16,16,2);b.line(3,7,6,10,2);b.line(6,10,11,4,2);});
+ICONS.reminder=mk(16,16,b=>{b.ring(8,9.5,6.5,2);b.rect(7,5,2,5);b.rect(7,8,4,2);b.ellipse(2.5,2.5,2.5,2.5);b.ellipse(13.5,2.5,2.5,2.5);});
+ICONS.work=mk(16,16,b=>{b.frame(0,1,16,14,2);b.rect(0,1,16,4);b.line(3,7,5,9,2);b.line(5,9,3,11,2);b.rect(8,11,5,2);});
+ICONS.note=mk(16,16,b=>{b.line(2,0,9,0,2);b.line(9,0,13,4,2);b.line(13,4,13,14,2);b.line(2,14,13,14,2);b.line(2,0,2,14,2);
+  b.line(9,0,9,4,1);b.line(9,4,13,4,1);b.rect(5,7,6,1);b.rect(5,10,6,1);});
+ICONS.cloud=mk(16,16,b=>{b.ellipse(5,9.5,4,3.5);b.ellipse(9.5,7,4.5,4.5);b.ellipse(13,10,3,3);b.rect(4,9,10,4);});
+ICONS.cloudx=mk(16,16,b=>{b.blit(ICONS.cloud,0,0);b.line(1,1,14,14,3,0);b.line(1,0,15,14,1,1);});
+ICONS.sd=mk(16,16,b=>{b.poly([[4,0],[14,0],[14,16],[2,16],[2,2]]);b.rect(6,2,1,4,0);b.rect(8,2,1,4,0);b.rect(10,2,1,4,0);b.rect(12,2,1,4,0);});
+ICONS.mic=mk(16,16,b=>{b.rrect(5,0,6,10,3);b.ring(8,6,6,2,1,0,180);b.rect(7,12,2,3);b.rect(4,14,8,2);});
+ICONS.mail=mk(16,16,b=>{b.frame(0,2,16,12,2);b.line(1,3,8,9,1);b.line(15,3,8,9,1);b.line(2,4,8,9,1);b.line(14,4,8,9,1);});
+ICONS.bolt=mk(8,8,b=>{b.frame(0,1,8,7,1);b.rect(2,3,1,2);b.rect(5,3,1,2);b.rect(3,0,2,1);});
+function icon(b,name,x,y,s=1,c=1,bg=null){b.blit(ICONS[name],x,y,s,c,bg);}
+
+/* ---------------- states ---------------- */
+const STATES=[
+ {id:"ready",label:"Ready",anim:true},
+ {id:"rec",label:"Recording",anim:true},
+ {id:"send",label:"Saved / sending",anim:true},
+ {id:"todo",label:"Result: todo",kind:"todo",title:"Buy AA batteries"},
+ {id:"reminder",label:"Result: reminder",kind:"reminder",title:"Call the dentist",due:"Tomorrow 9:00"},
+ {id:"work",label:"Result: work",kind:"work",title:"Research e-paper fonts at 200px"},
+ {id:"note",label:"Result: note",kind:"note",title:"Idea: robot face for the voice gadget"},
+ {id:"queued",label:"Queued / offline",anim:true,q:3},
+ {id:"short",label:"Too short"},
+ {id:"nosd",label:"No SD card"},
+];
+const KIND_WORD={todo:"TODO",reminder:"REMINDER",work:"WORK",note:"NOTE"};
+
+/* ================= CONCEPT 1: BOLT (robot face) ================= */
+function boltHead(b,o){
+  const f=o.f||0;
+  b.rframe(40,24,120,86,14,3);b.rect(33,50,7,34);b.rect(160,50,7,34);
+  b.rect(98,12,4,12);
+  const ant=o.ant||"ball";
+  if(ant==="ball")b.circle(100,8,5);
+  if(ant==="hollow")b.ring(100,8,5,2);
+  if(ant==="blink"){if(f%2===0)b.circle(100,8,5);else b.ring(100,8,5,2);}
+  if(ant==="signal"){b.circle(100,8,5);const n=1+f%3;for(let k=0;k<n;k++){const r=11+k*6;b.ring(100,8,r,2,1,140,220);b.ring(100,8,r,2,1,320,40);}}
+  if(ant==="bulb"){b.ring(100,7,6,2);b.rect(97,12,6,3);b.line(88,4,84,2,1);b.line(112,4,116,2,1);b.line(89,11,85,13,1);b.line(111,11,115,13,1);}
+  if(ant==="?")b.text("?",95,-1,2);
+  const L=76,R=124,Y=58;
+  const eye=(kind,cx,side)=>{
+    switch(kind){
+      case "sleep":b.rect(cx-10,Y+2,20,3);break;
+      case "open":b.ellipse(cx,Y,8,10);b.rect(cx+1,Y-6,3,3,0);break;
+      case "blinky":if(f%6===5)b.rect(cx-9,Y+1,18,3);else{b.ellipse(cx,Y,8,10);b.rect(cx+1,Y-6,3,3,0);}break;
+      case "wide":b.circle(cx,Y,12);b.circle(cx+4,Y-4,3,0);break;
+      case "up":{b.ring(cx,Y,12,3);const dx=[-4,0,4,0][f%4];b.circle(cx+dx,Y-4,4.5);break;}
+      case "happy":b.ring(cx,Y+5,11,4,1,180,360);break;
+      case "sad":b.circle(cx,Y+3,7);if(side<0)b.line(cx-11,Y-8,cx+7,Y-14,3);else b.line(cx-7,Y-14,cx+11,Y-8,3);break;
+      case "small":b.circle(cx,Y,4);b.line(cx-8,Y-14,cx+8,Y-18,3);break;
+      case "x":b.line(cx-8,Y-8,cx+8,Y+8,3);b.line(cx-8,Y+8,cx+8,Y-8,3);break;
+    }};
+  const e=o.eyes;
+  if(e==="visor"){b.rrect(52,46,96,24,4);b.rect(64,54,22,7,0);b.rect(114,54,22,7,0);}
+  else if(e==="wink"){eye("happy",L,-1);eye("open",R,1);}
+  else if(e==="confused"){eye("wide",L,-1);eye("small",R,1);}
+  else{eye(e,L,-1);eye(e,R,1);}
+  switch(o.mouth){
+    case "flat":b.rect(88,90,24,3);break;
+    case "small":b.rect(94,91,12,3);break;
+    case "o":b.ellipse(100,91,6,5);break;
+    case "O":b.ellipse(100,90,11,9);break;
+    case "smile":b.ring(100,78,17,3,1,25,155);break;
+    case "frown":b.ring(100,104,13,3,1,210,330);break;
+    case "zig":b.pline([[84,92],[90,87],[96,92],[102,87],[108,92],[114,87]],2);break;
+  }
+}
+function boltStatus(b,st){
+  const off=st.id==="queued";icon(b,off?"cloudx":"cloud",4,3);
+  if(off){b.text("3",22,8,1);}
+}
+function drawBolt(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{boltHead(b,{eyes:"sleep",mouth:"small",ant:"ball",f});
+      const z=f%2;b.text("z",140+z*2,18-z*2,1);b.text("Z",150,4+z*2,2);boltStatus(b,st);
+      b.ctext("hold BOOT",130,2);b.ctext("to talk",152,2);b.ctext("zzz...",182,1);break;}
+    case "rec":{boltHead(b,{eyes:"wide",mouth:f%2?"o":"O",ant:"blink",f});
+      const w=f%2?14:20;b.ring(36,67,w,2,1,150,210);b.ring(164,67,w,2,1,330,30);
+      b.circle(64,129,5);b.text("REC",74,123,2);b.ctext(c.sec+"s",146,4);b.ctext("release to send",184,1);break;}
+    case "send":{boltHead(b,{eyes:"up",mouth:"small",ant:"signal",f});boltStatus(b,st);
+      b.ctext("saved 7s",128,2);b.text("thinking"+".".repeat(f%4),28,152,2);b.ctext("uploading clip",184,1);break;}
+    case "queued":{boltHead(b,{eyes:"sad",mouth:"frown",ant:"hollow",f});boltStatus(b,st);
+      b.ctext("offline",124,2);b.ctext("3 queued",146,3);b.ctext("will retry",184,1);break;}
+    case "short":{boltHead(b,{eyes:"confused",mouth:"zig",ant:"?",f});boltStatus(b,st);
+      b.ctext("too short!",132,2);b.ctext("hold BOOT longer",160,1);break;}
+    case "nosd":{boltHead(b,{eyes:"x",mouth:"zig",ant:"hollow",f});
+      b.rect(0,118,200,82);icon(b,"sd",12,130,2,0);b.text("no SD",52,130,3,0);b.text("card",52,156,2,0);b.ctext("insert card + restart",184,1,0);break;}
+    default:{
+      const eyes={todo:"happy",reminder:"wink",work:"visor",note:"happy"}[st.kind];
+      boltHead(b,{eyes,mouth:st.kind==="work"?"flat":"smile",ant:st.kind==="note"?"bulb":"ball",f});boltStatus(b,st);
+      const word=KIND_WORD[st.kind];const pw=tw(word,2)+34;b.rect(4,117,pw,22);icon(b,st.kind,8,120,1,0);b.text(word,28,121,2,0);
+      if(st.due){b.text(st.title,6,146,2);b.rect(4,168,192,1);icon(b,"reminder",6,177,1);b.text(st.due,28,178,2);}
+      else textBlock(b,st.title,6,146,2,190,17,3);
+    }
+  }
+}
+
+/* ================= CONCEPT 2: CYCLOPS ================= */
+function bigEye(b,cx,cy,R,o={}){
+  b.circle(cx,cy,R);b.circle(cx,cy,R-4,0);
+  if(!o.noPupil){const pr=o.pr||20,px=cx+(o.dx||0),py=cy+(o.dy||0);b.circle(px,py,pr);b.circle(px+pr*.38,py-pr*.38,Math.max(2,pr*.26),0);}
+  if(o.lid){const ly=cy-R+2*R*o.lid;for(let y=cy-R-1;y<ly;y++)for(let x=cx-R-1;x<=cx+R+1;x++){const dx=x+.5-cx,dy=y+.5-cy;if(dx*dx+dy*dy<=R*R)b.px(x,y);}
+    // lashes on lid edge
+    if(o.lashes)for(const k of[-.6,-.2,.2,.6]){const lx=cx+k*R*Math.sqrt(1-((ly-cy)/R)**2);b.line(lx,ly,lx+k*8,ly+8,2);}}
+}
+function cycStatus(b,st){if(st.id==="queued"){icon(b,"cloudx",180,4);}else icon(b,"cloud",180,4);}
+function drawCyclops(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{const blink=f%8===7;
+      if(blink){b.ring(100,70,52,6,1,20,160);}else bigEye(b,100,86,56,{lid:.52,pr:22,dy:10,lashes:true});
+      cycStatus(b,st);b.ctext("hold BOOT",170,2);break;}
+    case "rec":{bigEye(b,100,82,48,{pr:28});const r=f%2?58:64;b.ring(100,82,r,2);if(f%2===0)b.ring(100,82,r+8,2);
+      b.circle(80,174,4);b.text(c.sec+"s",90,164,3);break;}
+    case "send":{const P=[[-20,-16],[0,-22],[20,-16],[0,-22]][f%4];bigEye(b,100,82,56,{pr:16,dx:P[0],dy:P[1]});cycStatus(b,st);
+      b.ctext("thinking"+".".repeat(f%4).padEnd(3," "),166,2);break;}
+    case "queued":{bigEye(b,100,78,50,{lid:.42,pr:18,dy:12,lashes:true});const ty=136+(f%3)*6;
+      b.poly([[140,ty-10],[136,ty],[144,ty]]);b.circle(140,ty+1,4);cycStatus(b,st);
+      b.ctext("3 waiting",160,2);b.ctext("offline - will retry",184,1);break;}
+    case "short":{bigEye(b,100,82,52,{pr:7});b.text("?",158,14,3);b.ctext("too short",166,2);break;}
+    case "nosd":{bigEye(b,100,80,52,{noPupil:true});b.line(84,64,116,96,6);b.line(84,96,116,64,6);
+      b.ctext("no SD card",160,2);b.ctext("insert card + restart",184,1);break;}
+    default:{
+      b.ring(100,64,34,8,1,180,360);
+      const word=KIND_WORD[st.kind].toLowerCase();const w=tw(word,2)+22;const x0=Math.round(100-w/2);
+      icon(b,st.kind,x0,72);b.text(word,x0+22,73,2);
+      if(st.due){textBlock(b,st.title,0,104,2,190,18,2,{center:true});b.rect(16,146,168,32);b.ctext(st.due,155,2,0);}
+      else textBlock(b,st.title,0,104,2,190,18,4,{center:true});
+    }
+  }
+}
+
+/* ================= CONCEPT 3: RECEIPT ================= */
+function rcHeader(b,st){
+  b.rect(0,0,200,16);icon(b,"bolt",4,4,1,0);b.text("VOX-01",16,5,1,0);
+  let r="ONLINE";if(st.id==="queued")r="OFFLINE  Q:3";if(st.id==="nosd")r="ERR";
+  b.text(r,196-tw(r,1),5,1,0);
+}
+function tear(b,y=188){for(let x=0;x<200;x+=8)b.poly([[x,200],[x+4,y],[x+8,200]]);b.rect(0,198,200,2);}
+function rcLines(b,lines,y0=26,lh=20){lines.forEach((l,i)=>b.text(l,6,y0+i*lh,2));return y0+lines.length*lh;}
+function drawReceipt(b,st,c){
+  const f=c.f;rcHeader(b,st);
+  switch(st.id){
+    case "ready":{rcLines(b,["> ready"]);if(f%2===0)b.rect(6+tw("> ready",2)+4,26,10,14);
+      b.text("hold BOOT",6,66,2);b.text("to talk",6,86,2);b.hdots(6,120,188,3);b.text("today: 4 sent",6,130,1);b.text("queue: empty",6,142,1);b.text("14:32",6,172,1);tear(b);break;}
+    case "rec":{b.text("> REC",6,26,2);if(f%2===0)b.circle(80,33,5);
+      const s=String(c.sec).padStart(2,"0");b.ctext("00:"+s,58,4);
+      for(let i=0;i<=30;i++){const x=10+i*6;const on=i<=c.sec;const h=i%5===0?14:8;if(on)b.rect(x,124-h,3,h);else b.rect(x+1,123,1,1);}
+      b.text("0",8,130,1);b.text("30s",180,130,1);b.text("release to send",6,160,1);tear(b);break;}
+    case "send":{const sp="|/-\\"[f%4];rcLines(b,["> saved 7s","> upload ok","> thinking "+sp]);
+      b.hdots(6,100,188,3);b.text("clip_0042.wav",6,110,1);b.text("whisper + llm",6,122,1);tear(b);break;}
+    case "queued":{rcLines(b,["> upload FAIL","> offline","> 3 in queue","> retry 30s"]);b.hdots(6,112,188,3);b.text("saved to SD, safe :)",6,122,1);tear(b);break;}
+    case "short":{rcLines(b,["> too short","  (0.3s)","> hold BOOT","  longer"]);tear(b);break;}
+    case "nosd":{b.rect(0,22,200,24);b.text("!! NO SD CARD",6,27,2,0);rcLines(b,["> insert card","> restart"],56);icon(b,"sd",160,112,2);tear(b);break;}
+    default:{
+      const word=KIND_WORD[st.kind];b.frame(4,22,tw(word,2)+40,22,2);icon(b,st.kind,8,25);b.text(word,30,26,2);
+      b.text("#0042",196-tw("#0042",1),30,1);
+      let y;
+      if(st.due){y=textBlock(b,st.title,6,54,2,190,18,2);b.text("due:",6,y+4,1);b.text(st.due,6,y+16,2);y+=36;}
+      else y=textBlock(b,st.title,6,54,2,190,18,4);
+      b.hdots(6,162,188,3);const foot={todo:"> added to list",reminder:"> alarm set",work:"> agent job #17",note:"> filed in notes"}[st.kind];
+      b.text(foot,6,170,1);tear(b,190);
+    }
+  }
+}
+
+/* ================= CONCEPT 4: PIP (pixel critter + speech bubble) ================= */
+function pip(o){return mk(24,24,b=>{
+  b.ellipse(12,14,10.5,8);b.ellipse(12,14,9.5,7,0);b.rect(11,3,2,4);b.rect(10,0,4,3);
+  b.rect(6,21,4,2);b.rect(14,21,4,2);
+  if(o.arms==="up"){b.line(2,13,0,9,1);b.line(21,13,23,9,1);}
+  if(o.arms==="down"){b.line(2,15,0,18,1);b.line(21,15,23,18,1);}
+  const E=(x)=>{switch(o.eyes){
+    case "open":b.rect(x,11,2,3);break;
+    case "closed":b.rect(x-1,13,4,1);break;
+    case "happy":b.px(x-1,13);b.px(x,12);b.px(x+1,12);b.px(x+2,13);break;
+    case "wide":b.rect(x-1,10,4,4);b.px(x+1,10,0);break;
+    case "sad":b.rect(x,12,2,2);break;
+    case "x":b.px(x-1,11);b.px(x+1,11);b.px(x,12);b.px(x-1,13);b.px(x+1,13);break;}};
+  E(7);E(15);
+  if(o.eyes==="sad"){b.line(6,10,8,9,1);b.line(15,9,17,10,1);}
+  switch(o.mouth){
+    case "smile":b.px(10,16);b.px(11,17);b.px(12,17);b.px(13,16);break;
+    case "o":b.rect(11,16,2,2);break;
+    case "O":b.rect(10,16,4,3);break;
+    case "flat":b.rect(10,17,4,1);break;
+    case "frown":b.px(10,17);b.px(11,16);b.px(12,16);b.px(13,17);break;
+    case "wavy":b.px(9,17);b.px(10,16);b.px(11,17);b.px(12,16);b.px(13,17);b.px(14,16);break;}
+});}
+function ground(b,y=170){b.rect(0,y,200,2);b.dots(0,y+5,200,200-y-5,6);}
+function bubble(b,x,y,w,h,tx){b.rrect(x,y,w,h,10,0);b.rframe(x,y,w,h,10,2);b.poly([[tx-7,y+h-2],[tx+5,y+h-2],[tx-3,y+h+10]]);}
+function pipStatus(b,st){const off=st.id==="queued";icon(b,off?"cloudx":"cloud",4,180);b.text(off?"offline - 3 queued":"online",24,185,1);}
+function drawPip(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{ground(b);b.rect(0,174,200,26,0);pipStatus(b,st);b.blit(pip({eyes:"closed",mouth:"flat"}),64,101+(f%2),3);
+      const z=f%2;b.text("z",140,92-z*4,2);b.text("Z",156,70-z*4,3);b.ctext("hold BOOT",16,2);b.ctext("to talk",38,2);break;}
+    case "rec":{ground(b);b.blit(pip({eyes:"wide",mouth:f%2?"o":"O",arms:"up"}),64,101,3);
+      const r=f%2?44:52;b.ring(100,136,r,3,1,155,205);b.ring(100,136,r,3,1,335,25);b.ring(100,136,r+10,2,1,160,200);b.ring(100,136,r+10,2,1,340,20);
+      bubble(b,46,6,108,64,100);b.circle(64,30,5);b.text(c.sec+"s",76,18,4);b.ctext("listening",56,1);break;}
+    case "send":{ground(b);b.rect(0,174,200,26,0);pipStatus(b,st);b.blit(pip({eyes:"happy",mouth:"smile",arms:"up"}),64,101,3);
+      const ey=60-(f%2)*8;icon(b,"mail",84,ey,2,1,0);for(let y=ey-8;y>22;y-=6)b.rect(130+(ey-y)/2,y,2,2);icon(b,"cloud",156,4,2);
+      b.text("sending",6,10,2);b.text(".".repeat(f%4),6,30,2);break;}
+    case "queued":{ground(b);b.rect(0,174,200,26,0);pipStatus(b,st);b.blit(pip({eyes:"sad",mouth:"frown",arms:"down"}),40,101,3);
+      for(let i=0;i<3;i++)icon(b,"mail",138+(i%2)*4,150-i*18,2,1,0);icon(b,"cloudx",168,4,2);b.text("offline",6,10,2);b.text("3 queued",6,32,2);b.text("will retry",6,54,1);
+      if(f%4===3)b.text(";_;",60,82,1);break;}
+    case "short":{ground(b);b.rect(0,174,200,26,0);pipStatus(b,st);b.blit(pip({eyes:"wide",mouth:"o"}),64,101,3);b.text("?",144,70,4);
+      b.ctext("huh? too short",12,2);b.ctext("hold BOOT longer",36,1);break;}
+    case "nosd":{ground(b);b.blit(pip({eyes:"x",mouth:"wavy",arms:"down"}),36,101,3);
+      b.frame(130,116,40,52,2);for(let y=118;y<166;y+=6)b.rect(132,y,36,3,0);b.text("?",142,128,3);
+      b.ctext("no SD card :(",12,2);b.ctext("insert card + restart",36,1);b.rect(0,174,200,26,0);b.text("storage error",4,185,1);break;}
+    default:{
+      ground(b,172);b.rect(0,176,200,24,0);pipStatus(b,st);
+      const eyes={todo:"happy",reminder:"open",work:"wide",note:"happy"}[st.kind];
+      b.blit(pip({eyes,mouth:"smile",arms:"up"}),12,124,2);
+      bubble(b,4,4,192,118,42);icon(b,st.kind,16,14);b.text(st.kind,38,15,2);
+      if(st.due){const y=textBlock(b,st.title,16,42,2,170,18,2);b.rect(14,y+6,172,26);b.ctext(st.due,y+12,2,0);}
+      else textBlock(b,st.title,16,42,2,170,18,4);
+      const say={todo:"on my list!",reminder:"I'll nudge you",work:"agent's on it",note:"jotted down!"}[st.kind];
+      b.text(say,72,150,1);
+    }
+  }
+}
+
+/* ================= CONCEPT 5: TAMA (handheld pet with icon bars) ================= */
+function botchi(o){return mk(16,16,b=>{
+  b.frame(1,0,14,11,1);b.rect(4,11,8,2);b.rect(4,13,2,3);b.rect(10,13,2,3);b.px(0,4);b.px(15,4);
+  switch(o.eyes){
+    case "open":b.rect(4,3,2,3);b.rect(10,3,2,3);break;
+    case "closed":b.rect(3,5,3,1);b.rect(10,5,3,1);break;
+    case "happy":b.px(3,5);b.px(4,4);b.px(5,5);b.px(10,5);b.px(11,4);b.px(12,5);break;
+    case "sad":b.rect(4,5,2,2);b.rect(10,5,2,2);b.px(3,3);b.px(4,2);b.px(12,3);b.px(11,2);break;
+    case "wide":b.rect(3,2,3,4);b.rect(10,2,3,4);break;
+    case "x":for(const x of[3,10]){b.px(x,3);b.px(x+2,3);b.px(x+1,4);b.px(x,5);b.px(x+2,5);}break;}
+  switch(o.mouth){case "smile":b.px(6,8);b.px(7,9);b.px(8,9);b.px(9,8);break;case "o":b.rect(7,8,2,2);break;
+    case "flat":b.rect(6,8,4,1);break;case "frown":b.px(6,9);b.px(7,8);b.px(8,8);b.px(9,9);break;}
+});}
+function tamaBars(b,act={},kind=null,f=0){
+  const top=["mic","cloud","sd","mail"],bot=["todo","reminder","work","note"],xs=[18,66,118,166];
+  top.forEach((n,i)=>{const on=act[n]&&(act[n]!=="blink"||f%2===0);if(on)b.rect(xs[i]-3,1,22,22);icon(b,n==="cloud"&&act.off?"cloudx":n,xs[i],4,1,on?0:1);});
+  b.hdots(0,25,200,2);b.hdots(0,174,200,2);
+  bot.forEach((n,i)=>{const on=kind===n;if(on)b.rect(xs[i]-3,177,22,22);icon(b,n,xs[i],180,1,on?0:1);});
+}
+function room(b){b.hdots(8,150,184,3);}
+function drawTama(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{tamaBars(b);room(b);const x=[76,84,92,84][f%4];b.blit(botchi({eyes:f%6===5?"closed":"open",mouth:"smile"}),x,102,3);
+      b.ctext("hold BOOT",38,2);b.ctext("to feed me a thought",60,1);break;}
+    case "rec":{tamaBars(b,{mic:true});room(b);b.blit(botchi({eyes:"wide",mouth:f%2?"o":"flat"}),76,102,3);
+      for(let i=0;i<4;i++){const h=[6,12,18,10][(i+f)%4];b.rect(136+i*7,140-h,4,h);b.rect(58-i*7,140-h,4,h);}
+      b.ctext(c.sec+"s",36,4);b.ctext("nom nom",72,1);break;}
+    case "send":{tamaBars(b,{cloud:"blink"});room(b);b.blit(botchi({eyes:"happy",mouth:"smile"}),76,102-(f%2)*4,3);icon(b,"mail",92,76-(f%2)*4,1);
+      b.ctext("sending",34,2);b.ctext(".".repeat(1+f%3),54,2);break;}
+    case "queued":{tamaBars(b,{mail:true,off:true});room(b);b.blit(botchi({eyes:"sad",mouth:"frown"}),48,102,3);
+      b.text("offline",8,34,2);b.text("to send:",8,58,1);for(let i=0;i<5;i++){if(i<3)icon(b,"mail",64+i*20,54);else b.frame(64+i*20,56,16,12,1);}
+      for(let i=0;i<3;i++)icon(b,"mail",120+(i%2)*6,132-i*14,1,1,0);break;}
+    case "short":{tamaBars(b,{mic:true});room(b);b.blit(botchi({eyes:"wide",mouth:"o"}),76,102,3);b.text("?",132,92,3);
+      b.ctext("too short!",38,2);b.ctext("hold a bit longer",60,1);break;}
+    case "nosd":{tamaBars(b,{sd:true});room(b);b.blit(botchi({eyes:"x",mouth:"flat"}),76,102,3);b.line(115,1,137,23,2,0);
+      b.ctext("no SD card",38,2);b.ctext("insert card + restart",60,1);break;}
+    default:{tamaBars(b,{},st.kind);room(b);
+      const bx=f%2?150:146;b.blit(botchi({eyes:"happy",mouth:"smile"}),bx,116-(f%2)*4,2);
+      if(st.due){textBlock(b,st.title,8,34,2,184,18,2);b.rect(8,74,184,24);icon(b,"reminder",14,78,1,0);b.text(st.due,36,79,2,0);b.text("+1 alarm",8,136,1);}
+      else textBlock(b,st.title,8,34,2,184,18,3);
+      if(!st.due)b.text({todo:"+1 todo",work:"+1 job",note:"+1 note"}[st.kind],8,136,1);
+    }
+  }
+}
+
+/* ================= CONCEPT 6: POSTER (giant heavy type) ================= */
+function drawPoster(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{b.tt("Hi.",8,14,72);const blink=f%6===5;
+      if(blink){b.rect(136,58,22,5);b.rect(166,58,22,5);}else{b.rect(136,44,22,22);b.rect(166,44,22,22);}
+      b.rect(0,148,200,52);b.tt("hold BOOT",12,164,22,{c:0});b.pline([[178,166],[190,174],[178,182]],3,0);icon(b,"cloud",180,4);break;}
+    case "rec":{b.fill(1);b.tt(String(c.sec),100,34,124,{align:"center",c:0});if(f%2===0)b.circle(16,16,7,0);b.tt("REC",28,9,16,{c:0});
+      b.tt("let go to send",100,178,14,{align:"center",c:0});break;}
+    case "send":{b.tt("saved · 7s",100,14,14,{align:"center"});for(let i=0;i<3;i++){const x=22+i*60;if(i===f%3)b.rect(x,70,36,36);else b.frame(x,70,36,36,4);}
+      b.tt("thinking",100,150,26,{align:"center"});break;}
+    case "queued":{b.tt("3",10,20,120);icon(b,"cloudx",126,30,3);b.tt("queued",114,96,18);b.tt("offline",114,122,14,{weight:700});
+      b.rect(0,170,200,30);b.tt("will retry",100,178,14,{align:"center",c:0});break;}
+    case "short":{b.tt("?!",100,24,110,{align:"center"});b.rect(0,150,200,50);b.tt("too short",100,160,24,{align:"center",c:0});break;}
+    case "nosd":{b.fill(1);icon(b,"sd",76,18,3,0);b.tt("NO SD",100,84,46,{align:"center",c:0});b.tt("insert card + restart",100,160,13,{align:"center",c:0});break;}
+    default:{
+      b.rect(0,0,200,62);icon(b,st.kind,8,7,3,0);let px=28;const word=KIND_WORD[st.kind];while(ttWidth(word,px)>130&&px>12)px--;
+      b.tt(word,64,31-Math.round(px*.37),px,{c:0});
+      if(st.due){const L=ttWrap(st.title,24,188);L.slice(0,2).forEach((l,i)=>b.tt(l,8,76+i*30,24));
+        b.rect(0,156,200,44);b.tt(st.due,100,168,22,{align:"center",c:0});}
+      else{let p=24,L=ttWrap(st.title,p,188);while(L.length>4&&p>14){p--;L=ttWrap(st.title,p,188);}
+        L.slice(0,4).forEach((l,i)=>b.tt(l,8,76+i*(p+8),p));}
+    }
+  }
+}
+
+/* =====================================================================
+   BOLT FACE KIT
+   ===================================================================== */
+const EXPR={
+ ready:{eyes:"sleep",mouth:"small",ant:"ball"},
+ rec:{eyes:"wide",mouth:"talk",ant:"blink"},
+ send:{eyes:"look",mouth:"small",ant:"signal"},
+ todo:{eyes:"happy",mouth:"smile",ant:"ball"},
+ reminder:{eyes:"wink",mouth:"smile",ant:"ball"},
+ work:{eyes:"visor",mouth:"flat",ant:"ball"},
+ note:{eyes:"happy",mouth:"smile",ant:"bulb"},
+ queued:{eyes:"sad",mouth:"frown",ant:"hollow"},
+ short:{eyes:"confused",mouth:"zig",ant:"?"},
+ nosd:{eyes:"x",mouth:"zig",ant:"hollow"},
+};
+const EYE_K=["sleep","open","wide","look","happy","sad","small","x"];
+const MOUTH_K=["small","flat","o","O","smile","frown","zig"];
+const ANT_K=["ball","hollow","signal","bulb","?"];
+const QUIP={todo:"on my list!",reminder:"I'll nudge you",work:"agent's on it",note:"jotted down!"};
+const R_=Math.round;
+
+function antTop(b,k,cx,cy,r,f,c=1){
+  switch(k){
+    case "ball":b.circle(cx,cy,r,c);break;
+    case "hollow":b.ring(cx,cy,r,2,c);break;
+    case "blink":if(f%2===0)b.circle(cx,cy,r,c);else b.ring(cx,cy,r,2,c);break;
+    case "signal":{b.circle(cx,cy,r,c);const n=1+f%3;for(let i=0;i<n;i++){const rr=r+6+i*5;b.ring(cx,cy,rr,2,c,140,220);b.ring(cx,cy,rr,2,c,320,40);}break;}
+    case "bulb":{b.ring(cx,cy-1,r+1,2,c);b.rect(R_(cx-r*.6),R_(cy+r),R_(r*1.2),3,c);
+      for(const s of[-1,1]){b.line(cx+s*(r+4),cy-r,cx+s*(r+7),cy-r-3,1,c);b.line(cx+s*(r+4),cy+1,cx+s*(r+8),cy+1,1,c);}break;}
+    case "?":b.text("?",R_(cx-5),R_(cy-8),2,c);break;
+  }
+}
+function eyeRound(b,k,cx,cy,R,f,side,c=1){
+  const nc=c?0:1,t=Math.max(2,R_(R/3.5));
+  switch(k){
+    case "sleep":b.rect(R_(cx-R),R_(cy+1),R_(2*R),t,c);break;
+    case "open":{b.ellipse(cx,cy,R*.75,R*.95,c);const h=Math.max(2,R_(R*.28));b.rect(R_(cx+R*.1),R_(cy-R*.6),h,h,nc);break;}
+    case "wide":b.circle(cx,cy,R+1,c);b.circle(cx+R*.35,cy-R*.35,Math.max(1.5,R*.28),nc);break;
+    case "look":{b.ring(cx,cy,R+1,t,c);const dx=[-1,0,1,0][f%4]*R*.35;b.circle(cx+dx,cy-R*.35,R*.42,c);break;}
+    case "happy":b.ring(cx,cy+R*.45,R,Math.max(3,R*.36),c,180,360);break;
+    case "sad":b.circle(cx,cy+R*.3,R*.62,c);if(side<0)b.line(cx-R,cy-R*.7,cx+R*.6,cy-R*1.25,t,c);else b.line(cx-R*.6,cy-R*1.25,cx+R,cy-R*.7,t,c);break;
+    case "small":b.circle(cx,cy,Math.max(2,R*.36),c);b.line(cx-R*.7,cy-R*1.15,cx+R*.7,cy-R*1.5,t,c);break;
+    case "x":{const a=R*.7;b.line(cx-a,cy-a,cx+a,cy+a,t,c);b.line(cx-a,cy+a,cx+a,cy-a,t,c);break;}
+  }
+}
+function visorBox(b,L,Rr,cy,R,c=1){const nc=c?0:1;const x0=R_(L-R*1.9),w=R_(Rr-L+R*3.8),h=R_(R*2.2);
+  b.rrect(x0,R_(cy-h/2),w,h,4,c);const sw=R_(R*2),sh=Math.max(3,R_(R*.6));
+  b.rect(R_(L-R),R_(cy-sh/2),sw,sh,nc);b.rect(R_(Rr-R),R_(cy-sh/2),sw,sh,nc);}
+function mouthRound(b,k,cx,cy,W,f,c=1){
+  const t=Math.max(2,R_(W/4));if(k==="talk")k=f%2?"o":"O";cy=R_(cy);
+  switch(k){
+    case "small":b.rect(R_(cx-W/2),cy,R_(W),t,c);break;
+    case "flat":b.rect(R_(cx-W),cy,R_(2*W),t,c);break;
+    case "o":b.ellipse(cx,cy+1,W*.5,W*.42,c);break;
+    case "O":b.ellipse(cx,cy,W*.92,W*.75,c);break;
+    case "smile":b.ring(cx,cy-W*.9,W*1.45,t,c,25,155);break;
+    case "frown":b.ring(cx,cy+W*1.15,W*1.1,t,c,210,330);break;
+    case "zig":{const p=[];for(let i=0;i<=6;i++)p.push([cx-W*1.2+i*W*.4,cy+(i%2?-W*.35:0)]);b.pline(p,Math.max(2,t-1),c);break;}
+  }
+}
+function drawEyes(b,eyeFn,k,L,Rr,cy,f,c,visorFn){
+  if(k==="blinky")k=f%6===5?"sleep":"open";
+  if(k==="visor"){if(visorFn)return visorFn(b,L,Rr,cy,c);k="happy";}
+  const pair={wink:["happy","open"],confused:["wide","small"]}[k]||[k,k];
+  eyeFn(b,pair[0],L,cy,f,-1,c);eyeFn(b,pair[1],Rr,cy,f,1,c);
+}
+const ROUND=R=>(b,k,cx,cy,f,s,c)=>eyeRound(b,k,cx,cy,R,f,s,c);
+
+/* LED matrix (CRT) parts */
+const LED_E={
+ open:["..###..",".#####.",".#####.",".#####.","..###.."],
+ sleep:["#######"],
+ wide:["..###..",".#####.","####.##","#######","#######",".#####.","..###.."],
+ happy:["..###..",".#...#.","#.....#"],
+ sad:[".....##","...##..",".##....",".......","..###..",".#####.","..###.."],
+ small:["....##.","..##...",".......","...##..","...##.."],
+ x:["#.....#",".#...#.","..#.#..","...#...","..#.#..",".#...#.","#.....#"],
+ bar:["#######","#######"],
+};
+const LED_RING=["..###..",".#...#.","#.....#","#.....#","#.....#",".#...#.","..###.."];
+const LED_M={small:["..#####.."],flat:["#########"],o:[".###.","#...#",".###."],O:[".#####.","#######","#######",".#####."],
+ smile:["#.......#",".#.....#.","..#####.."],frown:["..#####..",".#.....#.","#.......#"],zig:["#...#...#",".#.#.#.#.","..#...#.."]};
+function ledPat(b,pat,cx,cy,p,c=1,mirror=false){const h=pat.length,w=pat[0].length;const x0=R_(cx-w*p/2),y0=R_(cy-h*p/2);
+  for(let j=0;j<h;j++)for(let i=0;i<w;i++){if(pat[j][mirror?w-1-i:i]==="#")b.rect(x0+i*p,y0+j*p,p-1,p-1,c);}}
+function eyeLED(b,k,cx,cy,p,f,side,c=1){
+  if(k==="look"){ledPat(b,LED_RING,cx,cy,p,c);const dx=[-1,0,1,0][f%4];const x0=R_(cx-3.5*p),y0=R_(cy-3.5*p);
+    for(let j=2;j<4;j++)for(let i=2+dx;i<4+dx;i++)b.rect(x0+i*p,y0+j*p,p-1,p-1,c);return;}
+  ledPat(b,LED_E[k]||LED_E.open,cx,cy,p,c,side>0);}
+function mouthLED(b,k,cx,cy,p,f,c=1){if(k==="talk")k=f%2?"o":"O";ledPat(b,LED_M[k],cx,cy,p,c);}
+
+/* Retro tin parts */
+const GOG=R=>(b,k,cx,cy,f,s,c)=>{b.ring(cx,cy,R+4,2,c);eyeRound(b,k,cx,cy,R*.62,f,s,c);};
+function shades(b,L,Rr,cy,R,c=1){const nc=c?0:1;for(const x of[L,Rr]){b.circle(x,cy,R+4,c);b.rect(R_(x-R*.7),R_(cy-R*.55),R_(R*.6),2,nc);}b.rect(R_(L+R+3),R_(cy-2),R_(Rr-L-2*R-6),3,c);}
+function mouthGrille(b,k,cx,cy,f,c=1){if(k==="talk")k=f%2?"o":"O";
+  for(let i=0;i<7;i++){const d=i-3;let off=0,h=8,on=true;
+    switch(k){case "small":on=Math.abs(d)<=1;h=6;break;case "flat":h=6;break;case "o":on=Math.abs(d)<=1;h=10;break;
+      case "O":h=16-Math.abs(d)*3;break;case "smile":off=-(d*d)*.9+3;break;case "frown":off=d*d*.9-3;break;case "zig":off=i%2?-3:3;h=6;break;}
+    if(on)b.rect(cx-20+i*6,R_(cy+off-h/2),3,h,c);}}
+function dial(b,cx,cy,pct,c=1){b.ring(cx,cy,11,2,c);b.circle(cx,cy,2,c);
+  for(const a of[210,90,-30]){const r=a*Math.PI/180;b.px(cx+Math.cos(r)*8,cy-Math.sin(r)*8,c);}
+  const a=(210-240*pct/100)*Math.PI/180;b.line(cx,cy,cx+Math.cos(a)*7,cy-Math.sin(a)*7,2,c);}
+
+/* status bits */
+function batt(b,x,y,pct,c=1){b.frame(x,y,14,8,1,c);b.rect(x+14,y+2,2,4,c);b.rect(x+2,y+2,Math.max(1,R_(10*pct/100)),4,c);}
+function battPct(b,xr,y,pct,c=1){const s=pct+"%";b.text(s,xr-18-tw(s,1)-2,y+1,1,c);batt(b,xr-16,y,pct,c);}
+function cloudQ(b,st,x,y,c=1){const off=st.id==="queued";icon(b,off?"cloudx":"cloud",x,y,1,c);if(off)b.text("3",x+18,y+5,1,c);}
+function zzz(b,x,y,c=1){b.text("z",x,y+12,1,c);b.text("z",x+7,y+6,2,c);b.text("Z",x+19,y,2,c);}
+
+/* generic boxy head */
+function boxBot(b,x,y,w,h,ex,f,o={}){
+  const c=o.c??1,k=w/120,t=Math.max(2,R_(3*k)),cx=x+w/2;
+  if(o.solid)b.rrect(x,y,w,h,R_(14*k),c);else b.rframe(x,y,w,h,R_(14*k),t,c);
+  const ew=Math.max(3,R_(7*k)),eh=R_(h*.4);b.rect(x-ew,R_(y+h*.3),ew,eh,c);b.rect(x+w,R_(y+h*.3),ew,eh,c);
+  if(!o.noAnt){const sl=R_(12*k),ar=Math.max(2.5,5*k),sw=Math.max(2,R_(4*k));b.rect(R_(cx-sw/2),y-sl,sw,sl,c);antTop(b,ex.ant,cx,y-sl-ar+1,ar,f,c);}
+  const fc=o.solid?(c?0:1):c,L=x+w*.3,Rr=x+w*.7,ey=y+h*.4,R=w*.09;
+  drawEyes(b,ROUND(R),ex.eyes,L,Rr,ey,f,fc,(bb,LL,RR,cy,cc)=>visorBox(bb,LL,RR,cy,R,cc));
+  mouthRound(b,ex.mouth,cx,y+h*.76,w*.1,f,fc);
+}
+
+/* standard text area below the head */
+function resultText(b,st,y0,c=1){const nc=c?0:1;const word=KIND_WORD[st.kind];
+  b.rect(4,y0-1,tw(word,2)+34,22,c);icon(b,st.kind,8,y0+2,1,nc);b.text(word,28,y0+3,2,nc);
+  if(st.due){b.text(st.title,6,y0+28,2,c);b.rect(4,y0+48,192,1,c);icon(b,"reminder",6,y0+56,1,c);b.text(st.due,28,y0+57,2,c);}
+  else textBlock(b,st.title,6,y0+28,2,190,17,3,{c});}
+function stdText(b,st,ctx,y0,c=1){const nc=c?0:1,f=ctx.f;
+  switch(st.id){
+    case "ready":b.ctext("hold BOOT",y0+12,2,c);b.ctext("to talk",y0+34,2,c);break;
+    case "rec":b.circle(66,y0+11,5,c);b.text("REC",76,y0+5,2,c);b.ctext(ctx.sec+"s",y0+28,4,c);if(y0+66<194)b.ctext("release to send",y0+66,1,c);break;
+    case "send":b.ctext("saved 7s",y0+8,2,c);b.text("thinking"+".".repeat(f%4),28,y0+32,2,c);if(y0+60<194)b.ctext("uploading clip",y0+60,1,c);break;
+    case "queued":b.ctext("offline",y0+4,2,c);b.ctext("3 queued",y0+26,3,c);if(y0+58<194)b.ctext("will retry",y0+58,1,c);break;
+    case "short":b.ctext("too short!",y0+14,2,c);b.ctext("hold BOOT longer",y0+42,1,c);break;
+    case "nosd":b.rect(0,y0,200,200-y0,c);icon(b,"sd",12,y0+12,2,nc);b.text("no SD",52,y0+12,3,nc);b.text("card",52,y0+38,2,nc);if(y0+64<194)b.ctext("insert card + restart",y0+64,1,nc);break;
+    default:resultText(b,st,y0,c);
+  }
+}
+
+/* =====================================================================
+   VARIANTS
+   ===================================================================== */
+/* V1 Bolt (refined baseline) */
+function drawV1(b,st,ctx){const ex=EXPR[st.id];boxBot(b,40,24,120,86,ex,ctx.f);
+  if(st.id==="ready")zzz(b,166,28);
+  if(st.id==="rec"){const w=ctx.f%2?14:20;b.ring(36,67,w,2,1,150,210);b.ring(164,67,w,2,1,330,30);}
+  if(st.id!=="nosd"){cloudQ(b,st,4,3);if(ctx.bat!=null)battPct(b,196,4,ctx.bat);}
+  stdText(b,st,ctx,118);}
+
+/* V2 Bolt Mini */
+function drawV2(b,st,ctx){const f=ctx.f,ex=EXPR[st.id],hx=84;boxBot(b,12,22,60,44,ex,f);
+  if(st.kind){icon(b,st.kind,hx,14);b.text(KIND_WORD[st.kind].toLowerCase(),hx+20,15,2);}
+  else{const w={ready:"zzz",rec:"REC",send:"sending",queued:"offline",short:"huh?",nosd:"error"}[st.id];b.text(w,hx,15,2);
+    if(st.id==="rec"&&f%2===0)b.circle(hx+46,22,5);}
+  icon(b,st.id==="queued"?"cloudx":"cloud",hx,38);let s=st.id==="queued"?"Q3":"online";if(ctx.bat!=null)s+="  "+ctx.bat+"%";b.text(s,hx+20,43,1);
+  b.hdots(0,76,200,2);
+  switch(st.id){
+    case "ready":b.ctext("hold BOOT",104,2);b.ctext("to talk",128,2);break;
+    case "rec":b.ctext(ctx.sec+"s",92,6);for(let i=0;i<=30;i++){const x=10+i*6;if(i<=ctx.sec)b.rect(x,168-(i%5?8:14),3,i%5?8:14);else b.rect(x+1,167,1,1);}
+      b.text("0",8,174,1);b.text("30s",180,174,1);break;
+    case "send":b.text("saved 7s",10,92,2);b.text("thinking"+".".repeat(f%4),10,116,2);b.hdots(10,146,180,3);b.text("whisper > llm",10,156,1);break;
+    case "queued":b.text("3",14,92,7);b.text("queued",64,98,2);b.text("will retry",64,122,1);for(let i=0;i<3;i++)icon(b,"mail",64+i*22,142);break;
+    case "short":b.ctext("too short!",104,2);b.ctext("hold BOOT longer",132,1);break;
+    case "nosd":icon(b,"sd",14,92,3);b.text("no SD",72,96,3);b.text("card",72,122,2);b.text("insert + restart",72,146,1);break;
+    default:{
+      const L3=wrap(st.title,10);
+      if(L3.length<=(st.due?2:3)){L3.forEach((l,i)=>b.text(l,8,88+i*26,3));}
+      else textBlock(b,st.title,8,88,2,188,18,st.due?2:4);
+      if(st.due){b.rect(0,160,200,40);icon(b,"reminder",8,172,1,0);b.text(st.due,30,173,2,0);}
+    }
+  }
+}
+
+/* V3 Bolt Fullface */
+function capt(b,s){if(tw(s,2)<=180)b.ctext(s,174,2);else b.ctext(s,180,1);}
+function drawV3(b,st,ctx){const f=ctx.f,ex=EXPR[st.id],R=22;
+  b.rframe(0,0,200,200,20,4);b.circle(0,100,9);b.circle(200,100,9);
+  if(ctx.bat!=null)battPct(b,180,12,ctx.bat);
+  if(st.id==="queued")cloudQ(b,st,16,11);
+  drawEyes(b,ROUND(R),ex.eyes,58,142,66,f,1,(bb,L,Rr,cy,c)=>visorBox(bb,L,Rr,cy,R,c));
+  if(st.id==="send"||st.id==="short")antTop(b,ex.ant,100,22,3,f);
+  if(st.kind){icon(b,st.kind,92,8);
+    b.rrect(16,106,168,84,10);
+    if(st.due){const L=wrap(st.title,13).slice(0,2);const h=L.length*18+24;let y=106+R_((84-h)/2);
+      L.forEach((l,i)=>b.ctext(l,y+i*18,2,0));y+=L.length*18+2;b.rect(22,y,156,20,0);b.ctext(st.due,y+3,2,1);}
+    else{const L=wrap(st.title,13).slice(0,3);const h=L.length*18-4;const y=106+R_((84-h)/2);L.forEach((l,i)=>b.ctext(l,y+i*18,2,0));}
+    return;}
+  switch(st.id){
+    case "ready":zzz(b,152,28);mouthRound(b,"small",100,140,24,f);capt(b,"hold BOOT");break;
+    case "rec":{const big=f%2===0;b.ellipse(100,140,big?36:30,big?27:22);b.ctext(ctx.sec+"s",130,3,0);b.ctext("release to send",180,1);break;}
+    case "send":mouthRound(b,"small",100,140,24,f);b.text("thinking"+".".repeat(f%4),34,174,2);break;
+    case "queued":mouthRound(b,"frown",100,136,24,f);capt(b,"3 queued");break;
+    case "short":mouthRound(b,"zig",100,140,24,f);capt(b,"too short!");break;
+    case "nosd":mouthRound(b,"zig",100,140,24,f);icon(b,"sd",16,12);capt(b,"no SD card");break;
+  }
+}
+
+/* V4 Bolt + body */
+function arm(b,sx,sy,hx,hy){b.line(sx,sy,hx,hy,3);b.circle(hx,hy,4);}
+function drawV4(b,st,ctx){const f=ctx.f,ex=Object.assign({},EXPR[st.id]);
+  if(st.kind){
+    b.rframe(4,4,192,100,8,3);icon(b,st.kind,14,13);b.text(KIND_WORD[st.kind],36,14,2);
+    if(st.due){textBlock(b,st.title,12,38,2,176,18,2);b.rect(10,74,180,24);b.ctext(st.due,79,2,0);}
+    else textBlock(b,st.title,12,40,2,176,18,3);
+    boxBot(b,70,124,60,40,ex,f);b.rect(94,164,12,4);b.rframe(74,168,52,40,6,3);
+    arm(b,76,178,24,104);arm(b,124,178,176,104);return;}
+  boxBot(b,60,38,80,56,ex,f);b.rect(94,94,12,6);b.rframe(66,100,68,44,6,3);
+  if(ctx.bat!=null){b.frame(80,112,40,10,1);b.rect(82,114,Math.max(1,R_(36*ctx.bat/100)),6);b.text(ctx.bat+"%",88,128,1);}else{b.rect(80,114,40,2);b.rect(80,120,40,2);}
+  b.rect(78,144,8,14);b.rect(114,144,8,14);b.rect(72,158,18,4);b.rect(110,158,18,4);
+  const SL=[66,108],SR=[134,108];
+  switch(st.id){
+    case "ready":arm(b,...SL,50,136);arm(b,...SR,160,72);b.line(168,60,172,54,1);b.line(172,66,178,62,1);zzz(b,30,8);b.ctext("hold BOOT",176,2);break;
+    case "rec":arm(b,...SL,50,136);arm(b,...SR,152,76);icon(b,"mic",146,50);{const w=f%2?12:18;b.ring(54,62,w,2,1,150,210);}
+      b.circle(80,182,5);b.text(ctx.sec+"s",90,172,3);break;
+    case "send":arm(b,...SL,50,136);arm(b,...SR,162,44);icon(b,"mail",154,20-(f%2)*4,1,1,0);b.text("sending"+".".repeat(f%4),36,176,2);break;
+    case "queued":arm(b,...SL,52,142);arm(b,...SR,148,142);for(let i=0;i<3;i++)icon(b,"mail",160+(i%2)*4,140-i*14,1,1,0);icon(b,"cloudx",4,4);b.ctext("3 queued",176,2);break;
+    case "short":arm(b,...SL,40,94);arm(b,...SR,160,94);b.ctext("too short!",176,2);break;
+    case "nosd":arm(b,...SL,50,136);arm(b,...SR,156,92);b.frame(150,62,22,28,2);for(let y=64;y<88;y+=5)b.rect(152,y,18,2,0);b.text("?",158,70,2);b.ctext("no SD card",176,2);break;
+  }
+  if(st.id!=="queued")cloudQ(b,st,4,4);
+}
+
+/* V5 CRT face */
+function crtBot(b,ex,f,bat){
+  b.rframe(34,16,132,96,12,3);b.rrect(42,24,116,80,10);
+  b.line(90,16,72,4,2);b.line(110,16,128,4,2);
+  const tip=(x,y)=>{const k=ex.ant;if(k==="hollow")b.ring(x,y,3.5,2);else if(k==="blink"&&f%2)b.ring(x,y,3.5,2);else b.circle(x,y,3.5);};
+  tip(72,4);tip(128,4);
+  if(ex.ant==="signal"){const n=1+f%3;for(let i=0;i<n;i++){b.ring(128,4,9+i*5,2,1,300,60);}}
+  if(ex.ant==="bulb")antTop(b,"bulb",100,8,4,f);
+  if(ex.ant==="?")b.text("?",95,0,2);
+  drawEyes(b,(bb,k,cx,cy,ff,s,c)=>eyeLED(bb,k,cx,cy,4,ff,s,c),ex.eyes,74,126,52,f,0,(bb,L,Rr,cy,c)=>{eyeLED(bb,"bar",L,cy,4,f,-1,c);eyeLED(bb,"bar",Rr,cy,4,f,1,c);});
+  mouthLED(b,ex.mouth,100,86,4,f,0);
+  for(let i=0;i<4;i++){if(bat!=null&&bat>i*25+5)b.rect(48+i*7,105,5,3);else b.rect(50+i*7,106,1,1);}
+  b.circle(146,106.5,2.5);b.circle(136,106.5,2.5);
+}
+function drawV5(b,st,ctx){crtBot(b,EXPR[st.id],ctx.f,ctx.bat);
+  if(st.id==="ready")zzz(b,168,28);
+  if(st.id!=="nosd")cloudQ(b,st,4,3);
+  stdText(b,st,ctx,120);}
+
+/* V6 Retro tin toy */
+function retroBot(b,ex,f,bat){
+  b.rframe(44,30,112,84,28,3);for(const[x,y]of[[58,44],[142,44],[58,100],[142,100]])b.circle(x,y,2.5);
+  dial(b,32,72,bat==null?50:bat);
+  b.ring(168,72,11,2);b.circle(168,72,2);{const a=(ex.ant==="signal"?f*90:90)*Math.PI/180;b.line(168,72,168+Math.cos(a)*7,72-Math.sin(a)*7,2);}
+  const pts=[];for(let i=0;i<=6;i++)pts.push([i%2?95:105,30-i*3]);pts[0]=[100,30];b.pline(pts,2);
+  antTop(b,ex.ant,100,8,5,f);
+  drawEyes(b,GOG(9),ex.eyes,80,120,62,f,1,(bb,L,Rr,cy,c)=>shades(bb,L,Rr,cy,9,c));
+  mouthGrille(b,ex.mouth,100,96,f);
+}
+function drawV6(b,st,ctx){retroBot(b,EXPR[st.id],ctx.f,ctx.bat);
+  if(st.id==="ready")zzz(b,162,2);
+  if(st.id!=="nosd")cloudQ(b,st,4,3);
+  stdText(b,st,ctx,122);}
+
+/* V7 Moods only */
+function drawV7(b,st,ctx){const f=ctx.f,ex=EXPR[st.id];boxBot(b,40,22,120,86,ex,f);
+  if(st.id==="ready")zzz(b,166,26);
+  if(st.id==="rec"){const w=f%2?14:20;b.ring(36,65,w,2,1,150,210);b.ring(164,65,w,2,1,330,30);}
+  icon(b,st.id==="queued"?"cloudx":"cloud",4,3);if(ctx.bat!=null)batt(b,180,4,ctx.bat);
+  switch(st.id){
+    case "ready":icon(b,"mic",16,146,2);b.hdots(60,162,110,4);b.line(60,162,168,162,2);b.pline([[160,154],[170,162],[160,170]],2);b.rect(192,148,8,28);break;
+    case "rec":icon(b,"mic",14,132,2);if(f%2===0)b.circle(62,140,4);b.text(String(ctx.sec),76,132,5);
+      for(let i=0;i<20;i++){if(i<ctx.sec)b.rect(14+i*9,184,6,6);else b.rect(16+i*9,186,2,2);}break;
+    case "send":icon(b,"cloud",84,126,2);b.line(100,174,100,160,3);b.pline([[93,166],[100,159],[107,166]],3);
+      for(let i=0;i<3;i++){const x=80+i*16;if(i<(f%4))b.rect(x,186,8,8);else b.frame(x,186,8,8,1);}break;
+    case "queued":icon(b,"cloudx",14,134,2);for(let i=0;i<3;i++)icon(b,"mail",64+i*40,134,2);
+      b.ring(100,184,9,3,1,40,320);b.poly([[108,172],[114,181],[104,182]]);break;
+    case "short":icon(b,"mic",14,134,2);b.rect(64,146,10,14);b.hdots(74,146,100,3);b.hdots(74,159,100,3);b.rect(174,144,2,18);break;
+    case "nosd":icon(b,"sd",52,124,3);b.line(118,134,158,174,5);b.line(118,174,158,134,5);break;
+    default:{const word=wrapFirst(st.title,14,16).slice(0,st.due?2:4);icon(b,st.kind,4,130);
+      word.forEach((l,i)=>b.text(l,i?6:24,130+i*18,2));
+      if(st.due){b.rect(0,170,200,30);icon(b,"reminder",8,177,1,0);b.text(st.due,30,178,2,0);}}
+  }
+}
+function wrapFirst(str,n1,n){const words=str.split(" ");const L=[];let cur="",lim=n1;
+  for(const w of words){const t=cur?cur+" "+w:w;if(t.length<=lim)cur=t;else{L.push(cur);cur=w;lim=n;}}if(cur)L.push(cur);return L;}
+
+/* V8 Inverted */
+function drawV8(b,st,ctx){b.fill(1);const ex=EXPR[st.id];boxBot(b,40,24,120,86,ex,ctx.f,{c:0,solid:true});
+  if(st.id==="ready")zzz(b,166,28,0);
+  if(st.id==="rec"){const w=ctx.f%2?14:20;b.ring(36,67,w,2,0,150,210);b.ring(164,67,w,2,0,330,30);}
+  if(st.id!=="nosd"){cloudQ(b,st,4,3,0);if(ctx.bat!=null)battPct(b,196,4,ctx.bat,0);}
+  stdText(b,st,ctx,118,0);}
+
+/* =====================================================================
+   HYBRIDS
+   ===================================================================== */
+/* H1 Bolt x Poster */
+function drawH1(b,st,ctx){const f=ctx.f,ex=EXPR[st.id];
+  switch(st.id){
+    case "ready":boxBot(b,18,26,72,52,ex,f);b.tt("zzz",108,30,40);b.rect(0,148,200,52);b.tt("hold BOOT",12,164,22,{c:0});b.pline([[178,166],[190,174],[178,182]],3,0);
+      cloudQ(b,st,4,3);if(ctx.bat!=null)battPct(b,196,4,ctx.bat);break;
+    case "rec":b.fill(1);boxBot(b,14,22,64,46,ex,f,{c:0});b.tt(String(ctx.sec),140,26,110,{align:"center",c:0});
+      b.tt("let go to send",100,178,14,{align:"center",c:0});break;
+    case "send":boxBot(b,14,22,64,46,ex,f);b.tt("saved · 7s",88,30,14);for(let i=0;i<3;i++){const x=22+i*60;if(i===f%3)b.rect(x,90,36,36);else b.frame(x,90,36,36,4);}
+      b.tt("thinking",100,152,26,{align:"center"});break;
+    case "queued":b.tt("3",8,20,120);boxBot(b,118,30,64,46,ex,f);b.tt("queued",112,100,18);b.tt("offline",112,126,14,{weight:700});
+      b.rect(0,170,200,30);b.tt("will retry",100,178,14,{align:"center",c:0});break;
+    case "short":b.tt("?!",64,26,96,{align:"center"});boxBot(b,128,40,60,44,ex,f);b.rect(0,150,200,50);b.tt("too short",100,160,24,{align:"center",c:0});break;
+    case "nosd":b.fill(1);boxBot(b,64,20,72,52,ex,f,{c:0});b.tt("NO SD",100,92,46,{align:"center",c:0});b.tt("insert card + restart",100,160,13,{align:"center",c:0});break;
+    default:{b.rect(0,0,200,62);boxBot(b,12,18,54,38,ex,f,{c:0});let px=28;const word=KIND_WORD[st.kind];while(ttWidth(word,px)>116&&px>12)px--;
+      b.tt(word,78,31-R_(px*.37),px,{c:0});
+      if(st.due){ttWrap(st.title,24,188).slice(0,2).forEach((l,i)=>b.tt(l,8,76+i*30,24));b.rect(0,156,200,44);b.tt(st.due,100,168,22,{align:"center",c:0});}
+      else{let p=24,L=ttWrap(st.title,p,188);while(L.length>4&&p>14){p--;L=ttWrap(st.title,p,188);}L.slice(0,4).forEach((l,i)=>b.tt(l,8,76+i*(p+8),p));}}
+  }
+}
+
+/* H2 Bolt x Pip : little full-body Bolt with speech bubble */
+function boltBody(b,x,y,s,ex,f,armsK,c=1){ // x,y = head top-left, s = scale (1 => head 56x40)
+  const w=R_(56*s),h=R_(40*s),cx=x+w/2;boxBot(b,x,y,w,h,ex,f,{c});
+  const by=y+h+R_(4*s),bw=R_(36*s),bh=R_(24*s);b.rect(R_(cx-4*s),y+h,R_(8*s),R_(4*s),c);b.rframe(R_(cx-bw/2),by,bw,bh,R_(4*s),2,c);
+  b.rect(R_(cx-12*s),by+bh,R_(5*s),R_(8*s),c);b.rect(R_(cx+7*s),by+bh,R_(5*s),R_(8*s),c);
+  const sy=by+R_(6*s),lx=R_(cx-bw/2),rx=R_(cx+bw/2);const L=R_(18*s);
+  const A={down:[[lx-L*.5,sy+L],[rx+L*.5,sy+L]],up:[[lx-L*.6,sy-L],[rx+L*.6,sy-L]],wave:[[lx-L*.5,sy+L],[rx+L*.6,sy-L]],shrug:[[lx-L,sy-L*.4],[rx+L,sy-L*.4]]}[armsK||"down"];
+  b.line(lx,sy,A[0][0],A[0][1],2,c);b.line(rx,sy,A[1][0],A[1][1],2,c);b.circle(A[0][0],A[0][1],2.5*s+1,c);b.circle(A[1][0],A[1][1],2.5*s+1,c);
+  return by+bh+R_(8*s);
+}
+function drawH2(b,st,ctx){const f=ctx.f,ex=EXPR[st.id];
+  const scene=()=>{ground(b);b.rect(0,174,200,26,0);const off=st.id==="queued";icon(b,off?"cloudx":"cloud",4,180);b.text(off?"offline - 3 queued":"online",24,185,1);if(ctx.bat!=null)battPct(b,196,180,ctx.bat);};
+  switch(st.id){
+    case "ready":scene();boltBody(b,72,104,1,ex,f,"down");zzz(b,134,74);b.ctext("hold BOOT",16,2);b.ctext("to talk",38,2);break;
+    case "rec":ground(b);boltBody(b,72,104,1,ex,f,"down");{const r=f%2?40:48;b.ring(100,124,r,3,1,155,205);b.ring(100,124,r,3,1,335,25);}
+      bubble(b,46,4,108,62,100);b.circle(64,28,5);b.text(ctx.sec+"s",76,16,4);b.ctext("listening",54,1);break;
+    case "send":scene();boltBody(b,72,104,1,ex,f,"up");icon(b,"mail",84,62-(f%2)*6,2,1,0);icon(b,"cloud",156,4,2);b.text("sending",6,10,2);b.text(".".repeat(f%4),6,30,2);break;
+    case "queued":scene();boltBody(b,46,104,1,ex,f,"down");for(let i=0;i<3;i++)icon(b,"mail",138+(i%2)*4,134-i*18,2,1,0);b.text("offline",6,10,2);b.text("3 queued",6,32,2);b.text("will retry",6,54,1);break;
+    case "short":scene();boltBody(b,72,104,1,ex,f,"shrug");b.ctext("huh? too short",12,2);b.ctext("hold BOOT longer",36,1);break;
+    case "nosd":ground(b);boltBody(b,40,104,1,ex,f,"down");b.frame(140,116,40,52,2);for(let y=118;y<166;y+=6)b.rect(142,y,36,3,0);b.text("?",152,128,3);
+      b.ctext("no SD card :(",12,2);b.ctext("insert card + restart",36,1);b.rect(0,174,200,26,0);b.text("storage error",4,185,1);break;
+    default:{scene();boltBody(b,16,134,.62,ex,f,"up");
+      bubble(b,4,4,192,112,42);icon(b,st.kind,16,14);b.text(st.kind,38,15,2);
+      if(st.due){const y=textBlock(b,st.title,16,40,2,170,18,2);b.rect(14,y+6,172,26);b.ctext(st.due,y+12,2,0);}
+      else textBlock(b,st.title,16,40,2,170,18,4);
+      b.text(QUIP[st.kind],80,150,1);}
+  }
+}
+
+/* H3 Pip x Poster */
+function drawH3(b,st,ctx){const f=ctx.f;
+  const P=o=>pip(o);
+  switch(st.id){
+    case "ready":b.rect(0,150,200,2);b.blit(P({eyes:"closed",mouth:"flat"}),12,81,3);b.tt("zzz",114,48,40);b.tt("hold BOOT",100,166,20,{align:"center"});
+      if(ctx.bat!=null)battPct(b,196,4,ctx.bat);break;
+    case "rec":b.fill(1);b.blit(P({eyes:"wide",mouth:f%2?"o":"O",arms:"up"}),8,118,3,0);b.tt(String(ctx.sec),140,20,110,{align:"center",c:0});
+      b.circle(16,16,6,0);b.tt("REC",28,10,16,{c:0});break;
+    case "send":b.blit(P({eyes:"happy",mouth:"smile",arms:"up"}),8,108,3);icon(b,"mail",28,72-(f%2)*6,2);
+      b.tt("sending",84,40,22);for(let i=0;i<3;i++){const x=96+i*30;if(i===f%3)b.rect(x,100,20,20);else b.frame(x,100,20,20,3);}break;
+    case "queued":b.tt("3",96,16,120);b.blit(P({eyes:"sad",mouth:"frown",arms:"down"}),8,90,3);b.rect(0,170,200,30);b.tt("queued · offline",100,178,14,{align:"center",c:0});break;
+    case "short":b.tt("?!",130,20,90,{align:"center"});b.blit(P({eyes:"wide",mouth:"o"}),10,96,3);b.rect(0,170,200,30);b.tt("too short",100,176,18,{align:"center",c:0});break;
+    case "nosd":b.fill(1);b.blit(P({eyes:"x",mouth:"wavy",arms:"down"}),64,14,3,0);b.tt("NO SD",100,104,46,{align:"center",c:0});b.tt("insert card + restart",100,164,13,{align:"center",c:0});break;
+    default:{b.rect(0,0,200,56);icon(b,st.kind,8,8,2,0);let px=28;const word=KIND_WORD[st.kind];while(ttWidth(word,px)>140&&px>12)px--;b.tt(word,50,28-R_(px*.37),px,{c:0});
+      const eyes={todo:"happy",reminder:"open",work:"wide",note:"happy"}[st.kind];b.blit(P({eyes,mouth:"smile",arms:"up"}),148,150,2);
+      if(st.due){ttWrap(st.title,22,188).slice(0,2).forEach((l,i)=>b.tt(l,8,66+i*28,22));b.rect(0,120,200,28);b.tt(st.due,100,126,18,{align:"center",c:0});}
+      else{let p=22,L=ttWrap(st.title,p,188);while(L.length>3&&p>14){p--;L=ttWrap(st.title,p,188);}
+        if(L.length>3){L=ttWrap(st.title,p,136);}L.slice(0,4).forEach((l,i)=>b.tt(l,8,66+i*(p+7),p));}
+      b.tt(QUIP[st.kind],8,178,13,{weight:700});}
+  }
+}
+
+/* H4 Glyph Bolt: Bolt's head with a face made of giant type (one font, no face bitmaps) */
+const GLYPH={ready:["-","-","."],rec:["O","O","o"],send:["o","o","-"],todo:["^","^","w"],reminder:["^","o","w"],work:[">","<","-"],
+  note:["*","*","o"],queued:["T","T","~"],short:["o","O","~"],nosd:["x","x","-"]};
+function drawH4(b,st,ctx){const f=ctx.f;let g=GLYPH[st.id].slice();
+  if(st.id==="rec"&&f%2)g[2]="O";
+  b.rframe(24,22,152,96,16,4);b.rect(16,50,8,40);b.rect(176,50,8,40);b.rect(98,8,4,14);
+  const ant=EXPR[st.id].ant;antTop(b,ant,100,6,5,f);
+  const dy=st.id==="send"?[-4,-6,-4,-2][f%4]:0,dx=st.id==="send"?[-6,0,6,0][f%4]:0;
+  const E=(s,x)=>{const m=ttMask(s,46,900);b.tt(s,x+dx-R_(m.w/2),40+dy,46);};E(g[0],70);E(g[1],130);
+  {const m=ttMask(g[2],30,900);b.tt(g[2],100-R_(m.w/2),st.id==="ready"?78:84,30);}
+  if(st.id==="ready")b.tt("z z z",112,3,13);
+  cloudQ(b,st,2,2);if(ctx.bat!=null)battPct(b,198,2,ctx.bat);
+  const y0=128;
+  switch(st.id){
+    case "ready":b.tt("hold BOOT",100,y0+14,24,{align:"center"});break;
+    case "rec":b.circle(30,y0+30,6);b.tt(ctx.sec+"s",100,y0+6,52,{align:"center"});break;
+    case "send":b.tt("thinking",100,y0+8,24,{align:"center"});for(let i=0;i<3;i++){const x=82+i*14;if(i<f%4)b.rect(x,y0+48,8,8);else b.frame(x,y0+48,8,8,1);}break;
+    case "queued":b.tt("3 queued",100,y0+6,26,{align:"center"});b.tt("offline · will retry",100,y0+44,13,{align:"center",weight:700});break;
+    case "short":b.tt("too short",100,y0+12,26,{align:"center"});break;
+    case "nosd":b.rect(0,y0-4,200,76);b.tt("no SD card",100,y0+10,26,{align:"center",c:0});b.tt("insert + restart",100,y0+46,13,{align:"center",c:0,weight:700});break;
+    default:{icon(b,st.kind,30,28);
+      if(st.due){b.tt(st.title,6,y0,18);b.rect(0,y0+30,200,42);b.tt(st.due,100,y0+40,22,{align:"center",c:0});}
+      else{let p=20,L=ttWrap(st.title,p,190);while(L.length>3&&p>12){p--;L=ttWrap(st.title,p,190);}L.slice(0,3).forEach((l,i)=>b.tt(l,6,y0+i*(p+5),p));}}
+  }
+}
+
+/* =====================================================================
+   EXPRESSION SHEETS
+   ===================================================================== */
+const iconItem=(n)=>({l:n,w:36,d:(b,cx,cy,c)=>icon(b,n,R_(cx-8),R_(cy-8),1,c)});
+const STATUS_ROW={t:"STATUS (shared icons)",h:20,items:[iconItem("cloud"),iconItem("cloudx"),{l:"batt",w:36,d:(b,cx,cy,c)=>batt(b,R_(cx-8),R_(cy-4),60,c)},iconItem("todo"),iconItem("reminder"),iconItem("work"),iconItem("note"),iconItem("sd"),iconItem("mail"),iconItem("mic")]};
+function roundStyle(R,W,ar,more={}){return Object.assign({
+  eye:(b,k,cx,cy,c)=>eyeRound(b,k,cx,cy,R,0,-1,c),eyeW:Math.max(36,Math.ceil(2*R+12)),eyeH:Math.ceil(2*R+14),R,
+  visor:(b,cx,cy,c)=>visorBox(b,cx-R*2.22,cx+R*2.22,cy,R,c),visorW:Math.ceil(R*8.3+6),
+  mouth:(b,k,cx,cy,c)=>mouthRound(b,k,cx,cy,W,0,c),mouthK:MOUTH_K,mouthW:Math.max(36,Math.ceil(W*3+8)),mouthH:Math.ceil(W*2+8),
+  ant:ar?((b,k,cx,cy,c)=>antTop(b,k,cx,cy,ar,2,c)):null,antK:ANT_K,antW:Math.max(36,ar*2+36),antH:Math.ceil(ar*2+26)},more);}
+const STYLES={
+  v1:roundStyle(10.8,12,5),
+  v2:roundStyle(5.4,6,2.5),
+  v3:roundStyle(22,24,0,{extra:[{t:"MOUTH SCREEN",h:56,items:[{l:"rec mouth+digits",w:90,d:(b,cx,cy,c)=>{b.ellipse(cx,cy,36,27,c);b.ctext("7s",cy-10,3,c?0:1,cx);}},{l:"result screen",w:110,d:(b,cx,cy,c)=>{b.rrect(R_(cx-50),R_(cy-26),100,52,8,c);}}]}]}),
+  v4:roundStyle(7.2,8,3.3,{extra:[{t:"ARM POSES (lines + circles, no bitmaps)",h:44,items:["down","up","wave","shrug"].map(a=>({l:a,w:70,d:(b,cx,cy,c)=>{boltBody(b,R_(cx-14),R_(cy-20),.5,EXPR.todo,0,a,c);}}))}]}),
+  v5:{eye:(b,k,cx,cy,c)=>eyeLED(b,k,cx,cy,4,0,-1,c),eyeK:["sleep","open","wide","look","happy","sad","small","x","bar"],eyeW:36,eyeH:32,inv:true,
+      mouth:(b,k,cx,cy,c)=>mouthLED(b,k,cx,cy,4,0,c),mouthK:MOUTH_K,mouthW:44,mouthH:20,
+      ant:(b,k,cx,cy,c)=>{if(k==="hollow")b.ring(cx,cy,3.5,2,c);else b.circle(cx,cy,3.5,c);},antK:["ball","hollow"],antW:36,antH:14,
+      extra:[{t:"BEZEL BATTERY LEDS",h:12,items:[100,60,30,8].map(p=>({l:p+"%",w:44,d:(b,cx,cy,c)=>{for(let i=0;i<4;i++){if(p>i*25+5)b.rect(R_(cx-14+i*7),R_(cy-1),5,3,c);else b.px(R_(cx-12+i*7),R_(cy),c);}}}))}]},
+  v6:{eye:(b,k,cx,cy,c)=>GOG(9)(b,k,cx,cy,0,-1,c),eyeW:36,eyeH:32,
+      visor:(b,cx,cy,c)=>shades(b,cx-20,cx+20,cy,9,c),visorW:74,
+      mouth:(b,k,cx,cy,c)=>mouthGrille(b,k,cx,cy,0,c),mouthK:MOUTH_K,mouthW:48,mouthH:24,
+      ant:(b,k,cx,cy,c)=>antTop(b,k,cx,cy,5,2,c),antK:ANT_K,antW:46,antH:36,
+      extra:[{t:"EAR DIAL = BATTERY GAUGE (needle is an lv_line)",h:26,items:[100,60,30,8].map(p=>({l:p+"%",w:44,d:(b,cx,cy,c)=>dial(b,R_(cx),R_(cy),p,c)}))}]},
+  v7:roundStyle(10.8,12,5),
+  v8:roundStyle(10.8,12,5),
+};
+function sheetB(style){
+  const rows=[];
+  const eyeK=style.eyeK||EYE_K;
+  const eyeItems=eyeK.map(k=>({l:k,w:style.eyeW,d:(b,cx,cy,c)=>style.eye(b,k,cx,cy+(style.R?style.R*.25:0),c)}));
+  if(style.visor)eyeItems.push({l:"visor",w:style.visorW,d:(b,cx,cy,c)=>style.visor(b,cx,cy,c)});
+  rows.push({t:"EYES (one bitmap each; sad/small need L+R)",h:style.eyeH,items:eyeItems});
+  rows.push({t:"MOUTHS",h:style.mouthH,items:style.mouthK.map(k=>({l:k,w:style.mouthW,d:(b,cx,cy,c)=>style.mouth(b,k,cx,cy,c)}))});
+  if(style.ant)rows.push({t:"ANTENNA TOPS",h:style.antH,items:style.antK.map(k=>({l:k,w:style.antW,d:(b,cx,cy,c)=>style.ant(b,k,cx,cy,c)}))});
+  (style.extra||[]).forEach(r=>rows.push(r));rows.push(STATUS_ROW);
+  const W=400,placed=[];let y=4,count=0;
+  for(const r of rows){placed.push({t:r.t,y});y+=12;let x=4,ry=y;
+    for(const it of r.items){if(x+it.w>W-4){x=4;ry+=r.h+14;}placed.push({it,x,y:ry,h:r.h});x+=it.w+6;count++;}
+    y=ry+r.h+24;}
+  const b=new B(W,y),c=style.inv?0:1;if(style.inv)b.fill(1);
+  for(const p of placed){if(p.t){b.text(p.t,4,p.y,1,c);b.hdots(4,p.y+9,392,2,c);continue;}
+    const cx=p.x+p.it.w/2,cy=p.y+p.h/2+2;p.it.d(b,cx,cy,c);b.ctext(p.it.l,p.y+p.h+4,1,c,cx);}
+  b.count=count;return b;
+}
+
+/* =====================================================================
+   VARIANT LIST
+   ===================================================================== */
+const VARIANTS=[
+ {id:"v1",group:"bolt",name:"Bolt (refined)",line:"The original, tidied: steady head, battery % top-right, a frozen \"z z Z\" for sleep, 3-line titles in the bottom third.",draw:drawV1,style:"v1",
+  font:"5×7 bitmap 1×/2×/3×/4×. Head 120×86 + ears/antenna as one image; eyes ~24×26, mouths ~36×20."},
+ {id:"v2",group:"bolt",name:"Bolt Mini",line:"A tiny head sits top-left like an avatar; the bottom two-thirds goes to the result, at 3× when the title is short.",draw:drawV2,style:"v2",
+  font:"5×7 at 1×/2×/3×/6×/7× (6×/7× digits only). Mini parts ~12×12; whole head could be ~10 pre-rendered 76×58 images."},
+ {id:"v3",group:"bolt",name:"Bolt Fullface",line:"The whole screen is the face. The mouth becomes a black screen that \"says\" the result; seconds tick inside the open mouth.",draw:drawV3,style:"v3",
+  font:"5×7 at 1×/2×/3×. Eyes ~46×50 each; mouth screen is an lv_obj with radius, white label inside."},
+ {id:"v4",group:"bolt",name:"Bolt + Body",line:"A whole robot: waves goodnight when idle, holds up a card with the result, shrugs at too-short, battery gauge on the chest.",draw:drawV4,style:"v4",
+  font:"5×7 at 1×/2×/3×. Body/arms are lv_line + rects; card is an lv_obj. Head parts at two sizes (80 px and 60 px heads)."},
+ {id:"v5",group:"bolt",name:"Bolt CRT",line:"A little TV-head with rabbit-ear antennas; white LED-matrix eyes on a black screen, battery shown as 4 bezel LEDs.",draw:drawV5,style:"v5",
+  font:"5×7 at 1×/2×/4×. LED faces are 7×7-cell patterns, cheap to draw as rects at runtime (no bitmaps needed)."},
+ {id:"v6",group:"bolt",name:"Bolt Retro",line:"1960s tin-toy robot: rounded head, rivets, a coil-spring antenna, goggle eyes, grille mouth, and a dial ear that reads battery.",draw:drawV6,style:"v6",
+  font:"5×7 at 1×/2×/3×/4×. Grille mouth is 7 rects; dial needle is an lv_line rotated by battery %."},
+ {id:"v7",group:"bolt",name:"Bolt Moods-only",line:"No words at all except the result title: icons, a mic, envelopes and the face carry every state. Works for any language.",draw:drawV7,style:"v7",
+  font:"5×7 at 2×/5× (digits). Leans on the 16×16 icon set at 1×/2×/3×."},
+ {id:"v8",group:"bolt",name:"Bolt Inverted",line:"White solid robot on a black screen. High contrast and it looks great on e-paper, though a full-black screen ghosts a bit more.",draw:drawV8,style:"v8",
+  font:"Same parts as Bolt, drawn in the inverse colour (no extra bitmaps if images are 1-bit with recolor)."},
+ {id:"h1",group:"hybrid",name:"Bolt × Poster",line:"Poster's giant heavy type with a small Bolt head as the accent; full-black recording screen with Bolt's open mouth and huge seconds.",draw:drawH1,
+  font:"Heavy sans 1bpp at 13/14/18/22/24/26/40/46 + a ~110–120 px digits-only font; Bolt head at 54–72 px."},
+ {id:"h2",group:"hybrid",name:"Bolt × Pip",line:"Bolt as a small full-body character on Pip's dotted ground, holding up a speech bubble with the result and a quip.",draw:drawH2,
+  font:"5×7 at 1×/2×/4×. Body/arms are lines + rects; bubble is an lv_obj with radius + a triangle."},
+ {id:"h3",group:"hybrid",name:"Pip × Poster",line:"Pip the blob next to one giant bold word or number; Pip turns white on the full-black recording and error screens.",draw:drawH3,
+  font:"Heavy sans 1bpp at 13/14/16/18/20/22/26/40/46 + a 110–120 px digits-only font. Pip is a 24×24 sprite at 2×/3× (recolor for inverse)."},
+ {id:"h4",group:"hybrid",name:"Glyph Bolt",line:"Bolt's head with a face made of giant heavy type (^ ^ w, T T ~, x x -). The whole face is one font, no face bitmaps at all.",draw:drawH4,
+  font:"Heavy sans 1bpp at 46 (eye glyphs) and 30 (mouth glyphs), plus 13–26 for text and 52 for the counter. Only the head outline is a drawn shape."},
+];
+
+/* =====================================================================
+   PAGE
+   ===================================================================== */
+const ANIM_STATES=new Set(["rec","send"]); // only animate while awake + busy
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const picks=store.get("bolt-var-picks",{}),notes=store.get("bolt-var-notes",{});
+const screens=[];let frame=0,anim=true,tint=true,bat=85;
+
+function ctxFor(sc){const live=anim&&sc.animated;return {f:live?frame:0,sec:live?1+Math.floor(frame/2)%20:7,bat};}
+function paint(sc){
+  let b;try{b=sc.render(ctxFor(sc));}catch(e){console.error(sc.key,e);b=new B();}
+  sc.bits=b;const cv=sc.canvas;if(cv.width!==b.w||cv.height!==b.h){cv.width=b.w;cv.height=b.h;}
+  if(sc.sheet){cv.style.width=`calc(var(--scr) * ${b.w/200})`;cv.style.aspectRatio=`${b.w}/${b.h}`;}
+  const ctx=cv.getContext("2d");const img=ctx.createImageData(b.w,b.h);
+  const on=tint?[32,33,36]:[0,0,0],off=tint?[232,230,223]:[255,255,255];
+  for(let i=0;i<b.w*b.h;i++){const c=b.d[i]?on:off;img.data[i*4]=c[0];img.data[i*4+1]=c[1];img.data[i*4+2]=c[2];img.data[i*4+3]=255;}
+  ctx.putImageData(img,0,0);
+}
+function download(sc){const b=sc.bits,cv=document.createElement("canvas");cv.width=b.w;cv.height=b.h;const ctx=cv.getContext("2d");
+  const img=ctx.createImageData(b.w,b.h);for(let i=0;i<b.w*b.h;i++){const v=b.d[i]?0:255;img.data.set([v,v,v,255],i*4);}
+  ctx.putImageData(img,0,0);const a=document.createElement("a");a.href=cv.toDataURL("image/png");a.download=sc.key+".png";a.click();}
+
+function build(){
+  const main=document.getElementById("main"),nav=document.getElementById("nav");let lastGroup=null,n=0;
+  VARIANTS.forEach(V=>{
+    if(V.group!==lastGroup){lastGroup=V.group;const h=document.createElement("h2");h.className="group";h.id="g-"+V.group;
+      h.textContent=V.group==="bolt"?"Bolt variants":"Hybrids (Bolt · Pip · Poster)";main.appendChild(h);
+      const sep=document.createElement("span");sep.className="navsep";sep.textContent=V.group==="bolt"?"Bolt":"Hybrids";nav.appendChild(sep);}
+    n++;const num=n;
+    const a=document.createElement("a");a.href="#"+V.id;nav.appendChild(a);
+    const s=document.createElement("section");s.className="concept";s.id=V.id;
+    s.innerHTML=`<div class="chead"><div><h2><span class="num">${num}</span>${V.name}</h2><p class="why">${V.line}</p><p class="font">Font / assets: ${V.font}</p></div>
+      <div class="pick"><button class="star" type="button"></button></div></div>
+      <textarea placeholder="Notes on ${V.name}…"></textarea><div class="grid"></div>`;
+    const star=s.querySelector(".star"),ta=s.querySelector("textarea"),grid=s.querySelector(".grid");
+    const upd=()=>{const on=!!picks[V.id];star.classList.toggle("on",on);star.textContent=on?"★ Picked":"☆ Pick";
+      a.innerHTML=(on?'<span class="s">★</span> ':"")+num+". "+V.name;summary();};
+    star.onclick=()=>{picks[V.id]=!picks[V.id];store.set("bolt-var-picks",picks);upd();};
+    ta.value=notes[V.id]||"";ta.oninput=()=>{notes[V.id]=ta.value;store.set("bolt-var-notes",notes);summary();};
+    STATES.forEach(S=>{
+      const cell=document.createElement("div");cell.className="cell";const animated=ANIM_STATES.has(S.id);
+      const tag=S.id==="ready"?'<span class="tag">sleep · static</span>':animated?'<span class="tag">frames</span>':"";
+      cell.innerHTML=`<div class="device"><canvas width="200" height="200" title="Click to download 1-bit PNG"></canvas></div><div class="cap"><b>${S.label}</b>${tag}</div>`;
+      grid.appendChild(cell);
+      const sc={key:`${V.id}-${S.id}`,animated,render:c=>{const b=new B();V.draw(b,S,c);return b;},canvas:cell.querySelector("canvas")};
+      sc.canvas.onclick=()=>download(sc);screens.push(sc);paint(sc);
+    });
+    if(V.style){
+      const cell=document.createElement("div");cell.className="cell sheet";
+      cell.innerHTML=`<div class="sheetwrap"><canvas title="Click to download 1-bit PNG"></canvas></div><div class="cap"></div>`;grid.appendChild(cell);
+      const sc={key:`${V.id}-parts`,sheet:true,animated:false,render:()=>sheetB(STYLES[V.style]),canvas:cell.querySelector("canvas")};
+      sc.canvas.onclick=()=>download(sc);screens.push(sc);paint(sc);
+      cell.querySelector(".cap").innerHTML=`<b>Expression sheet</b> · ${sc.bits.count} parts (1:1 pixels) + 1 head outline. LVGL: one I1 image per part, swapped with lv_image_set_src.`;
+    }
+    main.appendChild(s);upd();
+  });
+}
+function summary(){const lines=VARIANTS.map(V=>`${picks[V.id]?"[x]":"[ ]"} ${V.name}${notes[V.id]?": "+notes[V.id].replace(/\n/g," / "):""}`);
+  document.getElementById("summary").textContent=lines.join("\n");}
+build();
+document.getElementById("copy").onclick=async()=>{try{await navigator.clipboard.writeText(document.getElementById("summary").textContent);document.getElementById("copied").textContent="Copied.";}catch(e){document.getElementById("copied").textContent="Copy failed; select the text below.";}};
+document.getElementById("anim").onchange=e=>{anim=e.target.checked;screens.forEach(paint);};
+document.getElementById("tint").onchange=e=>{tint=e.target.checked;screens.forEach(paint);};
+document.getElementById("bat").onchange=e=>{bat=e.target.value==="off"?null:+e.target.value;screens.forEach(paint);};
+const SIZES={actual:"27.7mm","1":"200px","2":"400px"};
+function setSize(k){document.documentElement.style.setProperty("--scr",SIZES[k]);document.body.classList.toggle("small",k!=="2");
+  document.querySelectorAll("#size button").forEach(x=>x.classList.toggle("on",x.dataset.s===k));store.set("bolt-var-size",k);}
+document.querySelectorAll("#size button").forEach(x=>x.onclick=()=>setSize(x.dataset.s));
+setSize(store.get("bolt-var-size","2"));
+setInterval(()=>{if(!anim)return;frame++;screens.forEach(sc=>{if(sc.animated)paint(sc);});},500);
+</script>
+</body>
+</html>

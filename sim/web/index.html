@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pocket Voice Sim</title>
+<style>
+:root{--bg:#f6f5f1;--fg:#1d1d1f;--muted:#6b6a66;--card:#fff;--line:#e2e0da;--accent:#d0451b;--ok:#1d7a3a;--bezel:#2a2b2f;--bezel-hi:#3a3c41;--paper:#e4e4e0;--ink:#222}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16171a;--fg:#ecebe7;--muted:#9a9993;--card:#1f2024;--line:#2e3036;--accent:#ff7a4d;--ok:#5fc27e;--bezel:#0d0e10;--bezel-hi:#26282d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 ui-sans-serif,system-ui,-apple-system,sans-serif}
+main{max-width:1280px;margin:0 auto;padding:16px;display:grid;gap:16px;grid-template-columns:minmax(300px,440px) 1fr}
+@media (max-width:860px){main{grid-template-columns:1fr}}
+h1{font-size:18px;margin:0}h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.device{position:relative;padding:18px;border-radius:22px;background:linear-gradient(160deg,var(--bezel-hi),var(--bezel));box-shadow:0 6px 18px rgba(0,0,0,.18);display:flex;flex-direction:column;align-items:center;gap:12px}
+canvas{width:100%;max-width:400px;aspect-ratio:1;image-rendering:pixelated;border-radius:3px;background:var(--paper)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:6px 12px;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none}
+button.hw{min-width:84px;padding:10px 14px;font-weight:600;background:#44464c;color:#f3f2ee;border-color:#55575d}
+button.hw.down{background:var(--accent);border-color:var(--accent)}
+button.on{background:var(--fg);color:var(--bg)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status{display:flex;gap:8px;align-items:center;color:#c9c8c3;font-size:13px;flex-wrap:wrap;justify-content:center}
+.led{width:10px;height:10px;border-radius:50%;background:#555;display:inline-block}.led.on{background:#ff3b30;box-shadow:0 0 8px #ff3b30}
+.pill{border:1px solid #55575d;border-radius:999px;padding:1px 8px}
+label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+select,input[type=number]{font:inherit;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+input[type=number]{width:80px}input[type=range]{flex:1;min-width:120px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px 12px}
+.kv{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed var(--line);padding:2px 0}
+.kv b{font-weight:600;font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}.warn{color:var(--accent)}.good{color:var(--ok)}
+#log{height:300px;overflow:auto;font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre-wrap;word-break:break-all;background:var(--bg);border-radius:6px;padding:8px}
+#log .UI{color:var(--accent)}#log .UP,#log .NET{color:var(--ok)}#log .SIM{color:var(--muted)}
+.files{font:12px ui-monospace,Menlo,monospace;max-height:120px;overflow:auto}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;max-width:1280px;margin:0 auto;padding:16px 16px 0}
+.clock{font-variant-numeric:tabular-nums;font-weight:600}
+</style>
+</head>
+<body>
+<div class="top"><h1>Pocket Voice simulator</h1><span class="muted">core firmware on a virtual ESP32-C6 &middot; <span id="server"></span></span></div>
+<main>
+  <div class="col">
+    <div class="device">
+      <canvas id="scr" width="200" height="200"></canvas>
+      <div class="status"><span class="led" id="led"></span><span class="pill" id="state">-</span><span class="pill clock" id="clock">0:00:00</span><span class="pill" id="sleep">awake</span><span class="pill" id="wifi">radio off</span></div>
+      <div class="btns">
+        <button class="hw" data-btn="boot" title="hold to record (key: space)">BOOT</button>
+        <button class="hw" data-btn="pwr" title="short = status/retry, hold 2 s = off (key: p)">PWR</button>
+        <button class="hw" id="reset">RESET</button>
+      </div>
+      <div class="row" style="color:#c9c8c3"><label><input type="checkbox" id="sound" checked> beeps</label>
+        <label>layout <select id="ui"><option value="bolt">Bolt</option><option value="classic">classic text</option></select></label><span class="muted">space = BOOT, p = PWR</span></div>
+    </div>
+    <div class="card">
+      <h2>Time</h2>
+      <div class="row">awake speed <select id="speed"><option>0.5</option><option selected>1</option><option>2</option><option>5</option><option>20</option></select>
+        sleep warp <select id="warp"><option value="1">1x</option><option value="60">60x</option><option value="600" selected>600x</option><option value="3600">3600x</option><option value="0">jump</option></select></div>
+    </div>
+    <div class="card">
+      <h2>Audio source (mic)</h2>
+      <div class="row"><select id="audio" style="flex:1"></select></div>
+    </div>
+    <div class="card">
+      <h2>Power</h2>
+      <div class="row"><label><input type="checkbox" id="usb"> USB connected</label></div>
+      <div class="row">battery <input type="range" id="batt" min="3000" max="4250" step="10"><b id="battv"></b></div>
+    </div>
+  </div>
+  <div class="col">
+    <div class="card">
+      <h2>Device faults</h2>
+      <div class="grid2" id="faults"></div>
+      <div class="row" style="margin-top:6px">extra HTTP latency <input type="number" id="slow" min="0" step="500" value="0"> ms &nbsp; Wi-Fi leak/cycle <input type="number" id="leak" min="0" step="50" value="0"> B</div>
+    </div>
+    <div class="card">
+      <h2>Mock server &middot; contract</h2>
+      <div class="row">mode <select id="mmode"><option value="async">async (202 + GET result)</option><option value="sync">legacy sync (200 task)</option></select>
+        <label><input type="checkbox" id="mupd" checked> /v1/updates</label></div>
+      <div class="row" style="margin-top:6px">kind <select id="kind"><option value="">rotate</option><option>note</option><option>todo</option><option>reminder</option><option>work</option><option>unsure</option><option>noise</option><option>error</option></select>
+        processing <select id="mproc"><option value="1500">1.5 s (in poll window)</option><option value="20000">20 s (late)</option><option value="300000">5 min</option><option value="3600000">1 h</option></select></div>
+      <div class="row" style="margin-top:6px">work: research <select id="mres"><option value="120000">2 min</option><option value="600000" selected>10 min</option><option value="1800000">30 min</option><option value="7200000">2 h</option></select>
+        then <select id="mout"><option value="done">done + summary</option><option value="paused_budget">paused: budget</option><option value="stopped">stopped</option></select></div>
+      <div class="row" style="margin-top:6px">GET 404 for <input type="number" id="mnf" min="0" step="1000" value="0"> ms after PUT (virtual)</div>
+      <h2 style="margin-top:10px">Mock server &middot; faults</h2>
+      <div class="row">
+        <button data-mock='{"script":[{"status":500}]}'>next PUT: 500</button>
+        <button data-mock='{"script":[{"status":401}]}'>next: 401</button>
+        <button data-mock='{"script":[{"status":400}]}'>next: 400</button>
+        <button data-mock='{"script":[{"malformed":true}]}'>next: bad JSON</button>
+        <button data-mock='{"script":[{"drop":true}]}'>next: drop reply</button>
+        <button data-mock='{"always":{"status":503}}'>always 503</button>
+        <button data-mock='{"get_script":[{"status":500}]}'>next GET: 500</button>
+        <button data-mock='{"get_script":[{"status":404}]}'>next GET: 404</button>
+        <button data-mock='{"get_script":[{"drop":true}]}'>next GET: drop</button>
+        <button data-mock='{"get_always":{"latency_ms":20000}}'>GETs slow (20 s)</button>
+        <button data-mock='{"get_always":{"status":503}}'>GETs always 503</button>
+        <button data-mock='{"status_script":[{"want_log":"body"}]}'>status: want log</button>
+        <button data-mock='{"status_always":{"status":404}}'>status: 404 (old server)</button>
+        <button data-mock='{"status_always":{"latency_ms":20000}}'>status: slow (20 s)</button>
+        <button data-mock='{"always":{},"script":[],"latency_ms":0,"get_always":{},"get_script":[],"status_always":{},"status_script":[]}'>healthy</button>
+        <button id="mockreset">reset</button>
+      </div>
+      <div class="row" style="margin-top:6px">PUT latency <input type="number" id="lat" min="0" step="1000" value="0"> ms (virtual)</div>
+      <div class="muted" id="mockst" style="margin-top:6px"></div>
+      <div class="files" id="mockrec" style="margin-top:6px"></div>
+    </div>
+    <div class="card">
+      <h2>State</h2>
+      <div class="grid2" id="kv"></div>
+    </div>
+    <div class="card">
+      <h2>Wi-Fi places</h2>
+      <div class="row">device is at <select id="place"><option>home</option><option>venue</option><option>street</option></select>
+        <label><input type="checkbox" id="keepalive" checked> HTTP keep-alive</label></div>
+      <div class="files" id="aps" style="margin-top:6px"></div>
+      <div class="muted" id="wifisum" style="margin-top:6px"></div>
+      <div class="row" style="margin-top:6px">server list:
+        <button data-mock='{"wifi":{"rev":1,"networks":[{"ssid":"PV-Home","psk":"home-secret-1","prio":1},{"ssid":"Joe\u2019s iPhone 15 Pro","psk":"hotspot-pw-7","prio":9}]}}'>rev 1: home + hotspot</button>
+        <button data-mock='{"wifi":{"rev":2,"networks":[{"ssid":"PV-Home","psk":"home-secret-1","prio":1},{"ssid":"Joe\u2019s iPhone 15 Pro","psk":"hotspot-pw-7","prio":9},{"ssid":"Venue Guest","psk":"venue-pass-42","prio":2}]}}'>rev 2: + Venue Guest</button>
+        <button data-mock='{"wifi":{"rev":3},"wifi_raw":"{\"rev\":3,\"networks\":[{\"ssid\""}'>rev 3: malformed</button>
+        <button data-mock='{"wifi_raw":null}'>clear raw</button></div>
+    </div>
+    <div class="card">
+      <h2>Status reports <span class="muted" style="text-transform:none;letter-spacing:0">(POST /v1/status, last one sent)</span></h2>
+      <div class="muted" id="statussum"></div>
+      <pre class="files" id="statusrep" style="max-height:220px;margin:6px 0 0;white-space:pre-wrap"></pre>
+    </div>
+    <div class="card">
+      <h2>Waiting for results</h2>
+      <div class="files" id="pending"></div>
+    </div>
+    <div class="card">
+      <h2>SD card</h2>
+      <div class="files" id="files"></div>
+    </div>
+    <div class="card">
+      <h2>Log <span class="muted" style="text-transform:none;letter-spacing:0">(also build/sim/run/sim.log)</span></h2>
+      <div class="row" style="margin-bottom:6px"><input id="filter" placeholder="filter" style="flex:1;font:inherit;padding:3px 6px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--fg)"><label><input type="checkbox" id="follow" checked> follow</label><button id="cmdstat">stat</button><button id="cmdota" title="firmware check + install now (mock: set fw in the server panel / POST /api/mock)">ota</button></div>
+      <div id="log"></div>
+    </div>
+  </div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const post = (u, body) => fetch(u, {method: "POST", body: body || ""});
+const set = (k, v) => post(`/api/set?key=${encodeURIComponent(k)}&value=${encodeURIComponent(v)}`);
+let S = null, fbSeq = -1, beepSeq = -1, logSeq = 0, logLines = [];
+
+// ---- screen ----
+const ctx = $("#scr").getContext("2d"), img = ctx.createImageData(200, 200);
+async function drawFrame() {
+  const b = new Uint8Array(await (await fetch("/api/frame")).arrayBuffer());
+  for (let y = 0; y < 200; y++) for (let x = 0; x < 200; x++) {
+    const white = b[y * 25 + (x >> 3)] & (0x80 >> (x & 7)), i = (y * 200 + x) * 4;
+    const v = white ? [228, 228, 224] : [34, 34, 34];
+    img.data[i] = v[0]; img.data[i + 1] = v[1]; img.data[i + 2] = v[2]; img.data[i + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+// ---- buttons (hold support: pointer + keyboard) ----
+document.querySelectorAll("[data-btn]").forEach(el => {
+  const name = el.dataset.btn;
+  const down = e => { e.preventDefault(); el.setPointerCapture?.(e.pointerId); el.classList.add("down"); post(`/api/button?name=${name}&action=down`); };
+  const up = () => { if (!el.classList.contains("down")) return; el.classList.remove("down"); post(`/api/button?name=${name}&action=up`); };
+  el.addEventListener("pointerdown", down); el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+});
+const keyBtn = {" ": "boot", p: "pwr"}, held = {};
+addEventListener("keydown", e => { const n = keyBtn[e.key]; if (!n || e.target.tagName === "INPUT" || held[n]) return; e.preventDefault(); held[n] = 1;
+  document.querySelector(`[data-btn=${n}]`).classList.add("down"); post(`/api/button?name=${n}&action=down`); });
+addEventListener("keyup", e => { const n = keyBtn[e.key]; if (!n || !held[n]) return; held[n] = 0;
+  document.querySelector(`[data-btn=${n}]`).classList.remove("down"); post(`/api/button?name=${n}&action=up`); });
+$("#reset").onclick = () => post("/api/button?name=reset");
+
+// ---- controls ----
+$("#speed").onchange = e => set("speed", e.target.value);
+$("#warp").onchange = e => set("sleep_warp", e.target.value);
+$("#usb").onchange = e => set("usb", e.target.checked ? 1 : 0);
+$("#batt").oninput = e => { $("#battv").textContent = e.target.value + " mV"; set("battery_mv", e.target.value); };
+$("#audio").onchange = e => set("audio", e.target.value);
+$("#slow").onchange = e => set("slow_ms", e.target.value);
+$("#leak").onchange = e => set("wifi_leak_bytes", e.target.value);
+$("#cmdstat").onclick = () => set("cmd", "stat");
+$("#cmdota").onclick = () => set("cmd", "ota");
+const FAULTS = [["wifi_offline", "Wi-Fi AP missing"], ["wifi_bad_pass", "wrong password"], ["wifi_hang", "association hangs"],
+  ["dns_fail", "DNS fails"], ["http_timeout", "HTTP timeout"], ["sd_missing", "SD missing (on reset)"], ["sd_write_fail", "SD write fails"]];
+$("#faults").innerHTML = FAULTS.map(([k, t]) => `<label><input type="checkbox" data-fault="${k}"> ${t}</label>`).join("");
+document.querySelectorAll("[data-fault]").forEach(el => el.onchange = () => set(el.dataset.fault, el.checked ? 1 : 0));
+document.querySelectorAll("[data-mock]").forEach(el => el.onclick = () => post("/api/mock", el.dataset.mock).then(pollMock));
+$("#mockreset").onclick = () => post("/api/mock?op=reset", "{}").then(pollMock);
+$("#kind").onchange = e => post("/api/mock", JSON.stringify({kind: e.target.value})).then(pollMock);
+$("#lat").onchange = e => post("/api/mock", JSON.stringify({latency_ms: +e.target.value})).then(pollMock);
+const mcfg = o => post("/api/mock", JSON.stringify(o)).then(pollMock);
+$("#mmode").onchange = e => mcfg({mode: e.target.value});
+$("#mupd").onchange = e => mcfg({updates_api: e.target.checked});
+$("#mproc").onchange = e => mcfg({process_ms: +e.target.value});
+$("#mres").onchange = e => mcfg({research_ms: +e.target.value});
+$("#mout").onchange = e => mcfg({work_outcome: e.target.value});
+$("#mnf").onchange = e => mcfg({not_found_ms: +e.target.value});
+$("#ui").onchange = e => set("ui", e.target.value);
+
+async function loadAudio() {
+  const a = await (await fetch("/api/audio")).json();
+  const opts = [...a.sd.map(f => ["file:sim/audio/" + f.name, "SD " + f.name]), ...a.recordings.map(f => ["file:sim/audio/" + f.name, f.name]),
+    ["tone:440", "tone 440 Hz"], ["tone:1000", "tone 1 kHz"], ["noise", "noise"], ["silence", "silence"]];
+  $("#audio").innerHTML = opts.map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+}
+
+// ---- beeps ----
+let actx = null;
+function beep(hz, ms, at) {
+  if (!$("#sound").checked) return;
+  actx = actx || new AudioContext();
+  const o = actx.createOscillator(), g = actx.createGain(), t = actx.currentTime + at;
+  o.frequency.value = hz; g.gain.setValueAtTime(0.08, t); g.gain.setValueAtTime(0, t + ms / 1000);
+  o.connect(g).connect(actx.destination); o.start(t); o.stop(t + ms / 1000 + 0.02);
+}
+
+// ---- polling ----
+const fmtT = ms => { const s = Math.floor(ms / 1000), d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24, m = Math.floor(s / 60) % 60;
+  return (d ? d + "d " : "") + h + ":" + String(m).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); };
+const kv = (k, v, cls) => `<div class="kv"><span class="muted">${k}</span><b class="${cls || ""}">${v}</b></div>`;
+let lastBeepT = 0;
+async function poll() {
+  try {
+    const s = S = await (await fetch("/api/state")).json();
+    if (s.fb_seq !== fbSeq) { fbSeq = s.fb_seq; drawFrame(); }
+    if (beepSeq >= 0 && s.beep_seq !== beepSeq) {
+      const fresh = s.beeps.filter(b => b[0] >= lastBeepT); let at = 0;
+      if (fresh.length) { const t0 = fresh[0][0]; fresh.forEach(b => beep(b[1], b[2], (b[0] - t0) / 1000)); }
+    }
+    if (s.beeps.length) lastBeepT = s.beeps[s.beeps.length - 1][0] + 1;
+    beepSeq = s.beep_seq;
+    $("#led").className = "led" + (s.led ? " on" : "");
+    $("#state").textContent = s.powered ? s.state : "POWER OFF";
+    $("#clock").textContent = fmtT(s.t_ms);
+    $("#sleep").textContent = !s.powered ? "off" : s.sleeping ? "light sleep" : "awake";
+    $("#wifi").textContent = s.wifi_on ? "Wi-Fi on" : "radio off";
+    $("#server").textContent = s.server;
+    if (document.activeElement !== $("#batt")) { $("#batt").value = s.battery_mv; $("#battv").textContent = `${s.battery_mv} mV (${s.battery_pct}%)`; }
+    $("#usb").checked = s.usb;
+    if (document.activeElement !== $("#ui")) $("#ui").value = s.ui;
+    const pl = s.pending_file.split("\n").filter(l => /^[01] /.test(l)).map(l => { const [ph, step, miss, id] = l.split(" ");
+      return `<div>${id} <span class="muted">${ph === "1" ? "researching" : "awaiting result"}, check #${+step + 1}${+miss ? ", 404s " + miss : ""}</span></div>`; });
+    $("#pending").innerHTML = pl.join("") || '<span class="muted">nothing - no Wi-Fi wakes</span>';
+    document.querySelectorAll("[data-fault]").forEach(el => el.checked = s.faults[el.dataset.fault]);
+    const st = s.stats, h = s.heap, e = s.energy;
+    $("#kv").innerHTML = [
+      kv("screen", s.screen.id), kv("queued", s.queue_files, s.queue_files ? "warn" : ""), kv("backoff", s.backoff_ms ? (s.backoff_ms / 1000) + " s" : "-"),
+      kv("next retry", s.next_retry_ms > s.t_ms ? fmtT(s.next_retry_ms - s.t_ms) : "-"), kv("clips", st.clips), kv("uploaded", st.uploaded, "good"),
+      kv("too short", st.too_short), kv("dups", st.dups), kv("upload fails", st.upload_fail), kv("wifi fails", st.wifi_fail), kv("set aside", st.quarantined),
+      kv("sessions", st.sessions), kv("wakes t/b/p", `${st.timer_wakes}/${st.boot_wakes}/${st.pwr_wakes}`), kv("boots", s.boots), kv("cycle", s.cycle),
+      kv("heap free*", h.free), kv("heap min*", h.min), kv("&Delta;heap/cycle", st.heap_cycle_delta, st.heap_cycle_delta < 0 ? "warn" : ""),
+      kv("core new()", h.tracked + " B", h.tracked ? "warn" : ""), kv("LVGL pool", `${h.lvgl_used} B ${h.lvgl_frag}%`), kv("open files", h.open_files, h.open_files ? "warn" : ""),
+      kv("energy*", e.mah.toFixed(2) + " mAh"), kv("avg current*", e.avg_ma.toFixed(2) + " mA"), kv("battery life*", e.days_est ? e.days_est.toFixed(1) + " d" : "-"),
+      kv("sleep / awake", `${(e.sleep_ms / 1000).toFixed(0)} / ${(e.awake_ms / 1000).toFixed(0)} s`), kv("rec / wifi", `${(e.rec_ms / 1000).toFixed(0)} / ${(e.wifi_ms / 1000).toFixed(0)} s`),
+      kv("e-paper refreshes", e.refreshes), kv("refreshes asleep", s.refreshes_asleep, s.refreshes_asleep ? "warn" : "good"), kv("dropped audio", st.dropped + " B"),
+      kv("waiting results", s.pending, s.pending ? "warn" : ""), kv("next check", s.pending && s.next_check_ms > s.t_ms ? fmtT(s.next_check_ms - s.t_ms) : "-"),
+      kv("battery level", ["ok", "LOW", "CRITICAL"][s.batt_level], s.batt_level ? "warn" : ""),
+      kv("accepted / results", `${s.res.accepted} / ${s.res.results}`), kv("checks (fail)", `${s.res.checks} (${s.res.check_fail})`),
+      kv("GETs", s.res.gets), kv("given up", s.res.gave_up, s.res.gave_up ? "warn" : ""),
+      kv("firmware", `${s.fw.version || "-"}${s.fw.verifying ? " (unconfirmed)" : ""}`, s.fw.bricked ? "warn" : s.fw.verifying ? "warn" : "good"),
+      kv("slots 0 / 1", s.fw.slots.map((x, i) => `${i === s.fw.slot ? "*" : ""}${x.version || "-"} ${x.state}`).join(" / "), s.fw.bricked ? "warn" : ""),
+      kv("rollbacks", s.fw.rollbacks, s.fw.rollbacks ? "warn" : ""),
+    ].join("") + `<div class="muted" style="grid-column:1/-1;font-size:12px">* modelled: heap = fixed budget minus tracked core allocations, open files, Wi-Fi; energy uses the current model in sim/src/sim.h (estimates, not measurements).</div>`;
+    const w = s.wifi;
+    if (document.activeElement !== $("#place")) $("#place").value = w.place;
+    $("#keepalive").checked = w.keepalive;
+    $("#aps").innerHTML = w.aps.map((a, i) => `<label style="display:block"><input type="checkbox" data-ap="${i}" ${a.on ? "checked" : ""}> ` +
+      `${a.ssid.replace(/</g, "&lt;")} <span class="muted">${a.place === "*" ? "with you" : "@" + a.place} ch${a.ch} ${a.rssi} dBm` +
+      `${a.on && (a.place === "*" || a.place === w.place) ? " · in range" : ""}</span>${w.joined === a.ssid ? " <b>joined</b>" : ""}</label>`).join("");
+    $("#wifisum").textContent = `list rev ${w.rev} · HTTP ${w.requests} requests / ${w.handshakes} TLS handshakes` + (w.leaks ? ` · ${w.leaks} LEAKED` : "");
+    const sr = s.status;
+    $("#statussum").textContent = `${sr.posts} sent (${sr.sent} ok, ${sr.fail} failed), ${sr.skipped} skipped` +
+      (sr.posts ? ` · last: ${sr.last_code > 0 ? "HTTP " + sr.last_code : "error " + sr.last_code} at ${fmtT(sr.last_t)}` : "") + ` · reset=${sr.reset}`;
+    if (sr.last !== $("#statusrep").dataset.raw) {
+      $("#statusrep").dataset.raw = sr.last;
+      let txt = sr.last;
+      try { const j = JSON.parse(sr.last); const lg = j.log; delete j.log; txt = JSON.stringify(j, null, 1) + (lg ? `\nlog (${lg.length}):\n` + lg.join("\n") : ""); } catch (e) {}
+      $("#statusrep").textContent = txt || "-";
+    }
+  } catch (e) { $("#state").textContent = "sim not reachable"; }
+}
+$("#place").onchange = e => set("place", e.target.value);
+$("#keepalive").onchange = e => set("keepalive", e.target.checked ? 1 : 0);
+$("#aps").onchange = e => { if (e.target.dataset.ap !== undefined) set("ap", `${e.target.dataset.ap}:${e.target.checked ? 1 : 0}`); };
+async function pollLog() {
+  const r = await (await fetch("/api/log?since=" + logSeq)).json();
+  if (!r.lines.length) return;
+  logSeq = r.lines[r.lines.length - 1][0];
+  logLines.push(...r.lines.map(l => l[1])); if (logLines.length > 3000) logLines = logLines.slice(-3000);
+  renderLog();
+}
+function renderLog() {
+  const f = $("#filter").value.toLowerCase(), el = $("#log");
+  const esc = s => s.replace(/[&<>]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
+  el.innerHTML = logLines.filter(l => !f || l.toLowerCase().includes(f)).slice(-800).map(l => {
+    const m = l.match(/^\[[^\]]*\] (?:\d+,\d+,)?([A-Z]+)/); return `<div class="${m ? m[1] : ""}">${esc(l)}</div>`; }).join("");
+  if ($("#follow").checked) el.scrollTop = el.scrollHeight;
+}
+$("#filter").oninput = renderLog;
+async function pollFiles() {
+  const f = await (await fetch("/api/files")).json();
+  const row = (d, x) => `<div>${d}/${x.name} <span class="muted">${(x.size / 1024).toFixed(1)} KB</span></div>`;
+  $("#files").innerHTML = (f.queue.map(x => row("REC", x)).join("") + f.bad.map(x => row("REC_BAD", x)).join("") +
+    f.root.map(x => row("", x)).join("")) || '<span class="muted">empty</span>';
+}
+async function pollMock() {
+  const m = await (await fetch("/api/mock")).json();
+  $("#mockst").textContent = m.error ? m.error : `PUTs ${m.puts}, ok ${m.ok}, errors ${m.errors}, tasks ${m.tasks}, duplicate replies ${m.dup_replies}, max ok per id ${m.max_ok_per_id}` +
+    (m.config && m.config.script && m.config.script.length ? `, scripted: ${JSON.stringify(m.config.script)}` : "") +
+    (m.config && m.config.always && Object.keys(m.config.always).length ? `, always: ${JSON.stringify(m.config.always)}` : "") +
+    `; GETs ${m.gets} (updates ${m.get_updates}, errors ${m.get_errors})` +
+    (m.config && m.config.get_script && m.config.get_script.length ? `, GET scripted: ${JSON.stringify(m.config.get_script)}` : "") +
+    (m.config && m.config.get_always && Object.keys(m.config.get_always).length ? `, GET always: ${JSON.stringify(m.config.get_always)}` : "");
+  if (m.records) $("#mockrec").innerHTML = m.records.slice().reverse().slice(0, 8).map(r =>
+    `<div>${r.id.slice(-15)} <b>${r.status}</b> ${r.kind || ""} <span class="muted">${(r.title || "").slice(0, 40)}${r.summary ? " - " + r.summary : ""}</span></div>`).join("");
+}
+loadAudio().then(() => fetch("/api/state")).then(r => r.json()).then(s => {
+  for (const o of $("#audio").options) if (o.text.endsWith(s.audio) || o.text === s.audio) o.selected = true;
+});
+setInterval(poll, 150); setInterval(pollLog, 400); setInterval(pollFiles, 1000); setInterval(pollMock, 2000);
+poll(); pollLog(); pollFiles(); pollMock();
+</script>
+</body>
+</html>

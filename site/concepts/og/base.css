@@ -1,0 +1,8 @@
+@font-face { font-family: "Fraunces"; src: url("../../fonts/Fraunces-Soft.woff2") format("woff2"); font-weight: 350 550; }
+@font-face { font-family: "Figtree"; src: url("../../fonts/Figtree-Variable.woff2") format("woff2"); font-weight: 300 900; }
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 1200px; height: 630px; overflow: hidden; }
+body { background: #f8f6f1; color: #3b3a35; font-family: "Figtree", sans-serif; -webkit-font-smoothing: antialiased; position: relative; }
+.serif { font-family: "Fraunces", serif; font-weight: 400; letter-spacing: -.02em; }
+.mark { font-family: "Fraunces", serif; font-weight: 500; letter-spacing: -.02em; }
+.muted { color: #86837a; }

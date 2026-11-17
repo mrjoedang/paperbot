@@ -1,0 +1,186 @@
+/* /setup: the paperbot.ca look (same as cli/wizard/index.html). */
+@font-face { font-family: "Fraunces"; src: url("/fonts/Fraunces-Soft.woff2") format("woff2"); font-weight: 350 550; font-display: swap; }
+@font-face { font-family: "Figtree"; src: url("/fonts/Figtree-Variable.woff2") format("woff2"); font-weight: 300 900; font-display: swap; }
+:root {
+  --bg: #f8f6f1; --surface: #fdfcf9; --ink: #3b3a35; --ink-2: #86837a; --line: #e7e3d9; --red: #b4472c; --alert: #e14832;
+  --charcoal: #3b3a35; --on-charcoal: #f8f6f1;
+  --display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --body: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --gutter: clamp(20px, 5vw, 64px);
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+h1 { font-family: var(--display); font-weight: 370; font-variation-settings: "SOFT" 100, "WONK" 0; letter-spacing: -.02em; margin: 0;
+  font-size: clamp(36px, 4.4vw, 56px); line-height: 1.05; text-wrap: balance; }
+.bar { max-width: 1280px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 22px var(--gutter); }
+.wordmark { font: 500 24px/1 var(--display); font-variation-settings: "SOFT" 100; letter-spacing: -.02em; color: var(--ink); }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--line); transition: width .3s, background .3s; }
+.dots i.on { width: 18px; background: var(--ink); }
+.dots i.done { background: var(--ink-2); }
+.setup { max-width: 1280px; margin: 0 auto; padding: 0 var(--gutter) 64px; display: grid; justify-items: center; }
+.stage { position: relative; overflow: hidden; width: min(100%, 520px); height: min(42svh, 380px); min-height: 260px; }
+/* poster.webp: the opening view captured from the viewer at 1.4:1, full stage height; the device's size follows the
+   stage height, so it lines up at any width. Recapture it when the camera, model or opening screen changes. */
+.still { position: absolute; top: 0; left: 50%; height: 100%; width: auto; max-width: none; translate: -50% 0; pointer-events: none; transition: opacity .5s ease .1s; }
+.stage.ready .still { opacity: 0; }
+model-viewer { position: relative; }
+model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
+.step { width: min(100%, 420px); display: grid; text-align: center; margin-top: 8px; }
+@media (min-width: 1000px) {
+  .setup { min-height: calc(100svh - 80px); grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); column-gap: clamp(32px, 5vw, 80px); align-items: center; justify-items: start; }
+  .step { order: -1; text-align: left; margin: 0; width: min(100%, 26rem); }
+  .stage { height: min(68vh, 620px); width: 100%; }
+}
+.sub { margin: 0; color: var(--ink-2); font-size: 18px; text-wrap: pretty; }
+.err { margin: 0; color: var(--red); font-size: 15px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 52px; width: 100%; padding: 0 24px; border: 0; border-radius: 999px;
+  background: var(--charcoal); color: var(--on-charcoal); font: 500 16px var(--body); text-decoration: none;
+  transition: translate .2s cubic-bezier(.3, 1.6, .5, 1), scale .12s ease, background .2s, box-shadow .2s; }
+.btn:disabled { opacity: .35; cursor: default; }
+@media (hover: hover) { .btn:hover:not(:disabled):not(.busy) { translate: 0 -2px; background: #2f2e2a; box-shadow: 0 10px 22px -12px rgb(40 34 20 / .55); } }
+.btn:active:not(:disabled) { translate: 0 1px; scale: .97; transition-duration: .06s; }
+.btn.busy { background: #2a2925; cursor: default; }
+.loader { display: inline-flex; align-items: center; gap: 6px; height: 26px; }
+.loader i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: hop 1.1s ease-in-out infinite; }
+.loader i:nth-child(2) { animation-delay: .15s; } .loader i:nth-child(3) { animation-delay: .3s; }
+@keyframes hop { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-5px); opacity: 1; } }
+.waiting { justify-self: center; color: var(--ink-2); }
+.link { justify-self: center; border: 0; background: none; padding: 4px; color: var(--ink-2); font-size: 15px; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 4px; }
+@media (min-width: 1000px) { .waiting, .link { justify-self: start; } .link { padding-left: 0; } }
+.link:hover { color: var(--ink); }
+.track { height: 3px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.track i { display: block; height: 100%; width: 0; background: var(--ink); border-radius: 3px; transition: width .35s ease; }
+.tips { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; color: var(--ink-2); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 22px 44px -28px rgb(60 52 30 / .32); overflow: hidden; text-align: left; }
+.nets { list-style: none; margin: 0; padding: 0; max-height: 46vh; overflow: auto; }
+.nets li + li { border-top: 1px solid var(--line); }
+.net { width: 100%; display: flex; gap: 12px; align-items: center; padding: 13px 18px; border: 0; background: none; text-align: left; font-size: 16px; }
+.net .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.net[aria-checked="true"] .name { font-weight: 600; }
+.sig { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; }
+.sig i { width: 3px; border-radius: 1px; background: var(--line); }
+.sig i:nth-child(1) { height: 3px; } .sig i:nth-child(2) { height: 6px; } .sig i:nth-child(3) { height: 9px; } .sig i:nth-child(4) { height: 12px; }
+.sig.s1 i:nth-child(-n+1), .sig.s2 i:nth-child(-n+2), .sig.s3 i:nth-child(-n+3), .sig.s4 i:nth-child(-n+4) { background: var(--ink); }
+.pwrow { padding: 0 18px 16px; display: grid; gap: 8px; }
+.pw { width: 100%; height: 46px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); padding: 0 14px; font-size: 16px; outline: none; }
+.pw:focus { border-color: var(--ink-2); }
+.pw.bad { border-color: var(--red); }
+.saved { display: flex; gap: 8px; align-items: center; height: 46px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); padding: 0 14px; font-size: 15px; }
+.saved svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mini { justify-self: start; border: 0; background: none; padding: 0; color: var(--ink-2); font-size: 14px; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.ok { display: flex; gap: 10px; align-items: center; justify-content: center; margin: 0; font-size: 18px; }
+@media (min-width: 1000px) { .ok { justify-content: flex-start; } }
+.ok svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.say { margin: 0; font: 400 clamp(22px, 2vw, 28px)/1.3 var(--display); font-variation-settings: "SOFT" 100; letter-spacing: -.015em; text-wrap: balance; }
+.memo { padding: 16px 20px 18px; }
+.memo .kind { font-size: 13.5px; color: var(--ink-2); text-transform: capitalize; }
+.memo h3 { margin: 6px 0 0; font: 400 25px/1.2 var(--display); font-variation-settings: "SOFT" 100; letter-spacing: -.02em; }
+@media (prefers-reduced-motion: reduce) { .loader i { animation: none; opacity: .7; } }
+.hint { margin: 0; color: var(--ink-2); font-size: 15px; }
+.copy { display: flex; gap: 8px; }
+.copy input { flex: 1; min-width: 0; height: 46px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 0 14px; font-size: 15px; }
+.copy .btn { width: auto; }
+/* Rhythm: heading, then its line of context close under it (12), then the step's content or action set apart (28),
+   then quiet follow-ups (links, hints) between them (16). */
+.step > * + * { margin-top: 16px; }
+.step > h1 + .sub, .step > h1 + .ok, .step > h1 + .err { margin-top: 14px; }
+.step > h1 + .say { margin-top: 14px; }
+.step > .btn, .step > .card, .step > .copy, .step > .waiting { margin-top: 28px; }
+.step > .card + .btn, .step > .err + .btn { margin-top: 16px; }
+.step > .track { margin-top: 24px; }
+.step > .track + .sub, .step > .track + .err { margin-top: 18px; }
+.step > .sub + .mini { margin-top: 4px; }
+.step > .err { margin-top: 12px; }
+.step > .tips { margin-top: 16px; }
+.step > .mini { justify-self: center; }
+@media (min-width: 1000px) { .step > .mini { justify-self: start; } }
+/* the cable comes up from below the stage: fade the stage's bottom edge so it eases in instead of being cut */
+.stage { -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent 100%); mask-image: linear-gradient(to bottom, #000 86%, transparent 100%); }
+/* the first memo: a pulsing marker on the ☀ button (model-viewer hotspot on the right side) */
+.hold { position: relative; width: 0; height: 0; pointer-events: none; }
+.hold[hidden] { display: none; }
+/* a ring around the whole button, clear of its edge, with a soft pulse outside it */
+.hold i { position: absolute; left: -38px; top: -38px; width: 76px; height: 76px; border-radius: 50%; border: 3.5px solid var(--alert); box-shadow: 0 0 0 5px rgb(225 72 50 / .16); }
+.hold i::after { content: ""; position: absolute; inset: -3.5px; border-radius: 50%; border: 3px solid var(--alert); animation: hold-pulse 1.6s ease-out infinite; }
+.hold span { position: absolute; left: 50px; top: 0; translate: 0 -50%; padding: 4px 10px; border-radius: 999px; background: var(--alert); color: #fff; font: 600 13px var(--body); white-space: nowrap; box-shadow: 0 6px 14px -6px rgb(225 72 50 / .6); }
+@keyframes hold-pulse { 0% { scale: 1; opacity: .7; } 80%, 100% { scale: 1.5; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hold i::after { animation: none; } }
+/* the password guide (in place of the network list): drawn copies of the Mac / iPhone screens, the target circled */
+.guide { padding: 6px 18px 16px; display: grid; gap: 12px; text-align: left; }
+.seg { display: inline-flex; justify-self: start; padding: 3px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); }
+.seg button { border: 0; background: none; padding: 5px 12px; border-radius: 999px; font-size: 14px; color: var(--ink-2); }
+.seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgb(60 52 30 / .18); }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.steps li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; }
+.steps .n { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: var(--on-charcoal); font: 600 12px/22px var(--body); text-align: center; }
+.steps p { margin: 1px 0 8px; font-size: 15px; line-height: 1.45; }
+kbd { display: inline-block; min-width: 22px; padding: 0 5px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--surface); font: 500 13px/20px var(--body); text-align: center; }
+.mock { border: 1px solid #e3e1dc; border-radius: 10px; background: #f6f5f3; padding: 6px; font: 13px -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; color: #222; }
+.m-head { padding: 2px 6px 6px; font-weight: 600; font-size: 12px; color: #555; }
+.m-row { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 7px; background: #fff; }
+.m-name { flex: 1; }
+.m-wifi { width: 16px; height: 16px; fill: #222; stroke: #222; stroke-width: 2.2; stroke-linecap: round; }
+.m-wifi path { fill: none; }
+.nets.guiding { max-height: none; overflow: visible; }
+.m-more, .m-info { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; font-weight: 700; }
+.m-info { color: #0a84ff; border: 1.5px solid #0a84ff; width: 18px; height: 18px; font: italic 600 12px serif; }
+.m-menu { width: 170px; display: grid; gap: 2px; background: #fbfbfa; box-shadow: 0 8px 20px -10px rgb(0 0 0 / .35); }
+.m-menu div { padding: 5px 9px; border-radius: 6px; }
+.m-pill { display: inline-block; padding: 6px; border-radius: 10px; background: #2c2c2e; }
+.m-pill span { display: inline-block; padding: 4px 12px; border-radius: 7px; color: #fff; }
+.ring { outline: 3px solid var(--alert); outline-offset: 2px; border-radius: 8px; animation: ring-pulse 1.6s ease-in-out infinite; }
+.m-more.ring, .m-info.ring { border-radius: 50%; }
+@keyframes ring-pulse { 50% { outline-color: rgb(225 72 50 / .35); } }
+@media (prefers-reduced-motion: reduce) { .ring { animation: none; } }
+div.net { cursor: default; }
+/* the floating window (Document Picture-in-Picture) over System Settings while the Wi-Fi password is copied */
+body.floating { padding: 14px 16px 18px; display: grid; gap: 14px; align-content: start; font-size: 16px; }
+.floating h2 { margin: 0; font: 400 24px/1.1 var(--display); font-variation-settings: "SOFT" 100; letter-spacing: -.02em; }
+.floating .sub { margin-top: 4px; font-size: 14px; display: flex; gap: 6px; align-items: center; }
+.floating .sub b { color: var(--ink); font-weight: 600; }
+.floating .sub svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.floating .steps p { font-size: 14px; }
+.floating .waiting { justify-self: center; }
+/* the Mac Wi-Fi settings drawing: the Wi-Fi card on top as a landmark, a known network's row like the real one */
+.m-card { display: flex; align-items: center; gap: 8px; padding: 7px 8px; margin-bottom: 8px; border-radius: 7px; background: #fff; opacity: .5; }
+.m-app { display: grid; place-items: center; width: 20px; height: 20px; border-radius: 5px; background: #0a84ff; }
+.m-app .m-wifi { width: 13px; height: 13px; fill: #fff; stroke: #fff; }
+.m-toggle { margin-left: auto; width: 28px; height: 16px; border-radius: 8px; background: #0a84ff; position: relative; }
+.m-toggle::after { content: ""; position: absolute; right: 2px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; }
+.m-lock { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; opacity: .7; }
+.m-more { background: #ecebe9; }
+/* light: the frame is Settings' grey behind white rows, so the drawing stands apart from the page's cream */
+.mock:not(.m-menu, .m-pill) { background: #e9e8e5; border-color: #d6d3cc; }
+.m-menu { border-color: #d6d3cc; }
+/* drawn like Settings looks on this Mac: dark when the Mac is */
+@media (prefers-color-scheme: dark) {
+  .mock { color: #eee; }
+  .mock:not(.m-menu, .m-pill) { background: #1e1e1f; border-color: #333; }
+  .m-menu { border-color: #333; }
+  .m-head { color: #999; }
+  .m-row, .m-card { background: #2b2b2d; }
+  .m-wifi { fill: #eee; stroke: #eee; }
+  .m-menu { background: #2b2b2d; }
+  .m-more { background: #3a3a3c; }
+  .m-pill { background: #3a3a3c; }
+}
+.floating .btn.quiet { height: 42px; background: transparent; color: var(--ink); border: 1px solid var(--line); font-size: 15px; }
+.floating .steps li:has(> div > p > .btn) { align-items: center; }
+.floating .steps p:has(> .btn) { margin: 0; }
+.floating .steps .pw { margin-top: 2px; }
+.floating .steps .err { margin-top: 6px; }
+@media (hover: hover) { .floating .btn.quiet:hover:not(:disabled) { background: var(--surface); border-color: var(--ink-2); box-shadow: 0 8px 18px -12px rgb(40 34 20 / .35); } }
+.mini.icon { display: inline-flex; align-items: center; gap: 7px; }
+.mini.icon svg { flex: none; width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.mini.icon svg .fill { fill: currentColor; stroke: none; }
+
+/* "It works": what the first memo saved, in the person's OpenBelt list */
+.saved-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 18px; padding: 14px 16px; border-radius: 14px; background: var(--surface); text-align: left; }
+.saved-item b { display: block; font-weight: 600; }
+.saved-item span { color: var(--ink-2); font-size: 14px; }

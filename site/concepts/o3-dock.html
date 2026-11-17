@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../assets/favicon-64.png" type="image/png">
+<title>paperbot · O3: Dock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Figtree:wght@400..600&display=swap" rel="stylesheet">
+<script>self.ModelViewerElement = { meshoptDecoderLocation: "../vendor/meshopt_decoder.js" };</script>
+<script type="module" src="../vendor/model-viewer.min.js"></script>
+<style>
+/* The device starts as the hero, then tucks itself into the corner and keeps you company down the page. */
+:root {
+  --bg: #f8f6f1; --ink: #3b3a35; --ink-2: #8b887f; --line: #e7e3d9; --chip: #ece8de; --charcoal: #3b3a35;
+  --display: "Fraunces", Georgia, serif; --f: "Figtree", ui-sans-serif, system-ui, sans-serif; --gutter: clamp(20px, 5vw, 64px);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--f); -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.soft { font-family: var(--display); font-variation-settings: "SOFT" 100, "WONK" 0; font-weight: 370; letter-spacing: -.02em; }
+
+.bar { position: fixed; inset: 0 0 auto; z-index: 4; display: flex; justify-content: space-between; align-items: center; padding: 20px var(--gutter); font-size: 14px; color: var(--ink-2); background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(10px); }
+.wordmark { font-size: 24px; font-weight: 520; color: var(--ink); }
+
+/* one fixed device; its transform is driven by scroll */
+.device { position: fixed; z-index: 3; left: 50%; top: 50%; width: 560px; height: 560px; margin: -330px 0 0 -280px; transform-origin: center; will-change: transform; }
+.device model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
+.docked .device { cursor: grab; }
+
+.hero { height: 100svh; min-height: 640px; position: relative; }
+.hero h1 { position: absolute; left: 0; right: 0; bottom: 9vh; margin: 0 auto; padding: 0 var(--gutter); text-align: center; max-width: 18ch; font-size: clamp(34px, 4.6vw, 64px); line-height: 1.08; transition: opacity .3s; }
+.docked .hero h1 { opacity: 0; }
+
+/* a day, told in memos; each one sets the docked device's screen */
+.day { max-width: 760px; margin: 0 auto; padding: 40px var(--gutter) 0 var(--gutter); }
+.day > h2 { font-size: clamp(32px, 4vw, 54px); line-height: 1.1; margin: 0 0 12px; }
+.day > p { margin: 0 0 60px; color: var(--ink-2); max-width: 30rem; }
+.moment { display: grid; grid-template-columns: 5.5rem 1fr; gap: 20px; padding: 34px 0; border-top: 1px solid var(--line); opacity: .4; transition: opacity .5s; }
+.moment.on { opacity: 1; }
+.moment time { font-size: 15px; color: var(--ink-2); padding-top: 8px; }
+.moment q { display: block; font-size: clamp(24px, 2.6vw, 32px); line-height: 1.2; quotes: "“" "”"; }
+.moment .chip { display: inline-block; margin-top: 12px; background: var(--chip); border-radius: 999px; padding: 3px 12px; font-size: 14px; font-weight: 500; }
+.moment .note { display: block; margin-top: 8px; font-size: 15px; color: var(--ink-2); }
+
+.end { max-width: 760px; margin: 120px auto 0; padding: 0 var(--gutter) 160px; }
+.end h2 { font-size: clamp(32px, 4vw, 54px); line-height: 1.1; margin: 0 0 14px; }
+.end p { margin: 0; color: var(--ink-2); max-width: 30rem; }
+.foot { max-width: 760px; margin: 0 auto; padding: 26px var(--gutter) 40px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 13.5px; color: var(--ink-2); }
+@media (max-width: 720px) {
+  .device { width: 380px; height: 380px; margin: -230px 0 0 -190px; }
+  .moment { grid-template-columns: 1fr; gap: 4px; }
+  .day, .end { padding-right: 120px; }
+}
+</style>
+</head>
+<body>
+<header class="bar"><span class="wordmark soft">paperbot</span><span>Not for sale yet</span></header>
+
+<div class="device" id="device">
+  <model-viewer id="mv" src="../assets/paperbot.glb" alt="paperbot, a small white device with an e-paper screen"
+    camera-controls disable-zoom disable-pan touch-action="pan-y" interaction-prompt="none"
+    camera-orbit="-22deg 80deg 0.19m" field-of-view="22deg" max-camera-orbit="auto auto 0.35m" interpolation-decay="150"
+    tone-mapping="neutral" exposure="1" shadow-intensity="0.35" shadow-softness="1"></model-viewer>
+</div>
+
+<main>
+  <section class="hero"><h1 class="soft">For the thoughts you’d otherwise lose.</h1></section>
+
+  <section class="day" aria-labelledby="day-title">
+    <h2 class="soft" id="day-title">A day with paperbot.</h2>
+    <p>Hold the button, say it, let go. Here's what that looks like on an ordinary Tuesday.</p>
+    <div class="moment" data-screen="todo"><time>8:12</time><div><q class="soft">Buy AA batteries.</q><span class="chip">Todo</span></div></div>
+    <div class="moment" data-screen="reminder"><time>9:40</time><div><q class="soft">Remind me to call the dentist on the 18th at nine.</q><span class="chip">Reminder, Oct 18 at 9:00</span></div></div>
+    <div class="moment" data-screen="work" data-then="done"><time>12:05</time><div><q class="soft">Which bitmap font reads best on e-paper?</q><span class="chip">Researched</span><span class="note">By the time lunch was over: Spleen 8×16 reads best of the three it found.</span></div></div>
+    <div class="moment" data-screen="tooshort"><time>15:30</time><div><q class="soft">Uh—</q><span class="chip">Too short</span><span class="note">Tapped by accident. It asks you to hold a little longer instead of guessing.</span></div></div>
+    <div class="moment" data-screen="note"><time>21:48</time><div><q class="soft">Idea: a robot face for the voice gadget.</q><span class="chip">Note</span></div></div>
+    <div class="moment" data-screen="ready"><time>23:00</time><div><q class="soft">zzz</q><span class="note">Asleep, with nothing to charge tonight. A charge lasts about 3½ days.</span></div></div>
+  </section>
+
+  <section class="end">
+    <h2 class="soft">Everything ends up in one quiet list.</h2>
+    <p>On your phone or laptop: tick off todos, see what's due, read the answers. paperbot isn't for sale yet; open-source code and one-click setup are on the way.</p>
+  </section>
+</main>
+<footer class="foot"><span>pocketbot.ca</span><span>Built on Waveshare hardware. Not affiliated.</span></footer>
+
+<script type="module">
+import { screen } from './screen.js';
+const dev = document.getElementById('device'), mv = document.getElementById('mv');
+const s = screen(mv);
+s.preload(['todo', 'reminder', 'work', 'done', 'tooshort', 'note', 'ready']);
+
+// scroll 0 → one screen: scale the device down and slide it into the bottom-right corner
+let raf = 0;
+function place() {
+  raf = 0;
+  const t = Math.min(Math.max(scrollY / (innerHeight * 0.9), 0), 1);
+  const e = t < .5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;      // ease in-out
+  const small = innerWidth < 720 ? 0.34 : 0.36;
+  const w = dev.offsetWidth, h = dev.offsetHeight;
+  const cx = dev.offsetLeft + w / 2, cy = dev.offsetTop + h / 2;            // untransformed centre
+  const tx = (innerWidth - 16 - w * small / 2 - cx) * e;
+  const ty = (innerHeight - 8 - h * small / 2 - cy) * e;
+  dev.style.transform = `translate(${tx}px, ${ty}px) scale(${1 - (1 - small) * e})`;
+  document.body.classList.toggle('docked', e > .98);
+}
+addEventListener('scroll', () => { raf ||= requestAnimationFrame(place); }, { passive: true });
+addEventListener('resize', place);
+place();
+
+let cur, timer;
+const io = new IntersectionObserver((es) => es.forEach((en) => {
+  if (!en.isIntersecting || en.target === cur) return;
+  cur?.classList.remove('on'); cur = en.target; cur.classList.add('on');
+  clearTimeout(timer); s.show(cur.dataset.screen, { flash: true });
+  if (cur.dataset.then) { const c = cur; timer = setTimeout(() => cur === c && s.show(c.dataset.then, { flash: true }), 2200); }
+}), { rootMargin: '-45% 0px -45% 0px' });
+document.querySelectorAll('.moment').forEach((m) => io.observe(m));
+</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>paperbot · Geist Serif</title>
+  <meta name="description" content="A small e-paper robot for your pocket. Hold its button, say the thing, let go. It becomes a note, a todo, a reminder, or a question it researches for you.">
+  <meta name="theme-color" content="#f8f6f1">
+  <link rel="canonical" href="https://pocketbot.ca/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://pocketbot.ca/">
+  <meta property="og:title" content="paperbot">
+  <meta property="og:description" content="For the thoughts you'd otherwise lose. Hold the button, say the thing, let go.">
+  <meta property="og:image" content="https://pocketbot.ca/assets/img/og.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="../assets/favicon-64.png" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <link rel="preload" href="../fonts/GeistSerif-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../assets/paperbot.glb" as="fetch" type="model/gltf-binary" crossorigin>
+  <link rel="stylesheet" href="../style.css">
+  <script>self.ModelViewerElement = { meshoptDecoderLocation: "../vendor/meshopt_decoder.js" };</script>
+<script type="module" src="../vendor/model-viewer.min.js"></script>
+  <script type="module" src="../main.js"></script>
+  <style>
+    /* Geist Serif has one axis, ELSH ("element shape"): every dot in the text (periods, i and j dots, !)
+       is round at 0, square at 25, triangle at 50 and a heart at 100. Here the dots follow the device:
+       round when idle, square pixels while it records, triangles while it sends, hearts when it's filed. */
+    @font-face { font-family: "Geist Serif"; src: url("../fonts/GeistSerif-Variable.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+    @font-face { font-family: "Geist"; src: url("../fonts/Geist-Variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+    :root { --display: "Geist Serif", "Times New Roman", serif; --body: "Geist", ui-sans-serif, system-ui, sans-serif; --elsh: 0; }
+    :root[data-device="rec"] { --elsh: 25; }
+    :root[data-device="sending"] { --elsh: 50; }
+    :root[data-device="filed"] { --elsh: 100; }
+    h1, h2, .wordmark { font-family: var(--display); font-weight: 400; letter-spacing: -.035em; font-variation-settings: "ELSH" var(--elsh); }
+    .wordmark { font-size: 25px; letter-spacing: -.04em; }
+    .hero h1 { font-size: clamp(40px, 5.6vw, 76px); line-height: 1.02; }
+    .steps h2 { font-size: 30px; letter-spacing: -.03em; }
+    body { letter-spacing: -.005em; }
+    /* the button's dot is a real period in Geist Serif, so it changes shape with everything else */
+    .hold .dot { width: auto; height: auto; background: none; opacity: 1; font: 400 44px/0 var(--display); font-variation-settings: "ELSH" var(--elsh); translate: 0 -.3em; }
+    .hold.down .dot { animation: blink 1s infinite; }
+  </style>
+</head>
+<body>
+<header class="bar">
+  <a class="wordmark" href="#top">paperbot.</a>
+  <span>Not for sale yet</span>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="h-title">
+    <div class="stage">
+      <model-viewer id="mv" src="../assets/paperbot.glb" poster="../assets/img/poster.webp"
+        alt="paperbot, a small white device with an e-paper screen showing a smiling robot"
+        camera-controls disable-zoom disable-pan touch-action="pan-y" interaction-prompt="none"
+        camera-orbit="24deg 80deg 0.19m" field-of-view="22deg" max-camera-orbit="auto auto 0.35m" interpolation-decay="140"
+        tone-mapping="neutral" exposure="1" shadow-intensity="0.45" shadow-softness="1"
+        ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed">
+        <button slot="ar-button" class="ar">See it on your desk</button>
+        <div slot="progress-bar"></div>
+      </model-viewer>
+    </div>
+
+    <button class="hold" id="hold" type="button"><span class="dot" aria-hidden="true">.</span><span id="hold-label">Hold to talk</span></button>
+    <p class="status" id="status" aria-live="polite">Press and hold, say something, let go.</p>
+
+    <h1 id="h-title">For the thoughts you’d otherwise lose.</h1>
+    <p class="lede">paperbot is a small e-paper robot for your pocket. Hold its button, say the thing, let go. It becomes a note, a todo, a reminder, or a question it goes and researches.</p>
+  </section>
+
+  <section class="steps" aria-label="How it works">
+    <div>
+      <h2>Hold and talk.</h2>
+      <p>The button on its side wakes it and starts recording in the same moment. No app, no wake word, nothing to unlock.</p>
+    </div>
+    <div>
+      <h2>Let go.</h2>
+      <p>Your words go to your own server and are written down in about two seconds. Then the device forgets its copy.</p>
+    </div>
+    <div>
+      <h2>It’s filed.</h2>
+      <p>Notes, todos and reminders, each with a title and the right time. Questions come back researched, with sources.</p>
+    </div>
+  </section>
+
+  <section class="app" aria-labelledby="a-title">
+    <div class="app-copy">
+      <h2 id="a-title">Everything lands in one quiet list.</h2>
+      <p>On your phone or laptop. Tick off todos, see what’s due, read the answers, and play back what you said when you need to.</p>
+    </div>
+    <figure class="shot">
+      <img src="../assets/img/app-desktop.webp" width="1600" height="950" loading="lazy"
+        alt="The paperbot web app: a list with todos, a note, a reminder due tomorrow and a researched question with its answer">
+    </figure>
+  </section>
+
+  <section class="details" aria-labelledby="d-title">
+    <h2 id="d-title">The details.</h2>
+    <dl>
+      <div><dt>Size</dt><dd>39.8 × 53 × 16.9 mm</dd></div>
+      <div><dt>Screen</dt><dd>1.54 inch e-paper, 200 × 200</dd></div>
+      <div><dt>Battery</dt><dd>About 3½ days at five memos a day, about two weeks if left alone</dd></div>
+      <div><dt>Offline</dt><dd>Clips wait on the memory card until it’s back on Wi-Fi or your phone’s hotspot</dd></div>
+      <div><dt>Charging</dt><dd>USB-C</dd></div>
+      <div><dt>Hardware</dt><dd>Waveshare ESP32-C6 e-paper board</dd></div>
+    </dl>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>pocketbot.ca</span>
+  <span>Not for sale yet. Built on Waveshare hardware, not affiliated.</span>
+</footer>
+</body>
+</html>

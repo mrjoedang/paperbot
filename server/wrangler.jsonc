@@ -1,0 +1,86 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // DEV deployment (the default `npx wrangler deploy`, `make deploy-dev`): Worker `paperbot-dev` on
+  // https://dev.paperbot.ca, with its own R2 bucket, auth database and Durable Objects. Anyone can sign up;
+  // TEST_HOOKS are on (email+password sign-in for scripts, X-Test-* upload headers, /admin/test/*).
+  // PRODUCTION: `env.production` below, deployed only when the owner says so.
+  "name": "paperbot-dev",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-17",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "workers_dev": true,
+  // dev.pocketbot.ca (the old domain) keeps serving boards (/v1) and /admin; everything else redirects to APP_ORIGIN.
+  "routes": [{ "pattern": "dev.paperbot.ca", "custom_domain": true }, { "pattern": "dev.pocketbot.ca", "custom_domain": true }],
+  "ai": { "binding": "AI" },
+  // Web app (public/). run_worker_first: every request goes through the Worker, which checks the session first.
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
+  "r2_buckets": [{ "binding": "AUDIO", "bucket_name": "paperbot-dev" }],
+  "d1_databases": [{ "binding": "AUTH_DB", "database_name": "paperbot-dev-auth", "database_id": "3f88da3d-9237-4bac-959a-fe7fce5c1a75" }],
+  "durable_objects": {
+    "bindings": [
+      { "name": "INBOX", "class_name": "Inbox" },
+      { "name": "WorkAgent", "class_name": "WorkAgent" },
+      { "name": "TASKS", "class_name": "TaskList" },
+      // Accounts (one Inbox per person) and board tokens (src/directory.ts)
+      { "name": "DIRECTORY", "class_name": "Directory" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Inbox", "WorkAgent", "TaskList"] }, { "tag": "v2", "new_sqlite_classes": ["Directory"] }],
+  "workflows": [{ "binding": "PIPELINE", "name": "paperbot-dev-pipeline", "class_name": "VoicePipeline" }],
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": {
+    "GATEWAY_ID": "paperbot-dev",
+    "TZ": "America/Edmonton",
+    "WEB_SEARCH": "1",
+    "SEARCH_PROVIDER": "exa",
+    // Dev only. MUST NOT be set in production.
+    "TEST_HOOKS": "1",
+    "GOOGLE_CLIENT_ID": "160317589614-7tc8mjforqmred30pjbep6100muouguu.apps.googleusercontent.com",
+    "APP_ORIGIN": "https://dev.paperbot.ca",
+    // App memos are built in the person's OpenBelt workspace (src/openbelt.ts). OpenBelt has no staging any more:
+    // dev builds on OpenBelt production too.
+    "OPENBELT_URL": "https://openbelt.com"
+  },
+  // Secrets: DEVICE_TOKEN (owner board + /admin), WIFI_KEY, BETTER_AUTH_SECRET, GOOGLE_CLIENT_SECRET, OWNER_EMAIL
+  // (the owner, signed in with Google: inbox "default", research included; everyone else brings their own).
+
+  "env": {
+    "production": {
+      "name": "paperbot",
+      // app.paperbot.ca: sign-in, web app, device API, install script (/install; paperbot.ca/install on the site
+      // redirects here), CLI + firmware downloads. paperbot.ca itself is the site (site/). The old addresses stay for
+      // boards set up with them: app.pocketbot.ca and the workers.dev URL serve /v1 and /admin, and redirect the rest
+      // to APP_ORIGIN (src/index.ts). A board moves to the new address when it is set up again.
+      "workers_dev": true,
+      "routes": [{ "pattern": "app.paperbot.ca", "custom_domain": true }, { "pattern": "app.pocketbot.ca", "custom_domain": true }],
+      "ai": { "binding": "AI" },
+      "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": true },
+      // The old production bucket: audio/<id>.wav keys of migrated tasks keep working.
+      "r2_buckets": [{ "binding": "AUDIO", "bucket_name": "paperbot" }],
+      "d1_databases": [{ "binding": "AUTH_DB", "database_name": "paperbot-auth", "database_id": "91761968-51c6-4df6-96a2-3cc7e0832a07" }],
+      "durable_objects": {
+        "bindings": [
+          { "name": "INBOX", "class_name": "Inbox" },
+          { "name": "WorkAgent", "class_name": "WorkAgent" },
+          { "name": "TASKS", "class_name": "TaskList" },
+          { "name": "DIRECTORY", "class_name": "Directory" }
+        ]
+      },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Inbox", "WorkAgent", "TaskList"] }, { "tag": "v2", "new_sqlite_classes": ["Directory"] }],
+      "workflows": [{ "binding": "PIPELINE", "name": "paperbot-pipeline", "class_name": "VoicePipeline" }],
+      "triggers": { "crons": ["* * * * *"] },
+      "vars": {
+        "GATEWAY_ID": "paperbot",
+        "TZ": "America/Edmonton",
+        "WEB_SEARCH": "1",
+        "SEARCH_PROVIDER": "exa",
+        "GOOGLE_CLIENT_ID": "160317589614-7tc8mjforqmred30pjbep6100muouguu.apps.googleusercontent.com",
+        "APP_ORIGIN": "https://app.paperbot.ca",
+        "OPENBELT_URL": "https://openbelt.com"
+      }
+      // Secrets (--env production): DEVICE_TOKEN (the production board token, ../.secrets.env), WIFI_KEY
+      // (../.secrets.env PAPERBOT_WIFI_KEY), BETTER_AUTH_SECRET, GOOGLE_CLIENT_SECRET, OWNER_EMAIL (../.secrets.env).
+    }
+  }
+}

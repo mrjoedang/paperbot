@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E-Paper UI Concepts</title>
+<style>
+:root{
+  --bg:#f6f5f1; --fg:#1d1d1f; --muted:#6b6a66; --card:#ffffff; --line:#e2e0da;
+  --accent:#d0451b; --bezel:#2a2b2f; --bezel-hi:#3a3c41; --nav:rgba(246,245,241,.92);
+  --star:#e0a100;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16171a; --fg:#ecebe7; --muted:#9a9993; --card:#1f2024; --line:#2e3036;
+    --accent:#ff7a4d; --bezel:#0d0e10; --bezel-hi:#26282d; --nav:rgba(22,23,26,.92);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16171a; --fg:#ecebe7; --muted:#9a9993; --card:#1f2024; --line:#2e3036;
+  --accent:#ff7a4d; --bezel:#0d0e10; --bezel-hi:#26282d; --nav:rgba(22,23,26,.92);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header.top{max-width:1400px;margin:0 auto;padding:28px 16px 8px}
+h1{font-size:26px;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0;max-width:820px}
+.controls{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:14px;font-size:14px}
+.controls label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:transparent;color:var(--fg);padding:5px 10px;font:inherit;cursor:pointer}
+.seg button.on{background:var(--fg);color:var(--bg)}
+nav{position:sticky;top:0;z-index:5;background:var(--nav);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line)}
+nav .in{max-width:1400px;margin:0 auto;padding:8px 16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+nav a{white-space:nowrap;text-decoration:none;color:var(--fg);padding:5px 10px;border-radius:999px;
+  border:1px solid var(--line);font-size:14px}
+nav a:hover{border-color:var(--fg)}
+nav a .s{color:var(--star)}
+main{max-width:1400px;margin:0 auto;padding:8px 16px 60px}
+section.concept{padding:28px 0 18px;border-bottom:1px solid var(--line)}
+.chead{display:flex;flex-wrap:wrap;gap:10px 20px;align-items:flex-start;justify-content:space-between}
+.chead h2{margin:0;font-size:22px}
+.chead h2 .num{color:var(--muted);font-weight:500;margin-right:6px}
+.why{margin:4px 0 2px;max-width:760px}
+.font{margin:0;color:var(--muted);font-size:13px}
+.pick{display:flex;gap:10px;align-items:center}
+.star{font-size:15px;border:1px solid var(--line);background:var(--card);color:var(--fg);
+  border-radius:999px;padding:6px 14px;cursor:pointer;font-family:inherit}
+.star.on{border-color:var(--star);background:var(--star);color:#1d1d1f}
+textarea{width:100%;max-width:760px;min-height:44px;margin-top:10px;background:var(--card);color:var(--fg);
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:14px;resize:vertical}
+.grid{display:grid;gap:22px 18px;margin-top:18px;
+  grid-template-columns:repeat(auto-fill,minmax(calc(var(--scr) + 36px),1fr))}
+.cell{display:flex;flex-direction:column;align-items:center;min-width:0}
+.device{position:relative;padding:16px;border-radius:20px;max-width:100%;
+  background:linear-gradient(160deg,var(--bezel-hi),var(--bezel));
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 6px 18px rgba(0,0,0,.18)}
+.device::after{content:"";position:absolute;right:-5px;top:38%;width:5px;height:30px;border-radius:0 3px 3px 0;
+  background:var(--bezel-hi)}
+.device canvas{display:block;width:var(--scr);max-width:100%;height:auto;aspect-ratio:1;
+  image-rendering:pixelated;image-rendering:crisp-edges;border-radius:2px;cursor:pointer}
+.cap{margin-top:8px;font-size:13px;color:var(--muted);text-align:center}
+.cap b{color:var(--fg);font-weight:600}
+.tag{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 4px;margin-left:4px}
+footer{max-width:1400px;margin:0 auto;padding:10px 16px 60px;color:var(--muted);font-size:13px}
+footer pre{white-space:pre-wrap;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--fg)}
+button.plain{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;padding:5px 10px;font:inherit;cursor:pointer}
+body.small .device{padding:8px;border-radius:12px}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Voice gadget: e-paper UI concepts</h1>
+  <p class="sub">Six directions for the 1.54" 200×200 1-bit screen. Every screen is drawn into a real 200×200 buffer of pure black/white pixels (no greys), the same as the panel. Click a screen to download it as a 1-bit PNG. Star the ones you like and leave notes; they're saved in this browser.</p>
+  <div class="controls">
+    <label><input type="checkbox" id="anim" checked> Animate (e-paper pace, 500 ms/frame)</label>
+    <span>Size <span class="seg" id="size"><button data-s="actual">Actual ~28mm</button><button data-s="1">1×</button><button data-s="2" class="on">2×</button></span></span>
+    <label><input type="checkbox" id="tint" checked> Paper tint</label>
+  </div>
+</header>
+<nav><div class="in" id="nav"></div></nav>
+<main id="main"></main>
+<footer>
+  <p><button class="plain" id="copy">Copy my picks + notes</button> <span id="copied"></span></p>
+  <pre id="summary"></pre>
+  <p>Fonts on the device screens: a classic 5×7 bitmap font drawn at integer scales (1×–4×), except the "Poster" concept, which uses a heavy sans run through a hard 1-bit threshold. Icons are 16×16 1-bit sprites scaled by whole numbers.</p>
+</footer>
+
+<script>
+"use strict";
+/* ---------------- 1-bit bitmap + primitives ---------------- */
+class B{
+  constructor(w=200,h=200){this.w=w;this.h=h;this.d=new Uint8Array(w*h);}
+  px(x,y,c=1){x=Math.floor(x);y=Math.floor(y);if(x<0||y<0||x>=this.w||y>=this.h)return;this.d[y*this.w+x]=c;}
+  get(x,y){return(x<0||y<0||x>=this.w||y>=this.h)?0:this.d[y*this.w+x];}
+  rect(x,y,w,h,c=1){for(let j=0;j<h;j++)for(let i=0;i<w;i++)this.px(x+i,y+j,c);}
+  frame(x,y,w,h,t=1,c=1){this.rect(x,y,w,t,c);this.rect(x,y+h-t,w,t,c);this.rect(x,y,t,h,c);this.rect(x+w-t,y,t,h,c);}
+  fill(c=1){this.d.fill(c);}
+  inRR(px,py,x,y,w,h,r){
+    if(px<x||py<y||px>=x+w||py>=y+h)return false;
+    const cx=px<x+r?x+r:(px>=x+w-r?x+w-r:px), cy=py<y+r?y+r:(py>=y+h-r?y+h-r:py);
+    const dx=px+.5-cx, dy=py+.5-cy; return cx===px||cy===py||dx*dx+dy*dy<=r*r;
+  }
+  rrect(x,y,w,h,r,c=1){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)if(this.inRR(i,j,x,y,w,h,r))this.px(i,j,c);}
+  rframe(x,y,w,h,r,t=2,c=1){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)
+    if(this.inRR(i,j,x,y,w,h,r)&&!this.inRR(i,j,x+t,y+t,w-2*t,h-2*t,Math.max(0,r-t)))this.px(i,j,c);}
+  line(x0,y0,x1,y1,t=1,c=1){
+    x0=Math.round(x0);y0=Math.round(y0);x1=Math.round(x1);y1=Math.round(y1);
+    const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let e=dx+dy;const o=Math.floor((t-1)/2);
+    for(;;){this.rect(x0-o,y0-o,t,t,c);if(x0===x1&&y0===y1)break;const e2=2*e;if(e2>=dy){e+=dy;x0+=sx;}if(e2<=dx){e+=dx;y0+=sy;}}
+  }
+  pline(pts,t=1,c=1){for(let i=0;i<pts.length-1;i++)this.line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],t,c);}
+  ellipse(cx,cy,rx,ry,c=1){for(let y=Math.floor(cy-ry-1);y<=cy+ry+1;y++)for(let x=Math.floor(cx-rx-1);x<=cx+rx+1;x++){
+    const dx=(x+.5-cx)/rx,dy=(y+.5-cy)/ry;if(dx*dx+dy*dy<=1)this.px(x,y,c);}}
+  circle(cx,cy,r,c=1){this.ellipse(cx,cy,r,r,c);}
+  ring(cx,cy,r,t,c=1,a0=0,a1=360){
+    for(let y=Math.floor(cy-r-1);y<=cy+r+1;y++)for(let x=Math.floor(cx-r-1);x<=cx+r+1;x++){
+      const dx=x+.5-cx,dy=y+.5-cy,d=Math.hypot(dx,dy);if(d>r||d<r-t)continue;
+      if(a0!==0||a1!==360){let a=Math.atan2(dy,dx)*180/Math.PI;if(a<0)a+=360;
+        if(a0<=a1?(a<a0||a>a1):(a<a0&&a>a1))continue;}
+      this.px(x,y,c);}
+  }
+  poly(pts,c=1){
+    let y0=Infinity,y1=-Infinity;for(const p of pts){y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);}
+    for(let y=Math.floor(y0);y<=Math.ceil(y1);y++){const yc=y+.5,xs=[];
+      for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];
+        if((a[1]<=yc&&b[1]>yc)||(b[1]<=yc&&a[1]>yc))xs.push(a[0]+(yc-a[1])/(b[1]-a[1])*(b[0]-a[0]));}
+      xs.sort((p,q)=>p-q);for(let k=0;k+1<xs.length;k+=2)for(let x=Math.ceil(xs[k]-.5);x<xs[k+1]-.5;x++)this.px(x,y,c);}
+  }
+  dots(x,y,w,h,step=4,c=1,off=0){for(let j=0;j<h;j+=step)for(let i=((j/step)%2?step/2:0)+off;i<w;i+=step)this.px(x+i,y+j,c);}
+  hdots(x,y,w,gap=2,c=1){for(let i=0;i<w;i+=gap)this.px(x+i,y,c);}
+  invert(x,y,w,h){for(let j=y;j<y+h;j++)for(let i=x;i<x+w;i++)this.px(i,j,this.get(i,j)?0:1);}
+  blit(src,x,y,s=1,c=1,bg=null){for(let j=0;j<src.h;j++)for(let i=0;i<src.w;i++){const v=src.d[j*src.w+i];
+    if(v)this.rect(x+i*s,y+j*s,s,s,c);else if(bg!==null)this.rect(x+i*s,y+j*s,s,s,bg);}}
+  /* pixel font */
+  text(str,x,y,s=1,c=1){str=String(str);let cx=x;for(const ch of str){const g=glyph(ch);
+      for(let col=0;col<5;col++){const bits=g[col];for(let r=0;r<8;r++)if(bits&(1<<r))this.rect(cx+col*s,y+r*s,s,s,c);}
+      cx+=6*s;}return cx-x-s;}
+  ctext(str,y,s=1,c=1,cx=100){const w=tw(str,s);return this.text(str,Math.round(cx-w/2),y,s,c);}
+  /* heavy sans, thresholded to 1-bit */
+  tt(str,x,y,px,o={}){const m=ttMask(str,px,o.weight||900);let X=x;
+    if(o.align==="center")X=Math.round(x-m.w/2);else if(o.align==="right")X=x-m.w;
+    const c=o.c===undefined?1:o.c;for(let j=0;j<m.h;j++)for(let i=0;i<m.w;i++)if(m.d[j*m.w+i])this.px(X+i,y+j,c);return m.w;}
+}
+const tw=(s,k=1)=>String(s).length*6*k-k;
+
+/* classic 5x7 font, column-major, LSB = top row (ASCII 32..126) */
+const FONT_HEX=
+"0000000000"+"00005f0000"+"0007000700"+"147f147f14"+"242a7f2a12"+"2313086462"+"3649562050"+"0000070000"+"001c224100"+"0041221c00"+
+"14083e0814"+"08083e0808"+"0050300000"+"0808080808"+"0060600000"+"2010080402"+
+"3e5149453e00427f400042615149462141454b311814127f1027454545393c4a49493001710905033649494936064949291e"+
+"0036360000"+"0056360000"+"0814224100"+"1414141414"+"0041221408"+"0201510906"+"324979413e"+
+"7e1111117e7f494949363e414141227f4141221c7f494949417f090909013e4149497a7f0808087f00417f41002040413f01"+
+"7f081422417f404040407f020c027f7f0408107f3e4141413e7f090909063e4151215e7f0919294646494949310101 7f0101".replace(/ /g,"")+
+"3f4040403f1f2040201f3f4038403f63140814630708700807615149454300 7f41410002040810200041417f0004020102044040404040".replace(/ /g,"")+
+"0001020400"+"2054545478"+"7f48444438"+"3844444420"+"384444487f"+"3854545418"+"087e090102"+"0c5252523e"+
+"7f08040478"+"00447d4000"+"2040443d00"+"7f10284400"+"00417f4000"+"7c04180478"+"7c08040478"+"3844444438"+
+"7c14141408"+"081414187c"+"7c08040408"+"4854545420"+"043f444020"+"3c4040207c"+"1c2040201c"+"3c4030403c"+
+"4428102844"+"0c5050503c"+"4464544c44"+"0008364100"+"00007f0000"+"0041360800"+"0804081008";
+const FONT=[];for(let i=0;i<FONT_HEX.length;i+=2)FONT.push(parseInt(FONT_HEX.substr(i,2),16));
+function glyph(ch){let k=ch.charCodeAt(0);if(k<32||k>126)k=63;const i=(k-32)*5;return FONT.slice(i,i+5);}
+
+/* thresholded heavy sans */
+const TT_FAMILY='"Arial Black","Helvetica Neue",Helvetica,Arial,sans-serif';
+const ttCache=new Map();const ttCanvas=document.createElement("canvas");const ttCtx=ttCanvas.getContext("2d",{willReadFrequently:true});
+function ttWidth(str,px,weight=900){ttCtx.font=`${weight} ${px}px ${TT_FAMILY}`;return Math.ceil(ttCtx.measureText(str).width);}
+function ttMask(str,px,weight){const key=str+"|"+px+"|"+weight;if(ttCache.has(key))return ttCache.get(key);
+  ttCtx.font=`${weight} ${px}px ${TT_FAMILY}`;const mt=ttCtx.measureText(str);
+  const asc=Math.ceil(mt.actualBoundingBoxAscent||px*.8),des=Math.ceil(mt.actualBoundingBoxDescent||px*.2);
+  const left=Math.ceil(mt.actualBoundingBoxLeft||0),w=Math.max(1,Math.ceil(mt.actualBoundingBoxRight||mt.width)+left),h=Math.max(1,asc+des);
+  ttCanvas.width=w+2;ttCanvas.height=h+2;ttCtx.font=`${weight} ${px}px ${TT_FAMILY}`;ttCtx.textBaseline="alphabetic";
+  ttCtx.clearRect(0,0,w+2,h+2);ttCtx.fillStyle="#000";ttCtx.fillText(str,left+1,asc+1);
+  const id=ttCtx.getImageData(1,1,w,h).data;const d=new Uint8Array(w*h);for(let i=0;i<w*h;i++)d[i]=id[i*4+3]>120?1:0;
+  const m={w,h,d};ttCache.set(key,m);return m;}
+function ttWrap(str,px,maxW,weight=900){const words=str.split(" ");const lines=[];let cur="";
+  for(const w of words){const t=cur?cur+" "+w:w;if(ttWidth(t,px,weight)<=maxW)cur=t;else{if(cur)lines.push(cur);cur=w;}}if(cur)lines.push(cur);return lines;}
+
+function wrap(str,maxChars){const words=str.split(" ");const lines=[];let cur="";
+  for(let w of words){while(w.length>maxChars){if(cur){lines.push(cur);cur="";}lines.push(w.slice(0,maxChars));w=w.slice(maxChars);}
+    const t=cur?cur+" "+w:w;if(t.length<=maxChars)cur=t;else{lines.push(cur);cur=w;}}if(cur)lines.push(cur);return lines;}
+function textBlock(b,str,x,y,s,maxW,lh,maxLines,o={}){const n=Math.floor((maxW+s)/(6*s));let L=wrap(str,n);
+  if(L.length>maxLines){L=L.slice(0,maxLines);L[maxLines-1]=L[maxLines-1].slice(0,n-2)+"..";}
+  L.forEach((ln,i)=>{if(o.center)b.ctext(ln,y+i*lh,s,o.c??1,o.cx??100);else b.text(ln,x,y+i*lh,s,o.c??1);});return y+L.length*lh;}
+
+/* ---------------- 16x16 icons ---------------- */
+const ICONS={};
+function mk(w,h,fn){const b=new B(w,h);fn(b);return b;}
+ICONS.todo=mk(16,16,b=>{b.frame(0,0,16,16,2);b.line(3,7,6,10,2);b.line(6,10,11,4,2);});
+ICONS.reminder=mk(16,16,b=>{b.ring(8,9.5,6.5,2);b.rect(7,5,2,5);b.rect(7,8,4,2);b.ellipse(2.5,2.5,2.5,2.5);b.ellipse(13.5,2.5,2.5,2.5);});
+ICONS.work=mk(16,16,b=>{b.frame(0,1,16,14,2);b.rect(0,1,16,4);b.line(3,7,5,9,2);b.line(5,9,3,11,2);b.rect(8,11,5,2);});
+ICONS.note=mk(16,16,b=>{b.line(2,0,9,0,2);b.line(9,0,13,4,2);b.line(13,4,13,14,2);b.line(2,14,13,14,2);b.line(2,0,2,14,2);
+  b.line(9,0,9,4,1);b.line(9,4,13,4,1);b.rect(5,7,6,1);b.rect(5,10,6,1);});
+ICONS.cloud=mk(16,16,b=>{b.ellipse(5,9.5,4,3.5);b.ellipse(9.5,7,4.5,4.5);b.ellipse(13,10,3,3);b.rect(4,9,10,4);});
+ICONS.cloudx=mk(16,16,b=>{b.blit(ICONS.cloud,0,0);b.line(1,1,14,14,3,0);b.line(1,0,15,14,1,1);});
+ICONS.sd=mk(16,16,b=>{b.poly([[4,0],[14,0],[14,16],[2,16],[2,2]]);b.rect(6,2,1,4,0);b.rect(8,2,1,4,0);b.rect(10,2,1,4,0);b.rect(12,2,1,4,0);});
+ICONS.mic=mk(16,16,b=>{b.rrect(5,0,6,10,3);b.ring(8,6,6,2,1,0,180);b.rect(7,12,2,3);b.rect(4,14,8,2);});
+ICONS.mail=mk(16,16,b=>{b.frame(0,2,16,12,2);b.line(1,3,8,9,1);b.line(15,3,8,9,1);b.line(2,4,8,9,1);b.line(14,4,8,9,1);});
+ICONS.bolt=mk(8,8,b=>{b.frame(0,1,8,7,1);b.rect(2,3,1,2);b.rect(5,3,1,2);b.rect(3,0,2,1);});
+function icon(b,name,x,y,s=1,c=1,bg=null){b.blit(ICONS[name],x,y,s,c,bg);}
+
+/* ---------------- states ---------------- */
+const STATES=[
+ {id:"ready",label:"Ready",anim:true},
+ {id:"rec",label:"Recording",anim:true},
+ {id:"send",label:"Saved / sending",anim:true},
+ {id:"todo",label:"Result: todo",kind:"todo",title:"Buy AA batteries"},
+ {id:"reminder",label:"Result: reminder",kind:"reminder",title:"Call the dentist",due:"Tomorrow 9:00"},
+ {id:"work",label:"Result: work",kind:"work",title:"Research e-paper fonts at 200px"},
+ {id:"note",label:"Result: note",kind:"note",title:"Idea: robot face for the voice gadget"},
+ {id:"queued",label:"Queued / offline",anim:true,q:3},
+ {id:"short",label:"Too short"},
+ {id:"nosd",label:"No SD card"},
+];
+const KIND_WORD={todo:"TODO",reminder:"REMINDER",work:"WORK",note:"NOTE"};
+
+/* ================= CONCEPT 1: BOLT (robot face) ================= */
+function boltHead(b,o){
+  const f=o.f||0;
+  b.rframe(40,24,120,86,14,3);b.rect(33,50,7,34);b.rect(160,50,7,34);
+  b.rect(98,12,4,12);
+  const ant=o.ant||"ball";
+  if(ant==="ball")b.circle(100,8,5);
+  if(ant==="hollow")b.ring(100,8,5,2);
+  if(ant==="blink"){if(f%2===0)b.circle(100,8,5);else b.ring(100,8,5,2);}
+  if(ant==="signal"){b.circle(100,8,5);const n=1+f%3;for(let k=0;k<n;k++){const r=11+k*6;b.ring(100,8,r,2,1,140,220);b.ring(100,8,r,2,1,320,40);}}
+  if(ant==="bulb"){b.ring(100,7,6,2);b.rect(97,12,6,3);b.line(88,4,84,2,1);b.line(112,4,116,2,1);b.line(89,11,85,13,1);b.line(111,11,115,13,1);}
+  if(ant==="?")b.text("?",95,-1,2);
+  const L=76,R=124,Y=58;
+  const eye=(kind,cx,side)=>{
+    switch(kind){
+      case "sleep":b.rect(cx-10,Y+2,20,3);break;
+      case "open":b.ellipse(cx,Y,8,10);b.rect(cx+1,Y-6,3,3,0);break;
+      case "blinky":if(f%6===5)b.rect(cx-9,Y+1,18,3);else{b.ellipse(cx,Y,8,10);b.rect(cx+1,Y-6,3,3,0);}break;
+      case "wide":b.circle(cx,Y,12);b.circle(cx+4,Y-4,3,0);break;
+      case "up":{b.ring(cx,Y,12,3);const dx=[-4,0,4,0][f%4];b.circle(cx+dx,Y-4,4.5);break;}
+      case "happy":b.ring(cx,Y+5,11,4,1,180,360);break;
+      case "sad":b.circle(cx,Y+3,7);if(side<0)b.line(cx-11,Y-8,cx+7,Y-14,3);else b.line(cx-7,Y-14,cx+11,Y-8,3);break;
+      case "small":b.circle(cx,Y,4);b.line(cx-8,Y-14,cx+8,Y-18,3);break;
+      case "x":b.line(cx-8,Y-8,cx+8,Y+8,3);b.line(cx-8,Y+8,cx+8,Y-8,3);break;
+    }};
+  const e=o.eyes;
+  if(e==="visor"){b.rrect(52,46,96,24,4);b.rect(64,54,22,7,0);b.rect(114,54,22,7,0);}
+  else if(e==="wink"){eye("happy",L,-1);eye("open",R,1);}
+  else if(e==="confused"){eye("wide",L,-1);eye("small",R,1);}
+  else{eye(e,L,-1);eye(e,R,1);}
+  switch(o.mouth){
+    case "flat":b.rect(88,90,24,3);break;
+    case "small":b.rect(94,91,12,3);break;
+    case "o":b.ellipse(100,91,6,5);break;
+    case "O":b.ellipse(100,90,11,9);break;
+    case "smile":b.ring(100,78,17,3,1,25,155);break;
+    case "frown":b.ring(100,104,13,3,1,210,330);break;
+    case "zig":b.pline([[84,92],[90,87],[96,92],[102,87],[108,92],[114,87]],2);break;
+  }
+}
+function boltStatus(b,st){
+  const off=st.id==="queued";icon(b,off?"cloudx":"cloud",4,3);
+  if(off){b.text("3",22,8,1);}
+}
+function drawBolt(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{boltHead(b,{eyes:"sleep",mouth:"small",ant:"ball",f});
+      const z=f%2;b.text("z",140+z*2,18-z*2,1);b.text("Z",150,4+z*2,2);boltStatus(b,st);
+      b.ctext("hold BOOT",130,2);b.ctext("to talk",152,2);b.ctext("zzz...",182,1);break;}
+    case "rec":{boltHead(b,{eyes:"wide",mouth:f%2?"o":"O",ant:"blink",f});
+      const w=f%2?14:20;b.ring(36,67,w,2,1,150,210);b.ring(164,67,w,2,1,330,30);
+      b.circle(64,129,5);b.text("REC",74,123,2);b.ctext(c.sec+"s",146,4);b.ctext("release to send",184,1);break;}
+    case "send":{boltHead(b,{eyes:"up",mouth:"small",ant:"signal",f});boltStatus(b,st);
+      b.ctext("saved 7s",128,2);b.text("thinking"+".".repeat(f%4),28,152,2);b.ctext("uploading clip",184,1);break;}
+    case "queued":{boltHead(b,{eyes:"sad",mouth:"frown",ant:"hollow",f});boltStatus(b,st);
+      b.ctext("offline",124,2);b.ctext("3 queued",146,3);b.ctext("will retry",184,1);break;}
+    case "short":{boltHead(b,{eyes:"confused",mouth:"zig",ant:"?",f});boltStatus(b,st);
+      b.ctext("too short!",132,2);b.ctext("hold BOOT longer",160,1);break;}
+    case "nosd":{boltHead(b,{eyes:"x",mouth:"zig",ant:"hollow",f});
+      b.rect(0,118,200,82);icon(b,"sd",12,130,2,0);b.text("no SD",52,130,3,0);b.text("card",52,156,2,0);b.ctext("insert card + restart",184,1,0);break;}
+    default:{
+      const eyes={todo:"happy",reminder:"wink",work:"visor",note:"happy"}[st.kind];
+      boltHead(b,{eyes,mouth:st.kind==="work"?"flat":"smile",ant:st.kind==="note"?"bulb":"ball",f});boltStatus(b,st);
+      const word=KIND_WORD[st.kind];const pw=tw(word,2)+34;b.rect(4,117,pw,22);icon(b,st.kind,8,120,1,0);b.text(word,28,121,2,0);
+      if(st.due){b.text(st.title,6,146,2);b.rect(4,168,192,1);icon(b,"reminder",6,177,1);b.text(st.due,28,178,2);}
+      else textBlock(b,st.title,6,146,2,190,17,3);
+    }
+  }
+}
+
+/* ================= CONCEPT 2: CYCLOPS ================= */
+function bigEye(b,cx,cy,R,o={}){
+  b.circle(cx,cy,R);b.circle(cx,cy,R-4,0);
+  if(!o.noPupil){const pr=o.pr||20,px=cx+(o.dx||0),py=cy+(o.dy||0);b.circle(px,py,pr);b.circle(px+pr*.38,py-pr*.38,Math.max(2,pr*.26),0);}
+  if(o.lid){const ly=cy-R+2*R*o.lid;for(let y=cy-R-1;y<ly;y++)for(let x=cx-R-1;x<=cx+R+1;x++){const dx=x+.5-cx,dy=y+.5-cy;if(dx*dx+dy*dy<=R*R)b.px(x,y);}
+    // lashes on lid edge
+    if(o.lashes)for(const k of[-.6,-.2,.2,.6]){const lx=cx+k*R*Math.sqrt(1-((ly-cy)/R)**2);b.line(lx,ly,lx+k*8,ly+8,2);}}
+}
+function cycStatus(b,st){if(st.id==="queued"){icon(b,"cloudx",180,4);}else icon(b,"cloud",180,4);}
+function drawCyclops(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{const blink=f%8===7;
+      if(blink){b.ring(100,70,52,6,1,20,160);}else bigEye(b,100,86,56,{lid:.52,pr:22,dy:10,lashes:true});
+      cycStatus(b,st);b.ctext("hold BOOT",170,2);break;}
+    case "rec":{bigEye(b,100,82,48,{pr:28});const r=f%2?58:64;b.ring(100,82,r,2);if(f%2===0)b.ring(100,82,r+8,2);
+      b.circle(80,174,4);b.text(c.sec+"s",90,164,3);break;}
+    case "send":{const P=[[-20,-16],[0,-22],[20,-16],[0,-22]][f%4];bigEye(b,100,82,56,{pr:16,dx:P[0],dy:P[1]});cycStatus(b,st);
+      b.ctext("thinking"+".".repeat(f%4).padEnd(3," "),166,2);break;}
+    case "queued":{bigEye(b,100,78,50,{lid:.42,pr:18,dy:12,lashes:true});const ty=136+(f%3)*6;
+      b.poly([[140,ty-10],[136,ty],[144,ty]]);b.circle(140,ty+1,4);cycStatus(b,st);
+      b.ctext("3 waiting",160,2);b.ctext("offline - will retry",184,1);break;}
+    case "short":{bigEye(b,100,82,52,{pr:7});b.text("?",158,14,3);b.ctext("too short",166,2);break;}
+    case "nosd":{bigEye(b,100,80,52,{noPupil:true});b.line(84,64,116,96,6);b.line(84,96,116,64,6);
+      b.ctext("no SD card",160,2);b.ctext("insert card + restart",184,1);break;}
+    default:{
+      b.ring(100,64,34,8,1,180,360);
+      const word=KIND_WORD[st.kind].toLowerCase();const w=tw(word,2)+22;const x0=Math.round(100-w/2);
+      icon(b,st.kind,x0,72);b.text(word,x0+22,73,2);
+      if(st.due){textBlock(b,st.title,0,104,2,190,18,2,{center:true});b.rect(16,146,168,32);b.ctext(st.due,155,2,0);}
+      else textBlock(b,st.title,0,104,2,190,18,4,{center:true});
+    }
+  }
+}
+
+/* ================= CONCEPT 3: RECEIPT ================= */
+function rcHeader(b,st){
+  b.rect(0,0,200,16);icon(b,"bolt",4,4,1,0);b.text("VOX-01",16,5,1,0);
+  let r="ONLINE";if(st.id==="queued")r="OFFLINE  Q:3";if(st.id==="nosd")r="ERR";
+  b.text(r,196-tw(r,1),5,1,0);
+}
+function tear(b,y=188){for(let x=0;x<200;x+=8)b.poly([[x,200],[x+4,y],[x+8,200]]);b.rect(0,198,200,2);}
+function rcLines(b,lines,y0=26,lh=20){lines.forEach((l,i)=>b.text(l,6,y0+i*lh,2));return y0+lines.length*lh;}
+function drawReceipt(b,st,c){
+  const f=c.f;rcHeader(b,st);
+  switch(st.id){
+    case "ready":{rcLines(b,["> ready"]);if(f%2===0)b.rect(6+tw("> ready",2)+4,26,10,14);
+      b.text("hold BOOT",6,66,2);b.text("to talk",6,86,2);b.hdots(6,120,188,3);b.text("today: 4 sent",6,130,1);b.text("queue: empty",6,142,1);b.text("14:32",6,172,1);tear(b);break;}
+    case "rec":{b.text("> REC",6,26,2);if(f%2===0)b.circle(80,33,5);
+      const s=String(c.sec).padStart(2,"0");b.ctext("00:"+s,58,4);
+      for(let i=0;i<=30;i++){const x=10+i*6;const on=i<=c.sec;const h=i%5===0?14:8;if(on)b.rect(x,124-h,3,h);else b.rect(x+1,123,1,1);}
+      b.text("0",8,130,1);b.text("30s",180,130,1);b.text("release to send",6,160,1);tear(b);break;}
+    case "send":{const sp="|/-\\"[f%4];rcLines(b,["> saved 7s","> upload ok","> thinking "+sp]);
+      b.hdots(6,100,188,3);b.text("clip_0042.wav",6,110,1);b.text("whisper + llm",6,122,1);tear(b);break;}
+    case "queued":{rcLines(b,["> upload FAIL","> offline","> 3 in queue","> retry 30s"]);b.hdots(6,112,188,3);b.text("saved to SD, safe :)",6,122,1);tear(b);break;}
+    case "short":{rcLines(b,["> too short","  (0.3s)","> hold BOOT","  longer"]);tear(b);break;}
+    case "nosd":{b.rect(0,22,200,24);b.text("!! NO SD CARD",6,27,2,0);rcLines(b,["> insert card","> restart"],56);icon(b,"sd",160,112,2);tear(b);break;}
+    default:{
+      const word=KIND_WORD[st.kind];b.frame(4,22,tw(word,2)+40,22,2);icon(b,st.kind,8,25);b.text(word,30,26,2);
+      b.text("#0042",196-tw("#0042",1),30,1);
+      let y;
+      if(st.due){y=textBlock(b,st.title,6,54,2,190,18,2);b.text("due:",6,y+4,1);b.text(st.due,6,y+16,2);y+=36;}
+      else y=textBlock(b,st.title,6,54,2,190,18,4);
+      b.hdots(6,162,188,3);const foot={todo:"> added to list",reminder:"> alarm set",work:"> agent job #17",note:"> filed in notes"}[st.kind];
+      b.text(foot,6,170,1);tear(b,190);
+    }
+  }
+}
+
+/* ================= CONCEPT 4: PIP (pixel critter + speech bubble) ================= */
+function pip(o){return mk(24,24,b=>{
+  b.ellipse(12,14,10.5,8);b.ellipse(12,14,9.5,7,0);b.rect(11,3,2,4);b.rect(10,0,4,3);
+  b.rect(6,21,4,2);b.rect(14,21,4,2);
+  if(o.arms==="up"){b.line(2,13,0,9,1);b.line(21,13,23,9,1);}
+  if(o.arms==="down"){b.line(2,15,0,18,1);b.line(21,15,23,18,1);}
+  const E=(x)=>{switch(o.eyes){
+    case "open":b.rect(x,11,2,3);break;
+    case "closed":b.rect(x-1,13,4,1);break;
+    case "happy":b.px(x-1,13);b.px(x,12);b.px(x+1,12);b.px(x+2,13);break;
+    case "wide":b.rect(x-1,10,4,4);b.px(x+1,10,0);break;
+    case "sad":b.rect(x,12,2,2);break;
+    case "x":b.px(x-1,11);b.px(x+1,11);b.px(x,12);b.px(x-1,13);b.px(x+1,13);break;}};
+  E(7);E(15);
+  if(o.eyes==="sad"){b.line(6,10,8,9,1);b.line(15,9,17,10,1);}
+  switch(o.mouth){
+    case "smile":b.px(10,16);b.px(11,17);b.px(12,17);b.px(13,16);break;
+    case "o":b.rect(11,16,2,2);break;
+    case "O":b.rect(10,16,4,3);break;
+    case "flat":b.rect(10,17,4,1);break;
+    case "frown":b.px(10,17);b.px(11,16);b.px(12,16);b.px(13,17);break;
+    case "wavy":b.px(9,17);b.px(10,16);b.px(11,17);b.px(12,16);b.px(13,17);b.px(14,16);break;}
+});}
+function ground(b,y=170){b.rect(0,y,200,2);b.dots(0,y+5,200,200-y-5,6);}
+function bubble(b,x,y,w,h,tx){b.rrect(x,y,w,h,10,0);b.rframe(x,y,w,h,10,2);b.poly([[tx-7,y+h-2],[tx+5,y+h-2],[tx-3,y+h+10]]);}
+function pipStatus(b,st){const off=st.id==="queued";icon(b,off?"cloudx":"cloud",4,180);b.text(off?"offline - 3 queued":"online",24,185,1);}
+function drawPip(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{ground(b);b.rect(0,174,200,26,0);pipStatus(b,st);b.blit(pip({eyes:"closed",mouth:"flat"}),64,101+(f%2),3);
+      const z=f%2;b.text("z",140,92-z*4,2);b.text("Z",156,70-z*4,3);b.ctext("hold BOOT",16,2);b.ctext("to talk",38,2);break;}
+    case "rec":{ground(b);b.blit(pip({eyes:"wide",mouth:f%2?"o":"O",arms:"up"}),64,101,3);
+      const r=f%2?44:52;b.ring(100,136,r,3,1,155,205);b.ring(100,136,r,3,1,335,25);b.ring(100,136,r+10,2,1,160,200);b.ring(100,136,r+10,2,1,340,20);
+      bubble(b,46,6,108,64,100);b.circle(64,30,5);b.text(c.sec+"s",76,18,4);b.ctext("listening",56,1);break;}
+    case "send":{ground(b);b.rect(0,174,200,26,0);pipStatus(b,st);b.blit(pip({eyes:"happy",mouth:"smile",arms:"up"}),64,101,3);
+      const ey=60-(f%2)*8;icon(b,"mail",84,ey,2,1,0);for(let y=ey-8;y>22;y-=6)b.rect(130+(ey-y)/2,y,2,2);icon(b,"cloud",156,4,2);
+      b.text("sending",6,10,2);b.text(".".repeat(f%4),6,30,2);break;}
+    case "queued":{ground(b);b.rect(0,174,200,26,0);pipStatus(b,st);b.blit(pip({eyes:"sad",mouth:"frown",arms:"down"}),40,101,3);
+      for(let i=0;i<3;i++)icon(b,"mail",138+(i%2)*4,150-i*18,2,1,0);icon(b,"cloudx",168,4,2);b.text("offline",6,10,2);b.text("3 queued",6,32,2);b.text("will retry",6,54,1);
+      if(f%4===3)b.text(";_;",60,82,1);break;}
+    case "short":{ground(b);b.rect(0,174,200,26,0);pipStatus(b,st);b.blit(pip({eyes:"wide",mouth:"o"}),64,101,3);b.text("?",144,70,4);
+      b.ctext("huh? too short",12,2);b.ctext("hold BOOT longer",36,1);break;}
+    case "nosd":{ground(b);b.blit(pip({eyes:"x",mouth:"wavy",arms:"down"}),36,101,3);
+      b.frame(130,116,40,52,2);for(let y=118;y<166;y+=6)b.rect(132,y,36,3,0);b.text("?",142,128,3);
+      b.ctext("no SD card :(",12,2);b.ctext("insert card + restart",36,1);b.rect(0,174,200,26,0);b.text("storage error",4,185,1);break;}
+    default:{
+      ground(b,172);b.rect(0,176,200,24,0);pipStatus(b,st);
+      const eyes={todo:"happy",reminder:"open",work:"wide",note:"happy"}[st.kind];
+      b.blit(pip({eyes,mouth:"smile",arms:"up"}),12,124,2);
+      bubble(b,4,4,192,118,42);icon(b,st.kind,16,14);b.text(st.kind,38,15,2);
+      if(st.due){const y=textBlock(b,st.title,16,42,2,170,18,2);b.rect(14,y+6,172,26);b.ctext(st.due,y+12,2,0);}
+      else textBlock(b,st.title,16,42,2,170,18,4);
+      const say={todo:"on my list!",reminder:"I'll nudge you",work:"agent's on it",note:"jotted down!"}[st.kind];
+      b.text(say,72,150,1);
+    }
+  }
+}
+
+/* ================= CONCEPT 5: TAMA (handheld pet with icon bars) ================= */
+function botchi(o){return mk(16,16,b=>{
+  b.frame(1,0,14,11,1);b.rect(4,11,8,2);b.rect(4,13,2,3);b.rect(10,13,2,3);b.px(0,4);b.px(15,4);
+  switch(o.eyes){
+    case "open":b.rect(4,3,2,3);b.rect(10,3,2,3);break;
+    case "closed":b.rect(3,5,3,1);b.rect(10,5,3,1);break;
+    case "happy":b.px(3,5);b.px(4,4);b.px(5,5);b.px(10,5);b.px(11,4);b.px(12,5);break;
+    case "sad":b.rect(4,5,2,2);b.rect(10,5,2,2);b.px(3,3);b.px(4,2);b.px(12,3);b.px(11,2);break;
+    case "wide":b.rect(3,2,3,4);b.rect(10,2,3,4);break;
+    case "x":for(const x of[3,10]){b.px(x,3);b.px(x+2,3);b.px(x+1,4);b.px(x,5);b.px(x+2,5);}break;}
+  switch(o.mouth){case "smile":b.px(6,8);b.px(7,9);b.px(8,9);b.px(9,8);break;case "o":b.rect(7,8,2,2);break;
+    case "flat":b.rect(6,8,4,1);break;case "frown":b.px(6,9);b.px(7,8);b.px(8,8);b.px(9,9);break;}
+});}
+function tamaBars(b,act={},kind=null,f=0){
+  const top=["mic","cloud","sd","mail"],bot=["todo","reminder","work","note"],xs=[18,66,118,166];
+  top.forEach((n,i)=>{const on=act[n]&&(act[n]!=="blink"||f%2===0);if(on)b.rect(xs[i]-3,1,22,22);icon(b,n==="cloud"&&act.off?"cloudx":n,xs[i],4,1,on?0:1);});
+  b.hdots(0,25,200,2);b.hdots(0,174,200,2);
+  bot.forEach((n,i)=>{const on=kind===n;if(on)b.rect(xs[i]-3,177,22,22);icon(b,n,xs[i],180,1,on?0:1);});
+}
+function room(b){b.hdots(8,150,184,3);}
+function drawTama(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{tamaBars(b);room(b);const x=[76,84,92,84][f%4];b.blit(botchi({eyes:f%6===5?"closed":"open",mouth:"smile"}),x,102,3);
+      b.ctext("hold BOOT",38,2);b.ctext("to feed me a thought",60,1);break;}
+    case "rec":{tamaBars(b,{mic:true});room(b);b.blit(botchi({eyes:"wide",mouth:f%2?"o":"flat"}),76,102,3);
+      for(let i=0;i<4;i++){const h=[6,12,18,10][(i+f)%4];b.rect(136+i*7,140-h,4,h);b.rect(58-i*7,140-h,4,h);}
+      b.ctext(c.sec+"s",36,4);b.ctext("nom nom",72,1);break;}
+    case "send":{tamaBars(b,{cloud:"blink"});room(b);b.blit(botchi({eyes:"happy",mouth:"smile"}),76,102-(f%2)*4,3);icon(b,"mail",92,76-(f%2)*4,1);
+      b.ctext("sending",34,2);b.ctext(".".repeat(1+f%3),54,2);break;}
+    case "queued":{tamaBars(b,{mail:true,off:true});room(b);b.blit(botchi({eyes:"sad",mouth:"frown"}),48,102,3);
+      b.text("offline",8,34,2);b.text("to send:",8,58,1);for(let i=0;i<5;i++){if(i<3)icon(b,"mail",64+i*20,54);else b.frame(64+i*20,56,16,12,1);}
+      for(let i=0;i<3;i++)icon(b,"mail",120+(i%2)*6,132-i*14,1,1,0);break;}
+    case "short":{tamaBars(b,{mic:true});room(b);b.blit(botchi({eyes:"wide",mouth:"o"}),76,102,3);b.text("?",132,92,3);
+      b.ctext("too short!",38,2);b.ctext("hold a bit longer",60,1);break;}
+    case "nosd":{tamaBars(b,{sd:true});room(b);b.blit(botchi({eyes:"x",mouth:"flat"}),76,102,3);b.line(115,1,137,23,2,0);
+      b.ctext("no SD card",38,2);b.ctext("insert card + restart",60,1);break;}
+    default:{tamaBars(b,{},st.kind);room(b);
+      const bx=f%2?150:146;b.blit(botchi({eyes:"happy",mouth:"smile"}),bx,116-(f%2)*4,2);
+      if(st.due){textBlock(b,st.title,8,34,2,184,18,2);b.rect(8,74,184,24);icon(b,"reminder",14,78,1,0);b.text(st.due,36,79,2,0);b.text("+1 alarm",8,136,1);}
+      else textBlock(b,st.title,8,34,2,184,18,3);
+      if(!st.due)b.text({todo:"+1 todo",work:"+1 job",note:"+1 note"}[st.kind],8,136,1);
+    }
+  }
+}
+
+/* ================= CONCEPT 6: POSTER (giant heavy type) ================= */
+function drawPoster(b,st,c){
+  const f=c.f;
+  switch(st.id){
+    case "ready":{b.tt("Hi.",8,14,72);const blink=f%6===5;
+      if(blink){b.rect(136,58,22,5);b.rect(166,58,22,5);}else{b.rect(136,44,22,22);b.rect(166,44,22,22);}
+      b.rect(0,148,200,52);b.tt("hold BOOT",12,164,22,{c:0});b.pline([[178,166],[190,174],[178,182]],3,0);icon(b,"cloud",180,4);break;}
+    case "rec":{b.fill(1);b.tt(String(c.sec),100,34,124,{align:"center",c:0});if(f%2===0)b.circle(16,16,7,0);b.tt("REC",28,9,16,{c:0});
+      b.tt("let go to send",100,178,14,{align:"center",c:0});break;}
+    case "send":{b.tt("saved · 7s",100,14,14,{align:"center"});for(let i=0;i<3;i++){const x=22+i*60;if(i===f%3)b.rect(x,70,36,36);else b.frame(x,70,36,36,4);}
+      b.tt("thinking",100,150,26,{align:"center"});break;}
+    case "queued":{b.tt("3",10,20,120);icon(b,"cloudx",126,30,3);b.tt("queued",114,96,18);b.tt("offline",114,122,14,{weight:700});
+      b.rect(0,170,200,30);b.tt("will retry",100,178,14,{align:"center",c:0});break;}
+    case "short":{b.tt("?!",100,24,110,{align:"center"});b.rect(0,150,200,50);b.tt("too short",100,160,24,{align:"center",c:0});break;}
+    case "nosd":{b.fill(1);icon(b,"sd",76,18,3,0);b.tt("NO SD",100,84,46,{align:"center",c:0});b.tt("insert card + restart",100,160,13,{align:"center",c:0});break;}
+    default:{
+      b.rect(0,0,200,62);icon(b,st.kind,8,7,3,0);let px=28;const word=KIND_WORD[st.kind];while(ttWidth(word,px)>130&&px>12)px--;
+      b.tt(word,64,31-Math.round(px*.37),px,{c:0});
+      if(st.due){const L=ttWrap(st.title,24,188);L.slice(0,2).forEach((l,i)=>b.tt(l,8,76+i*30,24));
+        b.rect(0,156,200,44);b.tt(st.due,100,168,22,{align:"center",c:0});}
+      else{let p=24,L=ttWrap(st.title,p,188);while(L.length>4&&p>14){p--;L=ttWrap(st.title,p,188);}
+        L.slice(0,4).forEach((l,i)=>b.tt(l,8,76+i*(p+8),p));}
+    }
+  }
+}
+
+/* ---------------- concepts ---------------- */
+const CONCEPTS=[
+ {id:"bolt",name:"Bolt",line:"A boxy robot head with antenna and ears; its face does the talking (sleepy idle, wide-eyed listening, happy ^^ results, sad offline, X_X errors).",
+  font:"5×7 bitmap at 1×/2×/3×/4× (convert one pixel TTF at 8/16/24/32 px). Head is one 120×86 1-bit image; eyes and mouth are small swappable bitmaps.",draw:drawBolt},
+ {id:"cyclops",name:"Cyclops",line:"Ultra-minimal: one huge eye and a single line of text. Mood comes only from the lid, pupil and a smile-curve.",
+  font:"5×7 bitmap at 2×/3×. The eye is an LVGL arc/circle stack (or ~8 pre-rendered 112×112 bitmaps).",draw:drawCyclops},
+ {id:"receipt",name:"Receipt",line:"A terminal / receipt-printer robot: monospace log lines, blinking block cursor, a torn-paper edge. Nerdy and very honest about what's happening.",
+  font:"Mono pixel font at 1×/2×/4× (LVGL's built-in unscii_8 / unscii_16 would work almost as-is).",draw:drawReceipt},
+ {id:"pip",name:"Pip",line:"A tiny pixel blob creature standing on the ground. It holds up your thought in a speech bubble and says a word about it.",
+  font:"5×7 bitmap at 1×/2×/4×. Pip is a 24×24 sprite drawn at 2× or 3× (~6 eye/mouth variants); bubble is an lv_obj with radius + border.",draw:drawPip},
+ {id:"tama",name:"Tama",line:"Tamagotchi-style handheld: icon bars top (mic, cloud, SD, queue) and bottom (todo, reminder, work, note) light up while a little TV-head pet wanders.",
+  font:"5×7 bitmap at 1×/2×/4×. Eight 16×16 icons, Botchi is a 16×16 sprite drawn at 2× or 3×.",draw:drawTama},
+ {id:"poster",name:"Poster",line:"Bold typographic poster: one giant word or number per state, full-black screens when recording, readable from across the room.",
+  font:"Heavy sans (e.g. Archivo Black / Inter Black) converted at 1bpp in sizes 14, 22, 26, 46, 72, plus a digits-only 124px font for the counter.",draw:drawPoster},
+];
+
+/* ---------------- page ---------------- */
+const store={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v);}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}};
+const picks=store.get("eink-ui-picks",{}),notes=store.get("eink-ui-notes",{});
+const screens=[];let frame=0,anim=true,tint=true;
+
+function paint(sc){
+  const b=new B();const sec=anim?1+Math.floor(frame/2)%20:7;
+  try{sc.concept.draw(b,sc.state,{f:anim?frame:0,sec});}catch(e){console.error(sc.concept.id,sc.state.id,e);}
+  sc.bits=b;const ctx=sc.canvas.getContext("2d");const img=ctx.createImageData(200,200);
+  const on=tint?[32,33,36]:[0,0,0],off=tint?[232,230,223]:[255,255,255];
+  for(let i=0;i<40000;i++){const c=b.d[i]?on:off;img.data[i*4]=c[0];img.data[i*4+1]=c[1];img.data[i*4+2]=c[2];img.data[i*4+3]=255;}
+  ctx.putImageData(img,0,0);
+}
+function download(sc){const cv=document.createElement("canvas");cv.width=200;cv.height=200;const ctx=cv.getContext("2d");
+  const img=ctx.createImageData(200,200);for(let i=0;i<40000;i++){const v=sc.bits.d[i]?0:255;img.data.set([v,v,v,255],i*4);}
+  ctx.putImageData(img,0,0);const a=document.createElement("a");a.href=cv.toDataURL("image/png");a.download=`${sc.concept.id}-${sc.state.id}.png`;a.click();}
+
+function build(){
+  const main=document.getElementById("main"),nav=document.getElementById("nav");
+  CONCEPTS.forEach((C,ci)=>{
+    const a=document.createElement("a");a.href="#"+C.id;a.dataset.id=C.id;nav.appendChild(a);
+    const s=document.createElement("section");s.className="concept";s.id=C.id;
+    s.innerHTML=`<div class="chead"><div><h2><span class="num">${ci+1}</span>${C.name}</h2><p class="why">${C.line}</p><p class="font">Font / assets: ${C.font}</p></div>
+      <div class="pick"><button class="star" type="button"></button></div></div>
+      <textarea placeholder="Notes on ${C.name}…"></textarea><div class="grid"></div>`;
+    const star=s.querySelector(".star"),ta=s.querySelector("textarea"),grid=s.querySelector(".grid");
+    const upd=()=>{const on=!!picks[C.id];star.classList.toggle("on",on);star.textContent=on?"★ Picked":"☆ Pick";
+      a.innerHTML=(on?'<span class="s">★</span> ':"")+(ci+1)+". "+C.name;summary();};
+    star.onclick=()=>{picks[C.id]=!picks[C.id];store.set("eink-ui-picks",picks);upd();};
+    ta.value=notes[C.id]||"";ta.oninput=()=>{notes[C.id]=ta.value;store.set("eink-ui-notes",notes);summary();};
+    STATES.forEach(S=>{
+      const cell=document.createElement("div");cell.className="cell";
+      cell.innerHTML=`<div class="device"><canvas width="200" height="200" title="Click to download 1-bit PNG"></canvas></div><div class="cap"><b>${S.label}</b>${S.anim?'<span class="tag">frames</span>':""}</div>`;
+      grid.appendChild(cell);const sc={concept:C,state:S,canvas:cell.querySelector("canvas")};
+      sc.canvas.onclick=()=>download(sc);screens.push(sc);paint(sc);
+    });
+    main.appendChild(s);upd();
+  });
+}
+function summary(){const lines=CONCEPTS.map(C=>`${picks[C.id]?"[x]":"[ ]"} ${C.name}${notes[C.id]?": "+notes[C.id].replace(/\n/g," / "):""}`);
+  document.getElementById("summary").textContent=lines.join("\n");}
+build();
+document.getElementById("copy").onclick=async()=>{try{await navigator.clipboard.writeText(document.getElementById("summary").textContent);document.getElementById("copied").textContent="Copied.";}catch(e){document.getElementById("copied").textContent="Copy failed; select the text below.";}};
+document.getElementById("anim").onchange=e=>{anim=e.target.checked;screens.forEach(paint);};
+document.getElementById("tint").onchange=e=>{tint=e.target.checked;screens.forEach(paint);};
+const SIZES={actual:"27.7mm","1":"200px","2":"400px"};
+function setSize(k){document.documentElement.style.setProperty("--scr",SIZES[k]);document.body.classList.toggle("small",k!=="2");
+  document.querySelectorAll("#size button").forEach(x=>x.classList.toggle("on",x.dataset.s===k));store.set("eink-ui-size",k);}
+document.querySelectorAll("#size button").forEach(x=>x.onclick=()=>setSize(x.dataset.s));
+setSize(store.get("eink-ui-size","2"));
+setInterval(()=>{if(!anim)return;frame++;screens.forEach(paint);},500);
+</script>
+</body>
+</html>

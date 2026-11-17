@@ -1,0 +1,10 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  // Keeps https://pocketbot.mrjoedang.workers.dev answering (see pocketbot.ts). Deploy: `cd server && npx wrangler deploy -c legacy-shim/pocketbot.jsonc`.
+  "name": "pocketbot",
+  "main": "pocketbot.ts",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  "services": [{ "binding": "PAPERBOT", "service": "paperbot" }]
+}

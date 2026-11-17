@@ -1,0 +1,4 @@
+[submodule "vendor/waveshare"]
+	path = vendor/waveshare
+	url = https://github.com/waveshareteam/ESP32-C6-ePaper-1.54
+	shallow = true

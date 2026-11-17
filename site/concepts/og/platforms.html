@@ -1,0 +1,51 @@
+<!doctype html><html><head><meta charset="utf-8"><title>paperbot link previews</title><style>
+* { box-sizing: border-box; margin: 0; }
+body { font: 15px/1.4 -apple-system, "Helvetica Neue", Arial, sans-serif; background: #e9e7e2; padding: 28px; display: grid; grid-template-columns: repeat(2, 560px); gap: 26px; }
+.frame { border-radius: 14px; padding: 18px; }
+.lbl { font: 600 12px -apple-system, sans-serif; letter-spacing: .04em; text-transform: uppercase; color: #7a766d; margin-bottom: 10px; }
+img { display: block; width: 100%; }
+/* X */
+.x { background: #000; color: #e7e9ea; }
+.x .post { display: flex; gap: 10px; } .x .av { width: 40px; height: 40px; border-radius: 50%; background: #333; flex: none; }
+.x .name { font-weight: 700; } .x .handle { color: #71767b; font-weight: 400; }
+.x .card { position: relative; margin-top: 10px; border: 1px solid #2f3336; border-radius: 16px; overflow: hidden; }
+.x .dom { position: absolute; left: 12px; bottom: 12px; background: rgba(0,0,0,.77); color: #fff; font-size: 13px; padding: 2px 6px; border-radius: 4px; }
+.x .from { color: #71767b; font-size: 13px; margin-top: 4px; }
+/* iMessage */
+.im { background: #fff; display: flex; justify-content: flex-end; }
+.im .b { width: 300px; border-radius: 18px; overflow: hidden; background: #e9e9eb; }
+.im .t { padding: 9px 13px 10px; } .im .tt { font-weight: 600; font-size: 14px; color: #000; } .im .d { color: #8a8a8e; font-size: 13px; }
+/* Slack */
+.sl { background: #fff; color: #1d1c1d; font-family: "Lato", -apple-system, sans-serif; }
+.sl .msg { display: flex; gap: 10px; } .sl .av { width: 36px; height: 36px; border-radius: 6px; background: #c8c2b6; flex: none; }
+.sl .u { font-weight: 900; } .sl .un { border-left: 4px solid #ddd; padding-left: 12px; margin-top: 6px; }
+.sl .site { font-size: 13px; font-weight: 700; } .sl .ti { color: #1264a3; font-weight: 700; } .sl .ds { font-size: 14px; }
+.sl .un img { width: 360px; border-radius: 8px; margin-top: 8px; border: 1px solid #eee; }
+/* LinkedIn */
+.li { background: #f4f2ee; } .li .c { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 1px rgba(0,0,0,.08); }
+.li .m { padding: 10px 12px 12px; } .li .tt { font-weight: 600; color: rgba(0,0,0,.9); font-size: 14px; } .li .dm { color: rgba(0,0,0,.6); font-size: 12px; margin-top: 2px; }
+/* Facebook */
+.fb { background: #f0f2f5; } .fb .c { background: #fff; border-radius: 8px; overflow: hidden; }
+.fb .m { background: #f0f2f5; padding: 10px 12px 12px; } .fb .dm { color: #65676b; font-size: 12px; text-transform: uppercase; } .fb .tt { font-weight: 600; font-size: 16px; color: #050505; margin-top: 2px; } .fb .ds { color: #65676b; font-size: 14px; }
+/* Discord */
+.dc { background: #313338; color: #dbdee1; } .dc .e { background: #2b2d31; border-left: 4px solid #3b3a35; border-radius: 4px; padding: 10px 14px 14px; max-width: 432px; }
+.dc .site { font-size: 12px; color: #b5bac1; } .dc .ti { color: #00a8fc; font-weight: 600; margin-top: 6px; } .dc .ds { font-size: 14px; margin-top: 6px; } .dc img { border-radius: 4px; margin-top: 14px; }
+/* WhatsApp */
+.wa { background: #efeae2; display: flex; justify-content: flex-end; } .wa .b { width: 330px; background: #d9fdd3; border-radius: 8px; padding: 4px; }
+.wa .p { background: #cfe9c7; border-radius: 6px; overflow: hidden; } .wa .m { padding: 6px 8px 8px; } .wa .tt { font-weight: 600; font-size: 14px; color: #111b21; } .wa .ds { font-size: 13px; color: #54656f; } .wa .dm { font-size: 12px; color: #667781; margin-top: 2px; }
+.wa .u { font-size: 14px; color: #027eb5; padding: 6px 6px 2px; }
+/* Messages/Slack small thumbnail fallback: square crop */
+.sq { background: #fff; } .sq .row { display: flex; gap: 12px; align-items: center; border: 1px solid #e6e6e6; border-radius: 12px; padding: 10px; }
+.sq .th { width: 84px; height: 84px; border-radius: 8px; background: url(card.png) center / cover; flex: none; } .sq .tt { font-weight: 600; } .sq .ds { color: #666; font-size: 13px; }
+</style></head><body>
+<div><div class="lbl">X</div><div class="frame x"><div class="post"><div class="av"></div><div style="flex:1"><div><span class="name">Joe</span> <span class="handle">@joe · 2m</span></div><div>made a little desk robot</div>
+<div class="card"><img src="card.png"><span class="dom">pocketbot.ca</span></div><div class="from">From pocketbot.ca</div></div></div></div></div>
+<div><div class="lbl">iMessage</div><div class="frame im"><div class="b"><img src="card.png"><div class="t"><div class="tt">paperbot: An open-source e-paper assistant</div><div class="d">pocketbot.ca</div></div></div></div></div>
+<div><div class="lbl">Slack</div><div class="frame sl"><div class="msg"><div class="av"></div><div><div><span class="u">Joe</span> <span style="color:#616061;font-size:12px">10:42 AM</span></div><div style="color:#1264a3">https://pocketbot.ca</div>
+<div class="un"><div class="site">paperbot</div><div class="ti">paperbot: An open-source e-paper assistant</div><div class="ds">A little e-paper assistant that gets out of your way.</div><img src="card.png"></div></div></div></div></div>
+<div><div class="lbl">LinkedIn</div><div class="frame li"><div class="c"><img src="card.png"><div class="m"><div class="tt">paperbot: An open-source e-paper assistant</div><div class="dm">pocketbot.ca</div></div></div></div></div>
+<div><div class="lbl">Facebook</div><div class="frame fb"><div class="c"><img src="card.png"><div class="m"><div class="dm">pocketbot.ca</div><div class="tt">paperbot: An open-source e-paper assistant</div><div class="ds">A little e-paper assistant that gets out of your way.</div></div></div></div></div>
+<div><div class="lbl">Discord</div><div class="frame dc"><div class="e"><div class="site">paperbot</div><div class="ti">paperbot: An open-source e-paper assistant</div><div class="ds">A little e-paper assistant that gets out of your way.</div><img src="card.png"></div></div></div>
+<div><div class="lbl">WhatsApp</div><div class="frame wa"><div class="b"><div class="p"><img src="card.png"><div class="m"><div class="tt">paperbot: An open-source e-paper assistant</div><div class="ds">A little e-paper assistant that gets out of your way.</div><div class="dm">pocketbot.ca</div></div></div><div class="u">https://pocketbot.ca</div></div></div></div>
+<div><div class="lbl">Small thumbnail (some apps, narrow layouts)</div><div class="frame sq"><div class="row"><div class="th"></div><div><div class="tt">paperbot: An open-source e-paper assistant</div><div class="ds">A little e-paper assistant that gets out of your way.</div><div class="ds">pocketbot.ca</div></div></div></div></div>
+</body></html>

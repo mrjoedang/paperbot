@@ -1,0 +1,8 @@
+{
+  "name": "paperbot-e2e",
+  "private": true,
+  "type": "module",
+  "description": "End-to-end journey of a new person on the dev deployment (tools/e2e/README.md)",
+  "scripts": { "accounts": "node accounts.mjs" },
+  "devDependencies": { "playwright-core": "1.65.1" }
+}

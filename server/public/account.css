@@ -1,0 +1,81 @@
+/* Settings, Connections (devices, assistants) and the first-visit setup card (account.js). Tokens come from style.css. */
+.acct-group { padding: 4px 0 22px; border-bottom: 1px solid var(--line); margin-bottom: 4px; display: grid; gap: 12px; }
+.acct-group:last-child { border-bottom: 0; }
+.drawer-body .acct-group > h3, .drawer-body h3.acct-wifi-h { margin: 20px 0 0; font: 600 15px/1.3 var(--f-body); color: var(--ink); text-transform: none; letter-spacing: 0; }
+.acct-p, .acct-group > .muted { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.acct-group .acct-p { margin-top: -6px; }
+.small { font-size: 13px; margin: 0; }
+.choice { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 12px; background: var(--paper-hi); }
+.choice.current { border-color: var(--ink); }
+.choice-h { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; }
+.choice-h > span:first-child { display: grid; gap: 2px; }
+.choice-h .muted { font-size: 13px; }
+.choice-more { display: grid; gap: 12px; }
+.tag { font-size: 12px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line-2); color: var(--ink-2); white-space: nowrap; }
+.tag.ok { border-color: var(--ink); color: var(--ink); }
+.cmd { display: flex; align-items: stretch; border: 1px solid var(--line-2); border-radius: 6px; overflow: hidden; background: var(--paper); }
+.cmd code { flex: 1; min-width: 0; padding: 8px 10px; font: 13px/1.4 var(--f-mono, ui-monospace, monospace); overflow-wrap: break-word; }
+.cmd-copy { border: 0; border-left: 1px solid var(--line-2); background: none; padding: 0 12px; font-size: 12px; cursor: pointer; color: var(--ink); }
+.cmd-copy:hover { background: var(--paper-lo); }
+.field input#byok { width: 100%; min-height: 42px; border: 1px solid var(--line-2); background: var(--paper); padding: 8px 10px; font: 15px var(--f-mono, monospace); }
+.acct-result { font-size: 13px; color: var(--ink-2); }
+.acct-result.bad { color: var(--red); }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; font-size: 14px; }
+.kv dt { color: var(--ink-2); }
+.kv dd { margin: 0; overflow-wrap: anywhere; }
+.link-inline { border: 0; background: none; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; cursor: pointer; }
+.acct-item { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--line); }
+.acct-item > div { display: grid; gap: 2px; min-width: 0; }
+.acct-item b { font-weight: 500; }
+.acct-item .muted { font-size: 13px; }
+.acct-more { border-top: 1px solid var(--line); padding-top: 12px; }
+.acct-more summary { list-style: none; cursor: pointer; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.acct-more summary::-webkit-details-marker { display: none; }
+.acct-more summary::before { content: "+"; display: grid; place-items: center; width: 22px; height: 22px; border: .5px solid var(--line-2); border-radius: 6px; font-weight: 400; }
+.acct-more[open] summary::before { content: "−"; }
+.acct-more[open] summary { margin-bottom: 14px; }
+.drawer-body h3.acct-wifi-h { margin: 22px 0 6px; }
+/* Connections, top level (places.js): a row per kind, each opening its own page. */
+.conn-list { display: grid; margin: -4px 0 0; }
+.conn-row { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px 4px; border: 0; border-radius: 0; border-bottom: .5px solid var(--line-2); background: none; color: var(--ink); text-align: left; font: inherit; cursor: pointer; transition: background 120ms ease; }
+.conn-row:hover { background: var(--paper-lo); }
+.conn-row:active { background: var(--paper-hi); }
+.conn-row-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-control); background: var(--paper-hi); border: .5px solid var(--line-2); color: var(--ink-2); }
+.conn-row-copy { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.conn-row-copy strong { font-weight: 600; font-size: 15px; }
+.conn-row-copy span { font-size: 13px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.conn-row-arrow { color: var(--ink-2); font-size: 22px; line-height: 1; }
+.places-panel .acct-group { border-bottom: 0; }
+.conn-page > .acct-group { padding-top: 0; }
+.conn-page > .acct-group > h3 { display: none; }
+/* An empty page (Wi-Fi with no networks): a drawing, what's missing, the one action. */
+.empty-state { display: grid; justify-items: center; gap: 8px; padding: 40px 8px 8px; text-align: center; }
+.empty-state .empty-art { color: var(--ink-2); margin-bottom: 12px; }
+.empty-state .empty-art .fill { fill: var(--paper-hi); }
+.empty-state .empty-art .soft { opacity: .55; }
+.empty-state .empty-art .faint { opacity: .25; }
+.empty-state strong { font-size: 17px; font-weight: 600; color: var(--ink); }
+.empty-state p { margin: 0 0 16px; font-size: 14px; color: var(--ink-2); }
+.empty-state .btn { width: 100%; }
+.ob-btn { gap: 10px; }
+.ob-btn .ob-mark { color: currentColor; }
+/* The connected OpenBelt workspace: its mark, its name over the email, Disconnect. */
+.ob-account { border-top: 0; padding-top: 0; }
+.ob-account-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-control); background: var(--paper-hi); border: .5px solid var(--line-2); }
+.ob-account > div { flex: 1; }
+.ob-account b { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ob-account .muted { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ob-account .btn { min-height: 36px; padding: 0 14px; font-size: 14px; }
+.ob-btn .ob-mark { color: currentColor; }
+.setup-card { margin: 20px 0 24px; padding: 28px; display: grid; gap: 18px; }
+.setup-card h2 { margin: 0 0 -10px; }
+.setup-card > p { margin: 0; }
+.setup-card > .btn { justify-self: start; }
+@media (max-width: 640px) { .setup-card { padding: 20px 16px; } }
+
+/* A work memo waiting for the person's own assistant (app.js workBlocks). */
+.research-body { padding: 12px; display: grid; gap: 10px; }
+.research-body p { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.err-action { margin: 8px 0 0 32px; }
+.item-view .err-action, .item-view .item-result .err { margin-left: 0; }
+.item-view .item-result .research-body p { font-size: 15px; }

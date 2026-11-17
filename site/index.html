@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Paperbot: speak now, read later</title>
+  <meta name="description" content="A little e-paper assistant that gets out of your way. Hold the button, speak, and get back to what you were doing. Open source.">
+  <meta name="theme-color" content="#f8f6f1">
+  <link rel="canonical" href="https://paperbot.ca/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Paperbot">
+  <meta property="og:locale" content="en_CA">
+  <meta property="og:url" content="https://paperbot.ca/">
+  <meta property="og:title" content="Paperbot: An open-source e-paper assistant">
+  <meta property="og:description" content="A little e-paper assistant that gets out of your way.">
+  <meta property="og:image" content="https://paperbot.ca/assets/img/og-v3.jpg">
+  <meta property="og:image:secure_url" content="https://paperbot.ca/assets/img/og-v3.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Paperbot, a small white e-paper device, next to the words: Speak now. Read later.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Paperbot: An open-source e-paper assistant">
+  <meta name="twitter:description" content="A little e-paper assistant that gets out of your way.">
+  <meta name="twitter:image" content="https://paperbot.ca/assets/img/og-v3.jpg">
+  <meta name="twitter:image:alt" content="Paperbot, a small white e-paper device, next to the words: Speak now. Read later.">
+  <link rel="icon" href="assets/favicon-64.png" sizes="64x64" type="image/png">
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preload" href="fonts/Fraunces-Soft.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/Figtree-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/img/poster.webp" as="image" fetchpriority="high">
+  <link rel="preload" href="assets/paperbot.glb" as="fetch" type="model/gltf-binary" crossorigin>
+  <link rel="modulepreload" href="vendor/model-viewer.min.js">
+  <link rel="stylesheet" href="style.css">
+  <script>self.ModelViewerElement = { meshoptDecoderLocation: "vendor/meshopt_decoder.js" };</script>
+  <script type="module" src="vendor/model-viewer.min.js"></script>
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+<header class="bar">
+  <a class="wordmark" href="#top">paperbot</a>
+  <div class="bar-right">
+    <a class="signin" href="https://app.paperbot.ca">Sign in</a>
+    <a class="gh" href="https://github.com/mrjoedang/paperbot" target="_blank" rel="noopener" aria-label="Paperbot on GitHub" title="GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg></a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="h-title">
+    <div class="stage">
+      <img class="stage-still" src="assets/img/poster.webp" alt="" fetchpriority="high" decoding="async">
+      <model-viewer id="mv" src="assets/paperbot.glb"
+        alt="Paperbot, a small white device with an e-paper screen showing a smiling robot"
+        camera-controls disable-zoom disable-pan touch-action="pan-y" interaction-prompt="none"
+        camera-orbit="24deg 80deg 0.19m" field-of-view="22deg" max-camera-orbit="auto auto 0.35m" interpolation-decay="140"
+        tone-mapping="neutral" exposure="1" shadow-intensity="0.45" shadow-softness="1"
+        ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed">
+        <!-- an empty slot hides the built-in AR button; the page's own one sits with the laptop and phone -->
+        <span slot="ar-button" hidden></span>
+        <div slot="progress-bar"></div>
+      </model-viewer>
+    </div>
+    <!-- live captions: what the person is saying while the demo listens -->
+    <p class="caption" id="caption" aria-hidden="true"></p>
+
+    <!-- Demo is the main action; owners set their board up; everyone else can get one -->
+    <div class="ctas">
+      <div class="cta-row">
+        <button class="hold" id="hold" type="button"><span id="hold-label">Demo</span><span class="spectrum" aria-hidden="true"></span><span class="loader" aria-hidden="true"><i></i><i></i><i></i></span></button>
+        <a class="setup-btn" href="https://app.paperbot.ca/setup">Set up device</a>
+      </div>
+      <p class="board-line">Don’t have one? <a href="https://www.waveshare.com/esp32-c6-epaper-1.54.htm" target="_blank" rel="noopener">Get the board ↗</a></p>
+    </div>
+    <!-- what got filed: under the button on phones, to the right of the device on wide screens -->
+    <div class="cards" id="cards" aria-live="polite"></div>
+
+    <h1 id="h-title">Speak now.<br>Read later.</h1>
+    <p class="lede">An open-source e-paper assistant. Hold the button, speak, and get back to what you were doing.</p>
+  </section>
+
+  <section class="story" aria-label="How it works">
+    <div class="row">
+      <div class="txt">
+        <h2>Hold the button and talk</h2>
+        <p>Let go when you’re done. Paperbot turns it into a todo, a reminder, an answer or an app.</p>
+      </div>
+      <div class="art">
+        <div class="say">
+          <img src="assets/img/paperbot-front.webp" width="578" height="726" loading="lazy" alt="Paperbot on a desk">
+          <div class="voice"><span class="wave" aria-hidden="true"><i style="height:6px"></i><i style="height:12px"></i><i style="height:18px"></i><i style="height:10px"></i><i style="height:20px"></i><i style="height:14px"></i><i style="height:8px"></i><i style="height:16px"></i><i style="height:22px"></i><i style="height:12px"></i><i style="height:6px"></i><i style="height:14px"></i><i style="height:18px"></i><i style="height:9px"></i><i style="height:5px"></i><i style="height:11px"></i><i style="height:17px"></i><i style="height:8px"></i></span>
+            <p>“Remind me to water the plants tomorrow afternoon”</p></div>
+        </div>
+        <!-- shown only where AR works (phones); opens the hero's 3D device in AR -->
+    <button class="ar" id="ar" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>See it on your desk</button>
+      </div>
+    </div>
+    <div class="row flip">
+      <div class="txt">
+        <h2>It lands in one quiet list</h2>
+        <p>Check it when you want, on your phone or laptop. Tick off todos, see what’s due and read the answers.</p>
+      </div>
+      <div class="art">
+        <figure class="phone-shot">
+          <img src="assets/img/app-list-phone-v2.webp" width="780" height="1560" loading="lazy"
+            alt="Your list on a phone: a reminder due tomorrow, a todo, shopping and a note, ready to tick off">
+        </figure>
+      </div>
+    </div>
+    <div class="row">
+      <div class="txt">
+        <h2>Or ask for an app</h2>
+        <p>Say “build me an app that…” and Paperbot makes it while you get on with your day. A real app with its own database, and a link you can share with others.</p>
+      </div>
+      <div class="art">
+        <div class="app-panel">
+          <div class="plants" role="img" aria-label="The app it made: your plants and when each one needs water next">
+            <b class="plants-h">Plants</b><span class="plants-s">Next watering</span>
+            <ul>
+          <li><span class="ck"></span><span><b>Monstera</b><i>Every 7 days</i></span><span class="due now">Today</span></li>
+          <li><span class="ck"></span><span><b>Basil</b><i>Every 2 days</i></span><span class="due now">Today</span></li>
+          <li><span class="ck"></span><span><b>Pothos</b><i>Every 5 days</i></span><span class="due">Fri</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="steps" aria-label="Why Paperbot">
+    <div>
+      <img class="illus" src="assets/img/illus-phone.webp" width="900" height="675" loading="lazy" alt="Paperbot researching on a desk, next to a phone lying face down">
+      <h2>No distractions</h2>
+      <p>No phone to unlock and no notifications to pull you away.</p>
+    </div>
+    <div>
+      <img class="illus" src="assets/img/illus-mug.webp" width="900" height="675" loading="lazy" alt="Paperbot showing a finished answer, next to a cup of coffee">
+      <h2>Answers for later</h2>
+      <p>It looks into things in the background. Come back to the answer whenever you like.</p>
+    </div>
+    <div>
+      <img class="illus" src="assets/img/illus-cable.webp" width="900" height="675" loading="lazy" alt="Paperbot lying on a desk with a USB-C cable plugged in">
+      <h2>Two weeks on a charge</h2>
+      <p>Use it every day. Charge it every couple of weeks.</p>
+    </div>
+  </section>
+
+  <section class="open" aria-labelledby="o-title">
+    <img class="open-illus" src="assets/img/illus-open.webp" width="1200" height="600" loading="lazy"
+      alt="Paperbot face down, showing its pin-map sticker and expansion header, with a small screwdriver beside it">
+    <h2 id="o-title">Open source</h2>
+    <p class="open-lede">Nothing locked away.</p>
+    <div class="open-points">
+      <div><h3>Yours to change</h3><p>Read the code, change it, and run it yourself.</p></div>
+      <div><h3>Bring your own AI</h3><p>Plug in your own API key, or connect the agent you already use.</p></div>
+      <div><h3>Made to tinker with</h3><p>An off-the-shelf ESP32 board with an expansion header.</p></div>
+    </div>
+    <a class="gh-link" href="https://github.com/mrjoedang/paperbot" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span>Paperbot on GitHub</span></a>
+  </section>
+
+  <section class="details" aria-labelledby="d-title">
+    <h2 id="d-title">Details</h2>
+    <dl>
+      <div><dt>Size</dt><dd>39.8 × 53 × 16.9 mm</dd></div>
+      <div><dt>Screen</dt><dd>1.54 inch e-paper, 200 × 200</dd></div>
+      <div><dt>Battery</dt><dd>About two weeks</dd></div>
+      <div><dt>Offline</dt><dd>Clips wait on the memory card until it’s back on Wi-Fi or your phone’s hotspot</dd></div>
+      <div><dt>Charging</dt><dd>USB-C</dd></div>
+      <div><dt>Hardware</dt><dd>Waveshare ESP32-C6 e-paper board</dd></div>
+    </dl>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>paperbot.ca</span>
+  <a href="/privacy">Privacy</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="../assets/favicon-64.png" type="image/png">
+<title>paperbot · Object 2: Casual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..800,0..1,0..1,0..1&display=swap" rel="stylesheet">
+<script>self.ModelViewerElement = { meshoptDecoderLocation: "../vendor/meshopt_decoder.js" };</script>
+<script type="module" src="../vendor/model-viewer.min.js"></script>
+<style>
+/* Recursive has a "casual" axis: the type literally relaxes while you talk. */
+:root {
+  --bg: #f7f5f0; --ink: #3a3934; --ink-2: #8a877e; --line: #e6e2d8; --charcoal: #3a3934; --on: #f7f5f0;
+  --f: "Recursive", ui-sans-serif, system-ui, sans-serif; --gutter: clamp(20px, 5vw, 64px);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 17px/1.6 var(--f); font-variation-settings: "CASL" .5; -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
+.bar { display: flex; justify-content: space-between; align-items: center; padding: 22px var(--gutter); font-size: 14px; color: var(--ink-2); }
+.wordmark { font-size: 22px; font-weight: 650; letter-spacing: -.03em; color: var(--ink); font-variation-settings: "CASL" 1; }
+
+.hero { display: grid; justify-items: center; text-align: center; padding: 0 var(--gutter); }
+.stage { width: min(100%, 760px); height: min(56vh, 540px); }
+model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
+
+h1 {
+  margin: 8px 0 0; font-size: clamp(48px, 7.4vw, 104px); line-height: 1; letter-spacing: -.035em; font-weight: 560;
+  font-variation-settings: "CASL" 0, "slnt" 0, "MONO" 0;
+  transition: font-variation-settings .7s cubic-bezier(.3, .7, .2, 1), letter-spacing .7s;
+}
+.talking h1 { font-variation-settings: "CASL" 1, "slnt" -9, "MONO" 0; letter-spacing: -.02em; }
+
+.hold-row { margin-top: 30px; display: flex; align-items: center; gap: 18px; height: 56px; }
+.wave { display: flex; align-items: center; gap: 3px; width: 92px; height: 40px; opacity: 0; transition: opacity .3s; }
+.wave.l { justify-content: flex-end; } .wave.r { justify-content: flex-start; }
+.wave i { width: 3px; height: 4px; border-radius: 2px; background: var(--ink); opacity: .55; transition: height .09s; }
+.talking .wave { opacity: 1; }
+.hold {
+  min-width: 168px; height: 56px; padding: 0 26px; border: 0; border-radius: 999px; cursor: pointer;
+  background: var(--charcoal); color: var(--on); font: 600 16px var(--f); font-variation-settings: "CASL" 1;
+  user-select: none; -webkit-user-select: none; touch-action: none;
+  transition: transform .15s cubic-bezier(.3, 1.6, .5, 1), background .2s;
+}
+.hold:hover { transform: translateY(-1px); }
+.hold.down { transform: scale(.95); background: #2d2c28; }
+
+.said { min-height: 5.2em; margin: 30px 0 0; max-width: 34rem; display: grid; justify-items: center; gap: 12px; }
+.quote { font-size: 22px; line-height: 1.35; font-variation-settings: "CASL" 1, "MONO" 1; letter-spacing: -.01em; }
+.quote:empty::before { content: "Press and hold the button, then let go."; color: var(--ink-2); font-size: 16px; font-variation-settings: "CASL" .5, "MONO" 0; }
+.caret { display: inline-block; width: .5em; height: 1.05em; vertical-align: -.15em; background: var(--ink); opacity: .35; margin-left: 2px; animation: caret 1s steps(1) infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.filed { font-size: 14px; color: var(--ink-2); opacity: 0; transform: translateY(6px); transition: opacity .4s, transform .5s cubic-bezier(.3, 1.4, .5, 1); }
+.filed.in { opacity: 1; transform: none; }
+.filed b { font-weight: 600; color: var(--ink); background: #ebe7dc; border-radius: 999px; padding: 3px 10px; margin-left: 4px; }
+
+.more { max-width: 980px; margin: 150px auto 0; padding: 0 var(--gutter); display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; }
+.more h2 { margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -.02em; font-variation-settings: "CASL" 1; }
+.more p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+.foot { max-width: 980px; margin: 140px auto 0; padding: 26px var(--gutter) 40px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 13.5px; color: var(--ink-2); }
+
+/* one load sequence: device, then words, then the button */
+@media (prefers-reduced-motion: no-preference) {
+  .stage { animation: up 1.1s cubic-bezier(.2, .8, .2, 1) both; }
+  h1 { animation: up 1s .15s cubic-bezier(.2, .8, .2, 1) both; }
+  .hold-row { animation: up 1s .3s cubic-bezier(.2, .8, .2, 1) both; }
+}
+@keyframes up { from { opacity: 0; transform: translateY(18px); } }
+@media (max-width: 720px) { .more { grid-template-columns: 1fr; } .wave { width: 52px; } }
+</style>
+</head>
+<body>
+<header class="bar"><span class="wordmark">paperbot</span><span>Not for sale yet</span></header>
+
+<main class="hero" id="hero">
+  <div class="stage">
+    <model-viewer id="mv" src="../assets/paperbot.glb" alt="paperbot, a small white device with an e-paper screen"
+      camera-controls disable-zoom disable-pan touch-action="pan-y" interaction-prompt="none"
+      camera-orbit="22deg 80deg 0.2m" field-of-view="22deg" max-camera-orbit="auto auto 0.35m" interpolation-decay="130"
+      tone-mapping="neutral" exposure="1" shadow-intensity="0.4" shadow-softness="1"></model-viewer>
+  </div>
+  <h1>Hold to talk.</h1>
+  <div class="hold-row">
+    <div class="wave l" aria-hidden="true"></div>
+    <button class="hold" id="hold" type="button">Hold me</button>
+    <div class="wave r" aria-hidden="true"></div>
+  </div>
+  <div class="said" aria-live="polite">
+    <div class="quote" id="quote"></div>
+    <div class="filed" id="filed"></div>
+  </div>
+</main>
+
+<section class="more">
+  <div><h2>Say it once</h2><p>The side button wakes it and starts recording right away. No app, no wake word.</p></div>
+  <div><h2>It files itself</h2><p>Notes, todos and reminders land in one quiet list, with times worked out for you.</p></div>
+  <div><h2>Questions come back</h2><p>Ask it to look something up. The answer shows up on the screen, with sources in the app.</p></div>
+</section>
+
+<footer class="foot"><span>pocketbot.ca</span><span>A small e-paper robot, built on Waveshare hardware.</span></footer>
+
+<script type="module">
+import { screen, holdable, beep } from './screen.js';
+const mv = document.getElementById('mv'), hero = document.getElementById('hero');
+const quote = document.getElementById('quote'), filed = document.getElementById('filed'), btn = document.getElementById('hold');
+const s = screen(mv);
+s.preload(['rec', 'sending', 'todo', 'reminder', 'note', 'work', 'done', 'tooshort']);
+const waves = [...document.querySelectorAll('.wave')];
+waves.forEach((w) => { for (let i = 0; i < 12; i++) w.append(document.createElement('i')); });
+const bars = waves.flatMap((w) => [...w.children]);
+const MEMOS = [
+  { frame: 'todo', said: 'buy double A batteries', kind: 'todo' },
+  { frame: 'reminder', said: 'remind me to call the dentist on the eighteenth at nine', kind: 'reminder, Oct 18 at 9:00' },
+  { frame: 'note', said: 'idea: a robot face for the voice gadget', kind: 'note' },
+  { frame: 'work', then: 'done', said: 'find a bitmap font that reads well on e-paper', kind: 'question', later: 'Spleen 8×16 reads best' },
+];
+let n = 0, typing = 0, timers = [];
+const later = (f, ms) => timers.push(setTimeout(f, ms));
+function type(text) {
+  clearInterval(typing); quote.textContent = ''; const caret = document.createElement('span'); caret.className = 'caret';
+  let i = 0; quote.append(caret);
+  typing = setInterval(() => { caret.before(text[i++]); if (i >= text.length) { clearInterval(typing); later(() => caret.remove(), 900); } }, 34);
+  return text.length * 34;
+}
+holdable(btn, {
+  onStart() {
+    timers.forEach(clearTimeout); timers = []; clearInterval(typing);
+    hero.classList.add('talking'); filed.classList.remove('in'); quote.textContent = '';
+    beep(); mv.cameraOrbit = '4deg 84deg 0.19m'; s.show('rec', 0); btn.textContent = '0s';
+  },
+  onTick(sec) {
+    btn.textContent = `${sec}s`; s.show('rec', sec);
+    bars.forEach((b, i) => { const edge = 1 - Math.abs((i % 12) - (i < 12 ? 11 : 0)) / 12; b.style.height = `${4 + Math.random() * 30 * (0.35 + edge * 0.65)}px`; });
+  },
+  onEnd(ms) {
+    hero.classList.remove('talking'); btn.textContent = 'Hold me'; bars.forEach((b) => (b.style.height = '4px'));
+    if (ms < 600) { s.show('tooshort', { flash: true }); quote.textContent = ''; filed.textContent = 'Too short. Hold it a little longer.'; filed.classList.add('in'); return; }
+    const m = MEMOS[n++ % MEMOS.length];
+    s.show('sending');
+    later(() => {
+      const t = type(m.said);
+      later(() => { s.show(m.frame, { flash: true }); filed.innerHTML = 'Filed as a <b></b>'; filed.querySelector('b').textContent = m.kind; filed.classList.add('in'); }, t + 200);
+      if (m.then) later(() => { s.show(m.then, { flash: true }); filed.innerHTML = 'Researched: <b></b>'; filed.querySelector('b').textContent = m.later; }, t + 3200);
+    }, 700);
+  },
+});
+</script>
+</body>
+</html>

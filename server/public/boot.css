@@ -1,0 +1,25 @@
+/* The loading screen, painted before style.css: paperbot.ca's warm white (and the app's warm dark). Keep the colors in step with style.css. */
+html{background:#f8f6f1} @media(prefers-color-scheme:dark){html{background:#1c1b18}}
+.app-boot{position:fixed;inset:0;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#f8f6f1;color:#3b3a35;font:500 14px/1.4 "Geist",ui-sans-serif,system-ui,sans-serif;transition:opacity 300ms ease,visibility 300ms;}
+.app-boot.is-ready{opacity:0;visibility:hidden;pointer-events:none}
+.app-boot img{width:102px;height:102px;border-radius:26px;margin-top:-35px;box-shadow:0 22px 44px -28px rgb(60 52 30 / .32)}
+.boot-label{margin-top:24px;color:#737067}
+.boot-track{position:relative;width:64px;height:3px;margin-top:14px;border-radius:3px;background:#e7e3d9;overflow:hidden}
+.boot-track:after{content:'';position:absolute;width:26px;height:3px;border-radius:3px;background:currentColor;animation:boot-loading 1250ms cubic-bezier(.45,0,.55,1) infinite}
+.boot-retry{margin-top:20px;min-height:44px;padding:0 20px;border:1px solid #d5d0c4;border-radius:999px;background:#fdfcf9;color:inherit;font:inherit;cursor:pointer}
+.boot-retry[hidden]{display:none}
+@keyframes boot-loading{from{transform:translateX(-28px)}to{transform:translateX(68px)}}
+@media(prefers-reduced-motion:reduce){.app-boot{transition:none}.boot-track:after{animation:none}}
+@media(prefers-color-scheme:dark){.app-boot{background:#1c1b18;color:#ece8dd}.boot-label{color:#a39f93}.boot-track{background:#33312c}.boot-retry{background:#242320;border-color:#48453e}}
+
+/* Honor an explicit theme before the main stylesheet arrives. */
+html[data-theme="dark"]{background:#1c1b18}
+html[data-theme="dark"] .app-boot{background:#1c1b18;color:#ece8dd}
+html[data-theme="dark"] .boot-label{color:#a39f93}
+html[data-theme="dark"] .boot-track{background:#33312c}
+html[data-theme="dark"] .boot-retry{background:#242320;border-color:#48453e}
+html[data-theme="light"]{background:#f8f6f1}
+html[data-theme="light"] .app-boot{background:#f8f6f1;color:#3b3a35}
+html[data-theme="light"] .boot-label{color:#737067}
+html[data-theme="light"] .boot-track{background:#e7e3d9}
+html[data-theme="light"] .boot-retry{background:#fdfcf9;border-color:#d5d0c4}

@@ -1,0 +1,22 @@
+{
+  // paperbot.ca: static site on Workers static assets. Deploy with tools/site/deploy.sh (make site-deploy).
+  // The custom domains need the paperbot.ca zone in the same Cloudflare account.
+  "$schema": "../server/node_modules/wrangler/config-schema.json",
+  "name": "paperbot-site",
+  "compatibility_date": "2026-10-17",
+  "assets": { "directory": "." },
+  "workers_dev": false,
+  "routes": [
+    { "pattern": "paperbot.ca", "custom_domain": true },
+    { "pattern": "www.paperbot.ca", "custom_domain": true }
+  ],
+  "env": {
+    // `make site-preview`: same files on a separate Worker at paperbot-site-preview.<account>.workers.dev.
+    // Never touches paperbot.ca.
+    "preview": {
+      "name": "paperbot-site-preview",
+      "workers_dev": true,
+      "routes": []
+    }
+  }
+}

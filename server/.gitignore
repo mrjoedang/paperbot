@@ -1,0 +1,7 @@
+.dev.vars
+.secrets
+.secrets.env
+.wrangler/
+node_modules/
+results/*.wav
+test/wav/real-*

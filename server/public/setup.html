@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Set up paperbot</title>
+<meta name="description" content="Plug in your paperbot and set it up from this page.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<!-- /setup: the whole setup in the browser over Web Serial (docs/setup.md). Public: the person signs in in a popup
+     part-way through, so the board connection (and a running install) survives. Assets copied from site/. -->
+<link rel="stylesheet" href="/setup/setup.css">
+<!-- fast first paint, like paperbot.ca: a still of the opening view at once, the 3D board takes over when it has drawn -->
+<link rel="preload" href="/setup/assets/poster.webp" as="image" fetchpriority="high">
+<link rel="modulepreload" href="/setup/vendor/model-viewer.min.js">
+<script src="/setup/mv-config.js"></script>
+<script type="module" src="/setup/vendor/model-viewer.min.js"></script>
+<script type="module" src="/setup/setup.js"></script>
+</head>
+<body>
+<header class="bar"><span class="wordmark">paperbot</span><div class="dots" id="dots" aria-hidden="true"></div></header>
+<main class="setup">
+  <div class="stage" id="stage">
+    <img class="still" src="/setup/assets/poster.webp" alt="" fetchpriority="high" decoding="async">
+    <model-viewer id="mv" src="/setup/assets/paperbot.glb" alt="Your paperbot"
+      camera-controls disable-zoom disable-pan touch-action="pan-y" interaction-prompt="none"
+      camera-orbit="22deg 100deg 0.27m" camera-target="0m -0.022m 0m" field-of-view="22deg" interpolation-decay="140"
+      tone-mapping="neutral" exposure="1" shadow-intensity="0.45" shadow-softness="1"><div slot="progress-bar"></div>
+      <div slot="hotspot-hold" id="hold" class="hold" data-position="0.0202m -0.0046m 0m" data-normal="1m 0m 0m" hidden><i></i><span>Hold to talk</span></div></model-viewer>
+  </div>
+  <section class="step" id="view" aria-live="polite"></section>
+</main>
+</body>
+</html>

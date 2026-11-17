@@ -1,0 +1,340 @@
+[
+ {
+  "id": 1,
+  "text": "Uh, remind me to call the dentist tomorrow at 3pm.",
+  "kind": "reminder",
+  "due": "2026-10-18T15:00"
+ },
+ {
+  "id": 2,
+  "text": "Buy milk, eggs, and, um, that sourdough bread.",
+  "kind": "shopping",
+  "due": null,
+  "alt": [
+   "todo"
+  ]
+ },
+ {
+  "id": 3,
+  "text": "Remind me to email Sam.",
+  "kind": "todo",
+  "due": null,
+  "alt": [
+   "reminder"
+  ],
+  "note": "remind-me phrasing with no time"
+ },
+ {
+  "id": 4,
+  "text": "Tomorrow I should look into why the build is so slow.",
+  "kind": "work",
+  "due": "2026-10-18",
+  "alt": [
+   "reminder",
+   "todo"
+  ],
+  "note": "work vs todo vs reminder"
+ },
+ {
+  "id": 5,
+  "text": "Refactor the upload code to retry with exponential backoff.",
+  "kind": "work",
+  "due": null
+ },
+ {
+  "id": 6,
+  "text": "Idea, what if the e-ink badge showed the weather when it's idle?",
+  "kind": "note",
+  "due": null
+ },
+ {
+  "id": 7,
+  "text": "Uh, test, test.",
+  "kind": "noise",
+  "due": null,
+  "alt": [
+   "note"
+  ]
+ },
+ {
+  "id": 8,
+  "text": "Can you research the best lithium battery for a small e-ink device, like something under 1000 milliamp hours?",
+  "kind": "work",
+  "due": null
+ },
+ {
+  "id": 9,
+  "text": "Pick up the dry cleaning on Friday.",
+  "kind": "reminder",
+  "due": "2026-10-23",
+  "alt": [
+   "todo"
+  ]
+ },
+ {
+  "id": 10,
+  "text": "Dentist appointment next Tuesday at 9:30.",
+  "kind": "reminder",
+  "due": "2026-10-20T09:30",
+  "due_alt": [
+   "2026-10-27"
+  ]
+ },
+ {
+  "id": 11,
+  "text": "I need to renew my passport before it expires in December.",
+  "kind": "todo",
+  "due": null,
+  "alt": [
+   "reminder"
+  ],
+  "due_alt": [
+   "2026-12-01",
+   "2026-11-30",
+   "2026-12-31"
+  ]
+ },
+ {
+  "id": 12,
+  "text": "Write a script that converts all the WAV recordings to Opus and uploads them to R2.",
+  "kind": "work",
+  "due": null
+ },
+ {
+  "id": 13,
+  "text": "Hmm. Interesting thought, people talk to their devices more when there's no screen.",
+  "kind": "note",
+  "due": null
+ },
+ {
+  "id": 14,
+  "text": "Call mom.",
+  "kind": "todo",
+  "due": null
+ },
+ {
+  "id": 15,
+  "text": "Remind me in two hours to take the laundry out.",
+  "kind": "reminder",
+  "due": "2026-10-17",
+  "note": "relative time; date-level due acceptable"
+ },
+ {
+  "id": 16,
+  "text": "Okay so the meeting with Priya got moved to Monday at 10, and I also need to send her the slides before then.",
+  "kind": "reminder",
+  "due": "2026-10-19T10:00",
+  "alt": [
+   "todo"
+  ],
+  "note": "multi-intent"
+ },
+ {
+  "id": 17,
+  "text": "Find out what the current best practice is for OTA firmware updates on ESP32.",
+  "kind": "work",
+  "due": null
+ },
+ {
+  "id": 18,
+  "text": "Groceries. Tomatoes, basil, garlic, olive oil.",
+  "kind": "shopping",
+  "due": null,
+  "alt": [
+   "todo"
+  ]
+ },
+ {
+  "id": 19,
+  "text": "Note to self, the Wi-Fi password at the cafe is bluebird42.",
+  "kind": "note",
+  "due": null
+ },
+ {
+  "id": 20,
+  "text": "Fix the bug where the device double uploads after reconnecting to Wi-Fi.",
+  "kind": "work",
+  "due": null
+ },
+ {
+  "id": 21,
+  "text": "Ich muss noch, uh, die Steuererklärung machen. The tax return, by the end of the month.",
+  "kind": "reminder",
+  "due": "2026-10-31",
+  "alt": [
+   "todo"
+  ],
+  "note": "German + English"
+ },
+ {
+  "id": 22,
+  "text": "Book flights to Lisbon for the conference.",
+  "kind": "todo",
+  "due": null
+ },
+ {
+  "id": 23,
+  "text": "Hey, so, um, yeah.",
+  "kind": "noise",
+  "due": null,
+  "alt": [
+   "note"
+  ]
+ },
+ {
+  "id": 24,
+  "text": "Every Monday morning check the plant watering system.",
+  "kind": "reminder",
+  "due": "2026-10-19",
+  "alt": [
+   "todo"
+  ],
+  "due_alt": [
+   null
+  ]
+ },
+ {
+  "id": 25,
+  "text": "Add a dark mode toggle to the web app and make it remember the setting.",
+  "kind": "work",
+  "due": null
+ },
+ {
+  "id": 26,
+  "text": "The new coffee place on 5th street is really good, the oat flat white especially.",
+  "kind": "note",
+  "due": null
+ },
+ {
+  "id": 27,
+  "text": "Compare the pricing of Workers AI versus running our own GPU box, and write up a summary.",
+  "kind": "work",
+  "due": null
+ },
+ {
+  "id": 28,
+  "text": "Pay the electricity bill by the 25th.",
+  "kind": "reminder",
+  "due": "2026-10-25",
+  "alt": [
+   "todo"
+  ]
+ },
+ {
+  "id": 29,
+  "text": "Tonight at 8, watch the game with Jake.",
+  "kind": "reminder",
+  "due": "2026-10-17T20:00"
+ },
+ {
+  "id": 30,
+  "text": "Maybe I should learn Rust this winter.",
+  "kind": "note",
+  "due": null,
+  "alt": [
+   "todo"
+  ]
+ },
+ {
+  "id": 31,
+  "text": "Look into, uh, why the battery drains overnight. Probably the deep sleep config.",
+  "kind": "work",
+  "due": null,
+  "alt": [
+   "todo"
+  ]
+ },
+ {
+  "id": 32,
+  "text": "Merci. Okay. Testing one two three.",
+  "kind": "noise",
+  "due": null,
+  "alt": [
+   "note"
+  ]
+ },
+ {
+  "id": 33,
+  "text": "Return the Amazon package.",
+  "kind": "todo",
+  "due": null
+ },
+ {
+  "id": 34,
+  "text": "Remind me to stretch.",
+  "kind": "todo",
+  "due": null,
+  "alt": [
+   "reminder"
+  ]
+ },
+ {
+  "id": 35,
+  "text": "Write unit tests for the transcript router and set up CI on GitHub Actions.",
+  "kind": "work",
+  "due": null
+ },
+ {
+  "id": 36,
+  "text": "Birthday party for Lena is Saturday the 24th at 2pm, need to buy a gift.",
+  "kind": "reminder",
+  "due": "2026-10-24T14:00",
+  "alt": [
+   "todo"
+  ],
+  "note": "multi-intent"
+ },
+ {
+  "id": 37,
+  "text": "Quote I liked: the best interface is no interface.",
+  "kind": "note",
+  "due": null
+ },
+ {
+  "id": 38,
+  "text": "Summarize the latest papers on on-device speech recognition for microcontrollers.",
+  "kind": "work",
+  "due": null
+ },
+ {
+  "id": 39,
+  "text": "Schedule the car service for sometime next week.",
+  "kind": "todo",
+  "due": null,
+  "alt": [
+   "reminder"
+  ],
+  "note": "vague time",
+  "due_alt": [
+   "*"
+  ]
+ },
+ {
+  "id": 40,
+  "text": "Thank you.",
+  "kind": "noise",
+  "due": null,
+  "note": "classic Whisper hallucination on silence",
+  "alt": [
+   "note"
+  ]
+ },
+ {
+  "id": 41,
+  "text": "Clean the garage this weekend.",
+  "kind": "reminder",
+  "due": "2026-10-18",
+  "alt": [
+   "todo"
+  ],
+  "due_alt": [
+   "2026-10-17"
+  ]
+ },
+ {
+  "id": 42,
+  "text": "Migrate the task list from the Durable Object to D1 and keep the API the same.",
+  "kind": "work",
+  "due": null
+ }
+]

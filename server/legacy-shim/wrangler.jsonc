@@ -1,0 +1,12 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  // Shim at the old pocket-voice address (see index.ts). Deploy: `cd server && npx wrangler deploy -c legacy-shim/wrangler.jsonc`.
+  "name": "pocket-voice",
+  "main": "index.ts",
+  "compatibility_date": "2026-10-01",
+  "observability": { "enabled": true },
+  "services": [{ "binding": "PAPERBOT", "service": "paperbot" }],
+  "durable_objects": { "bindings": [{ "name": "TASKS", "class_name": "TaskList" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["TaskList"] }]
+  // Secret DEVICE_TOKEN stays from the old deployment (only used by /v1/export).
+}

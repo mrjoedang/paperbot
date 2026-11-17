@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Privacy · Paperbot</title>
+  <meta name="description" content="What the Paperbot service keeps, why, and how to delete it.">
+  <meta name="theme-color" content="#f8f6f1">
+  <link rel="canonical" href="https://paperbot.ca/privacy">
+  <link rel="icon" href="assets/favicon-64.png" sizes="64x64" type="image/png">
+  <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <a class="wordmark" href="/">paperbot</a>
+</header>
+
+<main class="legal">
+  <h1>Privacy</h1>
+  <p class="legal-date">Updated 14 November 2026</p>
+  <p>Paperbot is a small open-source project run by Joe Dang. This page covers the hosted service at app.paperbot.ca:
+    what it keeps, why, and how to delete it.</p>
+
+  <h2>What it keeps</h2>
+  <ul>
+    <li><b>Your account:</b> your name and email address. If you sign in with Google, Paperbot asks Google only for
+      your basic profile and email.</li>
+    <li><b>Your memos:</b> the audio you record, its transcript, and what’s made from it: the title, the kind (to-do,
+      reminder, note, research), due dates and research results.</li>
+    <li><b>Your Paperbot:</b> its ID, firmware version, battery level, diagnostic logs, and the Wi-Fi networks you add.
+      Wi-Fi passwords are stored encrypted.</li>
+    <li><b>What you connect:</b> the assistants you connect (such as Claude or ChatGPT) and your own AI provider key if
+      you add one. The key is stored encrypted.</li>
+  </ul>
+
+  <h2>How it’s used</h2>
+  <p>Only to run Paperbot for you: to transcribe and sort what you say, show it in your list, and research it when you
+    ask. Your data isn’t sold, isn’t used for ads, and isn’t used to train AI models.</p>
+
+  <h2>Who handles it</h2>
+  <ul>
+    <li><b>Cloudflare</b> hosts the service and stores your data. Transcription and sorting run on Cloudflare’s AI
+      models.</li>
+    <li><b>Research</b> happens only the way you set it up: with your own Anthropic key, the memo is sent to Anthropic;
+      with your own assistant, that assistant reads the memos you ask it to.</li>
+    <li><b>Google</b> is used only to sign you in, if you choose it.</li>
+  </ul>
+
+  <h2>How long, and deleting it</h2>
+  <p>Everything is kept until you delete it. You can delete any memo, download all your data, or delete your account in
+    the app’s settings. Deleting your account removes your recordings, transcripts, results, devices and sign-in.</p>
+
+  <h2>Questions</h2>
+  <p>Email <a href="mailto:privacy@paperbot.ca">privacy@paperbot.ca</a>.</p>
+</main>
+
+<footer class="foot">
+  <a href="/">paperbot.ca</a>
+</footer>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hero: 1 + Shorter card on short screens</title>
+  <meta name="description" content="A little e-paper assistant that gets out of your way. Hold the button, ask, and get back to what you were doing. Free and open source.">
+  <meta name="theme-color" content="#f8f6f1">
+  <link rel="canonical" href="https://pocketbot.ca/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="paperbot">
+  <meta property="og:locale" content="en_CA">
+  <meta property="og:url" content="https://pocketbot.ca/">
+  <meta property="og:title" content="paperbot: an open-source e-paper assistant">
+  <meta property="og:description" content="A little e-paper assistant that gets out of your way.">
+  <meta property="og:image" content="https://pocketbot.ca/assets/img/og-v2.jpg">
+  <meta property="og:image:secure_url" content="https://pocketbot.ca/assets/img/og-v2.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="paperbot, a small white e-paper device, next to the words: Ask now. Read later.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="paperbot: an open-source e-paper assistant">
+  <meta name="twitter:description" content="A little e-paper assistant that gets out of your way.">
+  <meta name="twitter:image" content="https://pocketbot.ca/assets/img/og-v2.jpg">
+  <meta name="twitter:image:alt" content="paperbot, a small white e-paper device, next to the words: Ask now. Read later.">
+  <link rel="icon" href="../../assets/favicon-64.png" sizes="64x64" type="image/png">
+  <link rel="icon" href="../../assets/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+  <link rel="preload" href="../../fonts/Fraunces-Soft.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../fonts/Figtree-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../../assets/img/poster.webp" as="image" fetchpriority="high">
+  <link rel="preload" href="../../assets/paperbot.glb" as="fetch" type="model/gltf-binary" crossorigin>
+  <link rel="modulepreload" href="../../vendor/model-viewer.min.js">
+  <link rel="stylesheet" href="../../style.css">
+  <script>self.ModelViewerElement = { meshoptDecoderLocation: "../../vendor/meshopt_decoder.js" };</script>
+  <script type="module" src="../../vendor/model-viewer.min.js"></script>
+  <script type="module" src="../../main.js"></script>
+<style>
+  /* concept: desktop two-panel; below 900px the site's normal stacked hero applies */
+  @media (min-width: 900px) {
+    .hero { position: relative; max-width: 1280px; margin: 0 auto; text-align: left; justify-items: start; column-gap: clamp(32px, 5vw, 80px); }
+    .stage { width: 100%; height: min(72vh, 680px); }
+    .hero h1 { margin: 0; max-width: 11ch; font-size: clamp(52px, 6vw, 88px); line-height: 1.02; }
+    .lede { margin: 22px 0 0; max-width: 24rem; font-size: 19px; }
+    .hold { margin-top: 34px; }
+    .caption { width: min(100%, 40ch); }
+    .cards { position: static; translate: none; width: min(100%, 400px); min-height: 0; margin: 26px 0 0; }
+    .card { animation-name: card; }
+  }
+
+  @media (min-width: 900px) {
+    .hero { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      grid-template-areas: ". stage" "h1 stage" "lede stage" "hold stage" "cards stage" ". stage" ". cap";
+      grid-template-rows: 1fr auto auto auto auto 1fr auto; padding-top: 2vh; }
+    .stage { grid-area: stage; } .hero h1 { grid-area: h1; } .lede { grid-area: lede; } .hold { grid-area: hold; }
+    .cards { grid-area: cards; } .caption { grid-area: cap; justify-self: center; margin-top: -10px; }
+  }
+
+  @media (min-width: 900px) and (max-height: 820px) {
+    .card ul li:nth-child(n+2) { display: none; }
+    .card .summary { font-size: 15px; }
+    .hero h1 { font-size: clamp(48px, 5.4vw, 76px); }
+  }
+  /* live words sit right under the button's sound waves; the card later lands in the same spot */
+  @media (min-width: 900px) {
+    .caption { grid-area: cards; justify-self: start; align-self: start; width: min(100%, 28rem); height: auto; min-height: 0;
+      margin: 18px 0 0; text-align: left; justify-content: flex-start; align-content: flex-start; font-size: clamp(19px, 1.6vw, 23px); }
+    .cards { align-self: start; }
+  }
+</style>
+</head>
+<body>
+<header class="bar">
+  <a class="wordmark" href="#top">paperbot</a>
+  <div class="bar-right">
+    <a class="gh" href="https://github.com/mrjoedang/paperbot" target="_blank" rel="noopener" aria-label="paperbot on GitHub">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+    </a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="h-title">
+    <div class="stage">
+      <img class="stage-still" src="../../assets/img/poster.webp" alt="" fetchpriority="high" decoding="async">
+      <model-viewer id="mv" src="../../assets/paperbot.glb"
+        alt="paperbot, a small white device with an e-paper screen showing a smiling robot"
+        camera-controls disable-zoom disable-pan touch-action="pan-y" interaction-prompt="none"
+        camera-orbit="24deg 80deg 0.19m" field-of-view="22deg" max-camera-orbit="auto auto 0.35m" interpolation-decay="140"
+        tone-mapping="neutral" exposure="1" shadow-intensity="0.45" shadow-softness="1"
+        ar ar-modes="webxr scene-viewer quick-look" ar-scale="fixed">
+        <button slot="ar-button" class="ar">See it on your desk</button>
+        <div slot="progress-bar"></div>
+      </model-viewer>
+    </div>
+    <!-- live captions: what the person is saying while the demo listens -->
+    <p class="caption" id="caption" aria-hidden="true"></p>
+
+    <button class="hold" id="hold" type="button"><span id="hold-label">Demo</span><span class="spectrum" aria-hidden="true"></span><span class="loader" aria-hidden="true"><i></i><i></i><i></i></span></button>
+    <!-- what got filed: under the button on phones, to the right of the device on wide screens -->
+    <div class="cards" id="cards" aria-live="polite"></div>
+
+    <h1 id="h-title">Ask now.<br>Read later.</h1>
+    <p class="lede">Hold the button, ask, and get back to what you were doing.</p>
+  </section>
+
+  <section class="steps" aria-label="Why paperbot">
+    <div>
+      <img class="illus" src="../../assets/img/illus-phone.webp" width="900" height="675" loading="lazy" alt="paperbot researching on a desk, next to a phone lying face down">
+      <h2>No distractions</h2>
+      <p>No phone to unlock and no notifications to pull you away.</p>
+    </div>
+    <div>
+      <img class="illus" src="../../assets/img/illus-mug.webp" width="900" height="675" loading="lazy" alt="paperbot showing a finished answer, next to a cup of coffee">
+      <h2>Answers for later</h2>
+      <p>It looks into things in the background. Come back to the answer whenever you like.</p>
+    </div>
+    <div>
+      <img class="illus" src="../../assets/img/illus-cable.webp" width="900" height="675" loading="lazy" alt="paperbot lying on a desk with a USB-C cable plugged in">
+      <h2>Two weeks on a charge</h2>
+      <p>Use it every day. Charge it every couple of weeks.</p>
+    </div>
+  </section>
+
+  <section class="app" aria-labelledby="a-title">
+    <div class="app-copy">
+      <h2 id="a-title">Everything lands in one quiet list</h2>
+      <p>On your phone or laptop. Tick off todos, see what’s due, read the answers, and play back what you said when you need to.</p>
+    </div>
+    <div class="screens">
+      <figure class="shot shot-desk">
+        <img src="../../assets/img/app-list-laptop.webp" width="1280" height="1184" loading="lazy"
+          alt="The paperbot web app on a laptop: todos, a note, a reminder due tomorrow and a researched question">
+      </figure>
+      <img class="front-bot" src="../../assets/img/paperbot-front.webp" width="578" height="726" loading="lazy"
+        alt="paperbot facing you, its screen showing the same answer as the list: the Bow River loop is an easy, scenic place to start">
+      <figure class="shot shot-phone">
+        <img src="../../assets/img/app-list-phone.webp" width="780" height="1560" loading="lazy"
+          alt="The same list on a phone, with the answer to a researched question under it">
+      </figure>
+    </div>
+  </section>
+
+  <section class="open" aria-labelledby="o-title">
+    <img class="open-illus" src="../../assets/img/illus-open.webp" width="1200" height="600" loading="lazy"
+      alt="paperbot face down, showing its pin-map sticker and expansion header, with a small screwdriver beside it">
+    <h2 id="o-title">Free and open source</h2>
+    <p class="open-lede">No subscription and nothing locked away. It runs on your own account, with the AI you already use.</p>
+    <div class="open-points">
+      <div><h3>Free</h3><p>No plan to buy. You only pay your AI provider for what you use.</p></div>
+      <div><h3>Open source</h3><p>Read the code, change it, and run it yourself.</p></div>
+      <div><h3>Your key, your agent</h3><p>Plug in your own API key, or connect the agent you already use.</p></div>
+    </div>
+    <a class="gh-link" href="https://github.com/mrjoedang/paperbot" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span>Star paperbot on GitHub</span><svg class="star" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg></a>
+    <p class="gh-note">A star helps other people find it.</p>
+  </section>
+
+  <section class="details" aria-labelledby="d-title">
+    <h2 id="d-title">Details</h2>
+    <dl>
+      <div><dt>Size</dt><dd>39.8 × 53 × 16.9 mm</dd></div>
+      <div><dt>Screen</dt><dd>1.54 inch e-paper, 200 × 200</dd></div>
+      <div><dt>Battery</dt><dd>About two weeks</dd></div>
+      <div><dt>Offline</dt><dd>Clips wait on the memory card until it’s back on Wi-Fi or your phone’s hotspot</dd></div>
+      <div><dt>Charging</dt><dd>USB-C</dd></div>
+      <div><dt>Hardware</dt><dd>Waveshare ESP32-C6 e-paper board</dd></div>
+    </dl>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>pocketbot.ca</span>
+  <span>Built on Waveshare hardware. Not affiliated.</span>
+</footer>
+</body>
+</html>

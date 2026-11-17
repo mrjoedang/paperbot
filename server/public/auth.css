@@ -1,0 +1,42 @@
+/* Sign-in, "link your paperbot" and connector consent (login.html, device.html, consent.html, auth-pages.js).
+   Tokens, headings and buttons (.btn) come from style.css. */
+.auth { position: relative; z-index: 1; min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 48px 16px; }
+/* Sign-in: the wordmark centred over the buttons. */
+[data-page="login"] .auth-card .wordmark { text-align: center; }
+.auth-card { width: 100%; max-width: 400px; padding: 32px 28px 28px; }
+.auth-card .wordmark { margin: 0 0 30px; font-size: 22px; }
+.auth-title { margin: 0 0 10px; }
+.auth-lede { margin: 0 0 24px; color: var(--ink-2); font-size: 15px; line-height: 1.5; }
+.auth-lede b { color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
+.auth-actions { display: grid; gap: 10px; }
+.auth-actions.pair { grid-template-columns: 1fr 1fr; }
+.auth-msg { margin: 14px 0 0; min-height: 1.4em; font-size: 14px; color: var(--ink-2); }
+.auth-msg:empty { display: none; }
+.auth-msg.bad { color: var(--red); }
+.auth-msg.ok { color: var(--ink); }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin: 22px 0 14px; color: var(--ink-2); font-size: 12px; }
+.auth-divider::before, .auth-divider::after { content: ""; flex: 1; border-top: .5px solid var(--line-2); }
+.auth-more summary { list-style: none; cursor: pointer; color: var(--ink-2); font-size: 14px; text-align: center; }
+.auth-more summary::-webkit-details-marker { display: none; }
+.auth-more summary:hover { color: var(--ink); }
+.auth-more[open] summary { margin-bottom: 14px; }
+.auth-form { display: grid; gap: 10px; }
+.auth-input { width: 100%; min-height: 46px; padding: 10px 12px; border: .5px solid var(--line-2); border-radius: 10px; background: var(--paper);
+  color: var(--ink); font: 16px var(--f-body); }
+.auth-input:focus { outline: none; border-color: var(--ink-2); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 10%, transparent); }
+.auth-input::placeholder { color: color-mix(in srgb, var(--ink-2) 75%, transparent); }
+.auth-code { text-align: center; font: 500 26px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; min-height: 60px; }
+.auth-field { display: grid; gap: 6px; margin-bottom: 14px; }
+.auth-field label { font-size: 13px; color: var(--ink-2); }
+.auth-list { list-style: none; margin: 0 0 24px; padding: 0; display: grid; gap: 10px; font-size: 15px; }
+.auth-list li { display: flex; gap: 10px; align-items: flex-start; }
+.auth-list svg { flex: none; margin-top: 3px; color: var(--ink-2); }
+.auth-foot { margin: 20px 0 0; text-align: center; font-size: 13px; color: var(--ink-2); }
+.auth-foot a, .auth-foot button { color: inherit; background: none; border: 0; padding: 0; font: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.auth-done { text-align: center; }
+.auth-done .auth-badge { width: 52px; height: 52px; margin: 0 auto 18px; display: grid; place-items: center; border-radius: 50%;
+  background: var(--paper-lo); color: var(--ink); }
+@media (max-width: 480px) {
+  .auth { padding: 24px 16px; place-items: center stretch; }
+  .auth-card { max-width: none; padding: 28px 20px 24px; }
+}

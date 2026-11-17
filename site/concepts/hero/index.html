@@ -1,0 +1,74 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>paperbot hero concepts</title><link rel="icon" href="../../assets/favicon-64.png">
+<style>
+@font-face { font-family: "Fraunces"; src: url("../../fonts/Fraunces-Soft.woff2"); font-weight: 350 550; }
+@font-face { font-family: "Figtree"; src: url("../../fonts/Figtree-Variable.woff2"); font-weight: 300 900; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #f8f6f1; color: #3b3a35; font: 16px/1.55 Figtree, system-ui; padding: 56px clamp(20px, 6vw, 80px) 80px; }
+h1 { font: 400 40px Fraunces; letter-spacing: -.02em; margin: 0 0 6px; }
+.intro { color: #86837a; margin: 0 0 48px; max-width: 46rem; }
+section { margin-bottom: 56px; }
+h2 { font: 400 26px Fraunces; letter-spacing: -.015em; margin: 0 0 4px; display: flex; align-items: center; gap: 12px; }
+h2 .new { font: 600 12px Figtree; letter-spacing: .02em; color: #f8f6f1; background: #3b3a35; border-radius: 999px; padding: 3px 10px; }
+.sub { color: #86837a; margin: 0 0 20px; max-width: 46rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 22px; }
+a.c { display: block; text-decoration: none; color: inherit; }
+a.c img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; border: 1px solid #e7e3d9; background: #fdfcf9; transition: translate .2s, box-shadow .2s; }
+a.c:hover img { translate: 0 -2px; box-shadow: 0 14px 30px -18px rgb(60 52 30 / .35); }
+a.c b { display: flex; align-items: baseline; gap: 8px; margin-top: 10px; font: 500 18px Fraunces; letter-spacing: -.01em; }
+a.c b i { font: 600 13px Figtree; font-style: normal; color: #86837a; }
+a.c span { display: block; color: #86837a; font-size: 14.5px; margin-top: 2px; }
+.pick { white-space: nowrap; align-self: center; font: 600 11px Figtree; color: #3b3a35; border: 1px solid #d9d4c7; border-radius: 999px; padding: 1px 8px; margin-left: auto; }
+</style></head><body>
+<h1>Hero concepts</h1>
+<p class="intro">Each page is the full site with only the hero changed; the Demo button works. Thumbnails show the moment after a demo finishes. Below 900 px wide everything falls back to today's stacked phone layout.</p>
+
+<section>
+  <h2>Round 4: steady sound waves <span class="new">New</span></h2>
+  <p class="sub">All built on 3B (device slides over, card on the right). The waves sit above the words so they don't move while the words stream in. They differ in what the headline does. Thumbnails show mid-sentence.</p>
+  <div class="grid">
+    <a class="c" href="h4b-nothing-moves.html"><img src="thumbs/h4b-nothing-moves.webp" alt=""><b><i>4B</i> Nothing moves <span class="pick">my pick</span></b><span>The headline fades but keeps its space; the button never moves; words stream in under it.</span></a>
+    <a class="c" href="h4a-waves-up.html"><img src="thumbs/h4a-waves-up.webp" alt=""><b><i>4A</i> Waves move up once</b><span>The headline folds away when you press Demo, so the button rises once, then stays still.</span></a>
+    <a class="c" href="h4d-headline-stays.html"><img src="thumbs/h4d-headline-stays.webp" alt=""><b><i>4D</i> Headline stays</b><span>Nothing hides: headline, line, waves, then the words streaming under them.</span></a>
+    <a class="c" href="h4c-words-replace-headline.html"><img src="thumbs/h4c-words-replace-headline.webp" alt=""><b><i>4C</i> Your words replace the headline</b><span>Words stream large where the headline was, growing upward; the waves stay put below them.</span></a>
+  </div>
+</section>
+
+<section>
+  <h2>Round 3: hidden words, card beside the device</h2>
+  <p class="sub">Headline and line hide while it listens; the live words appear above the sound waves; the words come back when the answer lands to the right of the device.</p>
+  <div class="grid">
+    <a class="c" href="h3b-device-slides.html"><img src="thumbs/h3b-device-slides.webp" alt=""><b><i>3B</i> Device slides over</b><span>When the answer lands, the device glides left and the card takes the freed space.</span></a>
+    <a class="c" href="h3c-reserved-slot.html"><img src="thumbs/h3c-reserved-slot.webp" alt=""><b><i>3C</i> A spot reserved for the answer</b><span>Three columns from the start: words, device, and a quiet empty spot that says where the answer will appear.</span></a>
+  </div>
+</section>
+
+<section>
+  <h2>Round 2: what happens during the demo</h2>
+  <p class="sub">All built on layout 1 (text left, device right), with the live words now right under the button's sound waves. They differ only in what the headline does when you press Demo. Tested on a short 1280 × 720 laptop.</p>
+  <div class="grid">
+    <a class="c" href="h1a-compact.html"><img src="thumbs/h1a-compact.webp" alt=""><b><i>1A</i> Compact while demoing </b><span>Headline shrinks to ~70%, the line fades; both come back when you start over.</span></a>
+    <a class="c" href="h1b-swap.html"><img src="thumbs/h1b-swap.webp" alt=""><b><i>1B</i> Line swaps for the card</b><span>Headline stays; the card takes the line's place and the button moves under it.</span></a>
+    <a class="c" href="h1c-hide.html"><img src="thumbs/h1c-hide.webp" alt=""><b><i>1C</i> Hide the words</b><span>Headline and line disappear during the demo; the card moves up.</span></a>
+    <a class="c" href="h1d-short-card.html"><img src="thumbs/h1d-short-card.webp" alt=""><b><i>1D</i> Shorter card on short screens</b><span>Nothing moves; under 820 px tall the card shows the summary and one finding.</span></a>
+  </div>
+</section>
+
+<section>
+  <h2>Round 1: layouts</h2>
+  <p class="sub">Where the device, headline and button go on desktop.</p>
+  <div class="grid">
+    <a class="c" href="h1-text-left.html"><img src="thumbs/h1-text-left.webp" alt=""><b><i>1</i> Text left, device right</b><span>Headline, line and Demo on the left; device on the right. Basis for round 2.</span></a>
+    <a class="c" href="h2-device-left.html"><img src="thumbs/h2-device-left.webp" alt=""><b><i>2</i> Device left, text right</b><span>Device leads on the left; everything else stacks on the right.</span></a>
+    <a class="c" href="h3-button-with-device.html"><img src="thumbs/h3-button-with-device.webp" alt=""><b><i>3</i> Button under the device</b><span>Words on the left, Demo button and live words with the device on the right.</span></a>
+    <a class="c" href="h4-headline-first.html"><img src="thumbs/h4-headline-first.webp" alt=""><b><i>4</i> Headline first</b><span>Not two panels: big line of type on top, device under it, card beside it.</span></a>
+  </div>
+</section>
+
+<section>
+  <h2>For comparison</h2>
+  <div class="grid">
+    <a class="c" href="../../index.html"><img src="thumbs/today.webp" alt=""><b>Today's hero (live on pocketbot.ca)</b><span>Device centred, button under it, headline below.</span></a>
+  </div>
+</section>
+</body></html>

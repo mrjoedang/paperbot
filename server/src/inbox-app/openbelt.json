@@ -1,0 +1,7 @@
+{
+  "description": "What you asked paperbot to remember: todos, shopping, reminders and notes",
+  "collections": {
+    "items": "one doc per thing to remember, id = the paperbot memo id (or random when added here): { list: \"todo\" | \"shopping\" | \"reminder\" | \"note\", title, due: local ISO date or datetime or null, done: bool, memo: paperbot memo id or null }"
+  },
+  "writable": ["items"]
+}

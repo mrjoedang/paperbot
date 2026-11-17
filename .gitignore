@@ -1,0 +1,20 @@
+# Build output
+build/
+dist/
+node_modules/
+.wrangler/
+server/worker-configuration.d.ts
+
+# Secrets (never commit) - see README "Secrets"
+.secrets.env
+.secrets/
+.secrets
+firmware/paperbot/secrets.h
+server/.dev.vars
+server/.secrets
+
+# OS / editor
+.DS_Store
+*.swp
+tools/render3d/out/
+__pycache__/
