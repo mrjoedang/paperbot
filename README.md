@@ -11,12 +11,13 @@ and decides what it is: a question it answers on the screen, something to rememb
 
 ```mermaid
 flowchart LR
-  B["Board<br/>ESP32-C6 e-paper"] -- "WAV upload" --> W["Cloudflare Worker"]
-  W --> T["Whisper"] --> R{"Router<br/>one Haiku call"}
-  R -- ignore --> X["dropped"]
-  R -- answer --> S["answer on the screen"]
-  R -- save --> L["your list in OpenBelt"]
-  R -- "research / app" --> A["AI agent<br/>report or app"]
+  board[Board] -->|WAV| worker[Cloudflare Worker]
+  worker --> whisper[Whisper]
+  whisper --> router{Router}
+  router -->|ignore| dropped[Dropped]
+  router -->|answer| screen[Answer on the screen]
+  router -->|save| list[Your list in OpenBelt]
+  router -->|research or app| agent[AI agent]
 ```
 
 - **The board** is a Waveshare ESP32-C6 1.54" e-paper board (200×200, 1-bit) with a robot face, Bolt. It sleeps
