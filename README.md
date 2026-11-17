@@ -33,6 +33,11 @@ flowchart LR
 Memos, your list and your apps, on any phone or computer.
 
 <picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/screens/desktop-dark.png">
+  <img alt="The web app on a computer: memos" src="docs/screens/desktop-light.png">
+</picture>
+
+<picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screens/app-dark.png">
   <img alt="The web app: memos, an answer and a research report" src="docs/screens/app-light.png">
 </picture>
