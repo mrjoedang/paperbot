@@ -32,7 +32,10 @@ the worktree afterwards (`git worktree remove <scratch>/before`).
   before/after and why. The block is never left out.
 
 Images go in the PR via `gh` attachments or a comment; keep each under 10 MB. Never include a token,
-password, Wi-Fi password or personal recording in the evidence.
+password, Wi-Fi password or personal recording in the evidence. The repo is public: shoot web pages
+against a localhost Worker, never a tailnet address (`*.ts.net` shows up in the MCP command on Research),
+and look at every image for hostnames, personal email addresses and `/Users/...` paths before attaching
+it. A PR body's edit history keeps every image ever posted.
 
 ## The block
 
