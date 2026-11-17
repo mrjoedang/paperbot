@@ -1,8 +1,8 @@
-// Settings (research, recording, account), the Devices, Apps and Assistants parts of Connections, and the
-// first-visit setup card. Server: /api/me, /api/research, /api/tz, /api/export, /api/account, /api/boards,
+// The pages of Settings (settings.js draws the window and the menu): Research, Recording, Devices, Apps,
+// Assistants and Account, and the first-visit setup card. Server: /api/me, /api/research, /api/tz, /api/export, /api/account, /api/boards,
 // /api/openbelt, /api/assistants (src/index.ts). Untrusted strings only go through h() children.
 import { openbeltMark } from "./icons.js";
-import { h, api, toast, openDrawer, BASE } from "./dom.js";
+import { h, api, toast, BASE } from "./dom.js";
 import { ago } from "./util.js";
 
 export const MCP_URL = () => `${location.origin}/v1/mcp`;
@@ -32,66 +32,59 @@ export async function signOut() {
   location.href = "/login";
 }
 
-export function openSettings(S) {
-  const open = !document.getElementById("drawer").hidden && document.getElementById("drawer-title").textContent === "Settings";
-  if (!open) openDrawer("Settings", (body) => { body.append(h("p", { class: "muted" }, "loading…")); }, { hash: "settings" });
-  loadMe(S).then(() => renderSettings(S));
-}
-
-function renderSettings(S) {
-  const body = document.getElementById("drawer-body");
-  if (!me || document.getElementById("drawer-title").textContent !== "Settings") return;
-  const typed = body.querySelector("#byok")?.value ?? ""; // a re-render (fresh data) never drops a key being typed
-  body.replaceChildren(researchGroup(S), recordingGroup(), accountGroup(S));
-  const key = body.querySelector("#byok");
-  if (key && typed) key.value = typed;
-}
-
-function researchGroup(S) {
+/** Research: one radio per way to research; only the picked one's setup shows. S.researchPick is the radio
+ * picked on this visit (settings.js clears it on open); "On" marks the mode the server runs. */
+export function researchGroup(S, rerender) {
   const r = me.research ?? {};
-  const choice = (id, title, desc, tag, more, current) =>
-    h("div", { class: `choice${current ? " current" : ""}`, "data-choice": id },
-      h("div", { class: "choice-h" }, h("span", null, h("b", null, title), h("span", { class: "muted" }, desc)), tag ? h("span", { class: `tag${current ? " ok" : ""}` }, tag) : null),
-      more ? h("div", { class: "choice-more" }, more) : null);
+  const pick = S.researchPick ?? r.mode;
+  const opt = (id, title, desc, soon = false) => h("label", { class: `opt${soon ? " soon" : ""}${id === r.mode ? " current" : ""}`, "data-choice": id },
+    h("input", { type: "radio", name: "research", value: id, checked: id === pick || null, disabled: soon || null, onchange: () => { S.researchPick = id; rerender(); } }),
+    h("span", { class: "opt-t" }, h("b", null, title), h("span", null, desc)),
+    soon ? h("span", { class: "tag" }, "Soon") : id === r.mode ? h("span", { class: "tag ok" }, id === "key" && r.hint ? `Key …${r.hint}` : "On") : null);
 
-  // own key
-  const key = h("input", { id: "byok", type: "password", autocomplete: "off", spellcheck: "false", placeholder: r.hint ? `sk-ant-…${r.hint}` : "sk-ant-…" });
-  const res = h("span", { class: "acct-result", role: "status" });
-  const save = h("button", { class: "btn primary", type: "button", onclick: async () => {
-    const v = key.value.trim();
-    if (!v) { res.textContent = "Paste your Anthropic API key first."; res.className = "acct-result bad"; return; }
-    save.disabled = true; res.className = "acct-result"; res.textContent = "Checking the key…";
-    try { me.research = await api("api/research", { method: "POST", body: { provider: "anthropic", key: v } }); key.value = ""; toast("Key saved. Work memos are researched on it."); renderSettings(S); }
-    catch (e) { res.textContent = e.message; res.className = "acct-result bad"; save.disabled = false; }
-  } }, r.mode === "key" ? "Replace key" : "Save and check key");
-  const remove = r.mode === "key" ? h("button", { class: "btn", type: "button", onclick: async () => {
+  const opts = h("div", { class: "opts", role: "radiogroup", "aria-label": "How memos are researched" },
+    r.mode === "included" ? opt("included", "Included", "Research runs on paperbot's own account.") : null,
+    opt("assistant", "Ask my assistant", "Free with Claude or ChatGPT. Memos wait until you ask."),
+    opt("key", "Use my API key", "Memos are researched as you record them."),
+    opt("chatgpt", "Use my ChatGPT plan", "On your Plus or Pro allowance.", true));
+
+  const removeKey = () => h("button", { class: "btn", type: "button", onclick: async (e) => {
     if (!confirm("Remove your API key? Work memos will wait for your assistant instead.")) return;
-    try { me.research = await api("api/research", { method: "DELETE" }); toast("Key removed."); renderSettings(S); } catch (e) { toast(e.message, { bad: true }); }
-  } }, "Remove key") : null;
-  const keyMore = [
-    h("div", { class: "field" }, h("label", { for: "byok" }, "Anthropic API key"), key),
-    h("div", { class: "row" }, save, remove, res),
-    h("p", { class: "muted small" }, "Stored encrypted. Research stops at $5 a day."),
-  ];
+    e.currentTarget.classList.add("loading");
+    try { me.research = await api("api/research", { method: "DELETE" }); delete S.researchPick; toast("Key removed."); rerender(); } catch (x) { toast(x.message, { bad: true }); rerender(); }
+  } }, "Remove key");
 
-  const assistantMore = [
-    h("div", { class: "field" }, h("span", { class: "lbl" }, "Claude Code: run in a terminal (it opens your browser to sign in)"),
-      cmd(`claude mcp add --scope user --transport http paperbot ${MCP_URL()} && claude mcp login paperbot`)),
-    h("div", { class: "field" }, h("span", { class: "lbl" }, "claude.ai or ChatGPT: add a custom connector with this address"), cmd(MCP_URL())),
-    h("div", { class: "field" }, h("span", { class: "lbl" }, "Then ask it"), cmd(ASK)),
-  ];
-
-  const kids = [];
-  if (r.mode === "included") kids.push(choice("included", "Included", "Research runs on paperbot's own account.", "On", null, true));
-  kids.push(
-    choice("key", "Use my API key", "Automatic: memos are researched as soon as you record them.", r.mode === "key" ? `Key …${r.hint ?? ""}` : "Not set", keyMore, r.mode === "key"),
-    choice("assistant", "Ask my assistant", "Free with Claude or ChatGPT. Memos wait until you ask it to check paperbot.", r.mode === "assistant" ? "On" : null, assistantMore, r.mode === "assistant"),
-    choice("chatgpt", "Use my ChatGPT plan", "Automatic, on your Plus or Pro allowance.", "Coming soon", null, false),
-  );
-  return group("Research", ...kids);
+  let more = null;
+  if (pick === "key") {
+    const key = h("input", { id: "byok", type: "password", autocomplete: "off", spellcheck: "false", placeholder: r.hint ? `sk-ant-…${r.hint}` : "sk-ant-…" });
+    const res = h("span", { class: "acct-result", role: "status" });
+    const save = h("button", { class: "btn primary", type: "button", onclick: async () => {
+      const v = key.value.trim();
+      if (!v) { res.textContent = "Paste your Anthropic API key first."; res.className = "acct-result bad"; return; }
+      save.disabled = true; save.classList.add("loading"); res.className = "acct-result"; res.textContent = "";
+      try { me.research = await api("api/research", { method: "POST", body: { provider: "anthropic", key: v } }); key.value = ""; delete S.researchPick; toast("Key saved. Work memos are researched on it."); rerender(); }
+      catch (e) { res.textContent = e.message; res.className = "acct-result bad"; save.disabled = false; save.classList.remove("loading"); }
+    } }, r.mode === "key" ? "Replace key" : "Save and check key");
+    more = h("section", { class: "settings-card-box" },
+      h("div", { class: "field" }, h("label", { for: "byok" }, "Anthropic API key"), key),
+      h("div", { class: "row" }, save, r.mode === "key" ? removeKey() : null, res),
+      h("p", { class: "muted small" }, "Stored encrypted. Research stops at $5 a day."));
+  } else if (pick === "assistant") {
+    const tab = S.researchTab ?? "cc";
+    const tabs = [["cc", "Claude Code"], ["web", "claude.ai"], ["gpt", "ChatGPT"]];
+    more = h("section", { class: "settings-card-box" },
+      r.mode === "key" ? h("div", { class: "row" }, h("p", { class: "acct-p" }, "Your API key runs research now."), removeKey()) : null,
+      h("div", { class: "tabs", role: "tablist", "aria-label": "Assistant" }, tabs.map(([id, label]) =>
+        h("button", { type: "button", role: "tab", "aria-selected": String(id === tab), onclick: () => { S.researchTab = id; rerender(); } }, label))),
+      tab === "cc"
+        ? h("div", { class: "field" }, h("span", { class: "lbl" }, "Run in a terminal"), cmd(`claude mcp add --scope user --transport http paperbot ${MCP_URL()} && claude mcp login paperbot`))
+        : h("div", { class: "field" }, h("span", { class: "lbl" }, "Add a custom connector"), cmd(MCP_URL())),
+      h("div", { class: "field" }, h("span", { class: "lbl" }, "Then ask it"), cmd(ASK)));
+  }
+  return group("Research", opts, more);
 }
 
-function recordingGroup() {
+export function recordingGroup() {
   const u = me.usage ?? {}, cap = u.audio_cap_min ?? 0, used = Math.round((u.audio_seconds_24h ?? 0) / 60);
   if (!(cap > 0)) return group("Recording", p("Transcription has no daily limit on this account."));
   const pct = Math.min(100, (used / cap) * 100);
@@ -101,10 +94,10 @@ function recordingGroup() {
     h("p", { class: "muted small" }, `${used} of ${cap} minutes in the last 24 hours.`));
 }
 
-function accountGroup(S) {
+export function accountGroup(S, rerender) {
   const here = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const tzRow = h("dd", null, me.tz, here && here !== me.tz ? h("button", { class: "link-inline", type: "button", onclick: async () => {
-    try { await api("api/tz", { method: "POST", body: { tz: here } }); me.tz = here; toast(`Time zone set to ${here}`); renderSettings(S); } catch (e) { toast(e.message, { bad: true }); }
+    try { await api("api/tz", { method: "POST", body: { tz: here } }); me.tz = here; toast(`Time zone set to ${here}`); rerender(); } catch (e) { toast(e.message, { bad: true }); }
   } }, ` use ${here}`) : null);
   const out = h("button", { class: "btn", type: "button", onclick: signOut }, "Sign out");
   const del = me.owner ? null : h("button", { class: "btn danger", type: "button", onclick: async () => {
@@ -126,7 +119,7 @@ export async function loadLinks(S) {
 }
 
 /** Where Connect OpenBelt starts: OpenBelt's own sign-in (an email code), then back here. */
-export const connectOpenbelt = (next = "/#connections/apps") => `${BASE}api/openbelt/connect?next=${encodeURIComponent(next)}`;
+export const connectOpenbelt = (next = "/#settings/apps") => `${BASE}api/openbelt/connect?next=${encodeURIComponent(next)}`;
 
 // ---------------------------------------------------------------- Connections: apps (OpenBelt)
 export function appsGroup(S, rerender) {
@@ -157,13 +150,14 @@ export function devicesGroup(S, rerender) {
           try { await api(`api/boards/${b.device}`, { method: "DELETE" }); S.boards = S.boards.filter((x) => x !== b); toast("Board removed."); rerender(); } catch (e) { toast(e.message, { bad: true }); }
         } }, "Remove") : null);
     });
-  return group("Devices", ...list, h("a", { class: "btn", href: "/setup" }, boards?.length ? "Set up another" : "Set up a board"));
+  return group("Devices", ...list, h("div", { class: "row" }, h("a", { class: "btn", href: "/setup" }, boards?.length ? "Set up another" : "Set up a board"),
+    boards?.length ? h("a", { class: "btn", href: "#health" }, "Health and logs") : null));
 }
 
 export function assistantsGroup(S, rerender) {
   const a = S.assistants;
   const list = !a ? [h("p", { class: "muted" }, "loading…")]
-    : !a.length ? [h("p", { class: "muted" }, "None yet. Settings → Research shows how to connect Claude or ChatGPT.")]
+    : !a.length ? [h("p", { class: "muted" }, "None yet."), h("a", { class: "btn", href: "#settings/research" }, "Connect an assistant")]
     : a.map((x) => h("div", { class: "acct-item" },
       h("div", null, h("b", null, x.name || "Assistant"), h("span", { class: "muted" }, [`Allowed ${fmtDate(x.allowed_at)}`, x.last_used ? `last used ${ago(typeof x.last_used === "number" ? x.last_used : Date.parse(x.last_used))}` : null].filter(Boolean).join(", "))),
       h("button", { class: "btn", type: "button", onclick: async () => {

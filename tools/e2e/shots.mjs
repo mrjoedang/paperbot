@@ -99,8 +99,8 @@ try {
   // the loading screen, held up the way it looks before the app's first paint
   await shoot("boot", "/", { ready: ".setup-card", prep: async (p) => { await p.evaluate(() => {
     const b = document.getElementById("app-boot"); b.style.transition = "none"; b.classList.remove("is-ready"); b.querySelector(".boot-label").textContent = "Loading paperbot"; }); } });
-  await shoot("settings", "/#settings", { ready: ".acct-group" });
-  await shoot("connections-empty", "/#connections", { ready: ".acct-group" });
+  await shoot("settings", "/#settings", { ready: ".settings-nav" });
+  await shoot("settings-wifi-empty", "/#settings/wifi", { ready: ".empty-state" });
   await shoot("consent", "/consent?client_id=shots&scope=openid%20profile%20email%20offline_access%20memos", { ready: "#allow" });
 
   // ---- a linked board and memos in every state ----
@@ -139,10 +139,10 @@ try {
   await shoot("item-saved", "/#item/shot-reminder", { ready: ".item-view:not([hidden])" });
   await shoot("item-save-waiting", "/#item/shot-save-wait", { ready: ".item-view:not([hidden])" });
   await shoot("item-reminder", "/#item/shot-reminder", { ready: ".item-view:not([hidden])" });
-  await shoot("connections", "/#connections", { ready: ".acct-item" });
+  await shoot("settings-devices", "/#settings/devices", { ready: ".acct-item" });
   await shoot("settings-menu", "/", { ready: "#settings-toggle", prep: async (p) => { await p.click("#settings-toggle"); } });
   await inPage(async () => fetch("/api/research", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ provider: "anthropic", key: "sk-ant-test-shots0000000000000000000000003f9a" }) }));
-  await shoot("settings-own-key", "/#settings", { ready: '[data-choice="key"].current' });
+  await shoot("settings-own-key", "/#settings/research", { ready: '[data-choice="key"].current' });
 
   await inPage(async () => fetch("/api/account", { method: "DELETE" }));
   await ctx.close();

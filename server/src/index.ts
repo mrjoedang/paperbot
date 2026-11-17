@@ -422,8 +422,8 @@ async function handleWeb(req: Request, env: Env, url: URL, ctx: ExecutionContext
   if (path === "/api/openbelt" && req.method === "DELETE") return json(await box.openbeltDisconnect(openbeltBase(env.OPENBELT_URL)));
   if (path === "/api/openbelt/connect" && req.method === "GET") {
     // A top-level navigation from the web app (a link): only ever back into this app afterwards.
-    const asked = url.searchParams.get("next") ?? "/#connections/apps";
-    const next = asked.startsWith("/") && !asked.startsWith("//") ? asked : "/#connections/apps";
+    const asked = url.searchParams.get("next") ?? "/#settings/apps";
+    const next = asked.startsWith("/") && !asked.startsWith("//") ? asked : "/#settings/apps";
     try {
       const to = await box.openbeltStart(openbeltBase(env.OPENBELT_URL), `${url.origin}/api/openbelt/callback`, next);
       return Response.redirect(to, 302);
@@ -436,7 +436,7 @@ async function handleWeb(req: Request, env: Env, url: URL, ctx: ExecutionContext
   if (path === "/api/openbelt/callback" && req.method === "GET") {
     // The web app shows a fixed message (text in a URL could be anyone's); the reason goes to the log. Setup's popup goes on to
     // its last page either way.
-    const back = (q: string, next: string | null) => Response.redirect(next?.startsWith("/setup/") ? `${url.origin}${next}` : `${url.origin}/?${q}#connections/apps`, 302);
+    const back = (q: string, next: string | null) => Response.redirect(next?.startsWith("/setup/") ? `${url.origin}${next}` : `${url.origin}/?${q}#settings/apps`, 302);
     const err = url.searchParams.get("error");
     if (err) { console.log(JSON.stringify({ ev: "openbelt_connect_refused", error: err.slice(0, 60), inbox: name })); return back(err === "access_denied" ? "openbelt_error=denied" : "openbelt_error=1", await box.openbeltAbandon()); }
     const done = await box.openbeltFinish(openbeltBase(env.OPENBELT_URL), url.searchParams.get("code") ?? "", url.searchParams.get("state") ?? "");

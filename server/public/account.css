@@ -1,16 +1,10 @@
-/* Settings, Connections (devices, assistants) and the first-visit setup card (account.js). Tokens come from style.css. */
+/* Settings (settings.js: the window, its menu) and its pages, and the first-visit setup card (account.js). Tokens come from style.css. */
 .acct-group { padding: 4px 0 22px; border-bottom: 1px solid var(--line); margin-bottom: 4px; display: grid; gap: 12px; }
 .acct-group:last-child { border-bottom: 0; }
 .drawer-body .acct-group > h3, .drawer-body h3.acct-wifi-h { margin: 20px 0 0; font: 600 15px/1.3 var(--f-body); color: var(--ink); text-transform: none; letter-spacing: 0; }
 .acct-p, .acct-group > .muted { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
 .acct-group .acct-p { margin-top: -6px; }
 .small { font-size: 13px; margin: 0; }
-.choice { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 12px; background: var(--paper-hi); }
-.choice.current { border-color: var(--ink); }
-.choice-h { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; }
-.choice-h > span:first-child { display: grid; gap: 2px; }
-.choice-h .muted { font-size: 13px; }
-.choice-more { display: grid; gap: 12px; }
 .tag { font-size: 12px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line-2); color: var(--ink-2); white-space: nowrap; }
 .tag.ok { border-color: var(--ink); color: var(--ink); }
 .cmd { display: flex; align-items: stretch; border: 1px solid var(--line-2); border-radius: 6px; overflow: hidden; background: var(--paper); }
@@ -35,19 +29,7 @@
 .acct-more[open] summary::before { content: "−"; }
 .acct-more[open] summary { margin-bottom: 14px; }
 .drawer-body h3.acct-wifi-h { margin: 22px 0 6px; }
-/* Connections, top level (places.js): a row per kind, each opening its own page. */
-.conn-list { display: grid; margin: -4px 0 0; }
-.conn-row { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px 4px; border: 0; border-radius: 0; border-bottom: .5px solid var(--line-2); background: none; color: var(--ink); text-align: left; font: inherit; cursor: pointer; transition: background 120ms ease; }
-.conn-row:hover { background: var(--paper-lo); }
-.conn-row:active { background: var(--paper-hi); }
-.conn-row-icon { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-control); background: var(--paper-hi); border: .5px solid var(--line-2); color: var(--ink-2); }
-.conn-row-copy { display: grid; gap: 3px; min-width: 0; flex: 1; }
-.conn-row-copy strong { font-weight: 600; font-size: 15px; }
-.conn-row-copy span { font-size: 13px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.conn-row-arrow { color: var(--ink-2); font-size: 22px; line-height: 1; }
 .places-panel .acct-group { border-bottom: 0; }
-.conn-page > .acct-group { padding-top: 0; }
-.conn-page > .acct-group > h3 { display: none; }
 /* An empty page (Wi-Fi with no networks): a drawing, what's missing, the one action. */
 .empty-state { display: grid; justify-items: center; gap: 8px; padding: 40px 8px 8px; text-align: center; }
 .empty-state .empty-art { color: var(--ink-2); margin-bottom: 12px; }
@@ -79,3 +61,64 @@
 .err-action { margin: 8px 0 0 32px; }
 .item-view .err-action, .item-view .item-result .err { margin-left: 0; }
 .item-view .item-result .research-body p { font-size: 15px; }
+
+/* The Settings window (settings.js). Wide: a centred window, the menu as a sidebar beside the page. */
+.settings-nav, .settings-back, .settings-chev { display: none; }
+.drawer-card.settings-card { inset: 0; margin: auto; width: min(920px, calc(100% - 48px)); height: min(720px, calc(100% - 48px));
+  display: grid; grid-template-columns: 232px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+.settings-card .drawer-h, .settings-card .drawer-body { grid-column: 2; border-radius: 0; }
+.settings-card .settings-nav { grid-row: 1 / 3; display: grid; align-content: start; gap: 18px; padding: 20px 12px; background: var(--paper-lo); overflow: auto; }
+.settings-nav h2 { margin: 0 10px 2px; font: 400 21px/1.2 var(--f-display); letter-spacing: -.02em; }
+.settings-nav-group { display: grid; gap: 2px; }
+.settings-nav h3 { margin: 0 10px 4px; font: 500 12px/1.3 var(--f-body); color: var(--ink-2); }
+.settings-nav button { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 10px; border: 0; background: none; border-radius: var(--radius-control);
+  font: 14px/1.2 var(--f-body); color: var(--ink); text-align: left; transition: background 120ms ease; }
+.settings-nav button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.settings-nav button:active { background: color-mix(in srgb, var(--ink) 11%, transparent); }
+.settings-nav button[aria-current="page"] { background: var(--paper-hi); font-weight: 500; }
+.settings-nav .px-icon { color: var(--ink-2); }
+.settings-alert { flex: none; width: 7px; height: 7px; margin-left: auto; border-radius: 99px; background: var(--red); }
+.settings-card .acct-group { padding: 0; border-bottom: 0; margin: 0; gap: 18px; }
+.settings-card .drawer-body .acct-group > h3 { display: none; }
+/* Narrow: the menu is a page of its own; a page has a back button. */
+@media (max-width: 700px) {
+  .drawer-card.settings-card { inset: 12px; width: auto; height: auto; display: flex; flex-direction: column; }
+  .settings-card .drawer-h { order: -1; }
+  .settings-card .settings-nav { display: none; padding: 16px; gap: 22px; background: none; }
+  .settings-card.at-menu .settings-nav { display: grid; flex: 1; min-height: 0; }
+  .settings-card.at-menu .drawer-body { display: none; }
+  .settings-card:not(.at-menu) .settings-back { display: grid; margin-left: -8px; }
+  .settings-nav h2 { display: none; }
+  .settings-nav-group { gap: 0; }
+  .settings-nav-group button { min-height: 52px; padding: 0 14px; gap: 12px; border-radius: 0; background: var(--paper-hi); font-size: 15px; }
+  .settings-nav-group button + button { box-shadow: inset 0 1px var(--line); }
+  .settings-nav-group button:first-of-type { border-top-left-radius: var(--radius-panel); border-top-right-radius: var(--radius-panel); }
+  .settings-nav-group button:last-child { border-bottom-left-radius: var(--radius-panel); border-bottom-right-radius: var(--radius-panel); }
+  .settings-nav-group button:hover { background: var(--paper-lo); }
+  .settings-nav h3 { margin: 0 4px 8px; }
+  .settings-chev { display: block; margin-left: auto; color: var(--ink-2); }
+  .settings-alert + .settings-chev { margin-left: 8px; }
+}
+
+/* Research: a radio per way to research, then the picked one's setup. */
+.opts { background: var(--paper-hi); border-radius: var(--radius-panel); overflow: hidden; }
+.opt { display: flex; align-items: center; gap: 14px; padding: 14px; cursor: pointer; transition: background 120ms ease; }
+.opt + .opt { box-shadow: inset 0 1px var(--line); }
+.opt:hover { background: var(--paper-lo); }
+.opt input { appearance: none; flex: none; width: 20px; height: 20px; margin: 0; border-radius: 99px; background: var(--paper-lo); box-shadow: inset 0 0 0 1.5px var(--line-2); cursor: pointer; }
+.opt input:checked { background: var(--ink); box-shadow: inset 0 0 0 5px var(--ink), inset 0 0 0 10px var(--paper-hi); }
+.opt-t { flex: 1; display: grid; gap: 1px; min-width: 0; }
+.opt-t b { font-weight: 500; font-size: 15px; }
+.opt-t span { font-size: 13px; color: var(--ink-2); }
+.opt.soon { cursor: default; opacity: .55; }
+.opt.soon:hover { background: none; }
+.settings-card-box { display: grid; gap: 14px; padding: 16px; background: var(--paper-hi); border-radius: var(--radius-panel); }
+.settings-card-box .row .acct-p { flex: 1; margin: 0; }
+.tabs { display: flex; gap: 2px; padding: 3px; background: var(--paper-lo); border-radius: var(--radius-pill); justify-self: start; max-width: 100%; }
+.tabs button { min-height: 32px; padding: 0 12px; border: 0; background: none; border-radius: var(--radius-pill); font: 500 13px/1 var(--f-body); color: var(--ink-2); transition: background 120ms ease, color 120ms ease; }
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] { background: var(--paper-hi); color: var(--ink); box-shadow: 0 1px 2px #0000000f; }
+.btn.loading { color: transparent !important; position: relative; pointer-events: none; }
+.btn.loading::after { content: ""; position: absolute; width: 14px; height: 14px; border-radius: 99px; border: 2px solid var(--ink); border-right-color: transparent; animation: btn-spin .7s linear infinite; }
+.btn.primary.loading::after { border-color: var(--action-ink); border-right-color: transparent; }
+@keyframes btn-spin { to { rotate: 360deg; } }

@@ -1,10 +1,9 @@
-// Places: the Wi-Fi networks paperbot knows, synced to the device (GET /v1/wifi). Passwords never come back
-// from the server; they can only be replaced.
-import { h, ic, api, toast, openDrawer } from "./dom.js";
+// The Wi-Fi page of Settings (settings.js): the networks paperbot knows, synced to the device (GET /v1/wifi).
+// Passwords never come back from the server; they can only be replaced.
+import { h, ic, api, toast } from "./dom.js";
 import { parseWifiQR } from "./wifiqr.js";
-import { loadLinks, devicesGroup, appsGroup, assistantsGroup } from "./account.js";
 
-let open = false, S0 = null, form = null, scanner = null, page = null; // page: null (the list), "devices", "wifi", "apps", "assistants"
+let S0 = null, form = null, scanner = null, again = () => {};
 document.addEventListener('pointerdown',event=>{
   for(const menu of document.querySelectorAll('.places-network-menu[open]')) if(!menu.contains(event.target)) menu.open=false;
 });
@@ -12,93 +11,34 @@ document.addEventListener('keydown',event=>{
   if(event.key==='Escape') for(const menu of document.querySelectorAll('.places-network-menu[open]')) {menu.open=false;menu.querySelector('summary').focus();event.stopPropagation();}
 });
 const bytes = (s) => new TextEncoder().encode(s).length;
+// Every change re-renders the whole Settings page, which calls renderWifi again.
+const render = () => again();
 
-export function openPlaces(S, start = null) {
-  S0 = S;
-  // set inside build: opening over an open drawer runs its onClose first, which would undo them
-  openDrawer("Connections", (body) => { open = true; page = start; form = null; render(body); }, { hash: start ? `connections/${start}` : "connections", onClose: () => { open = false; stopScan(); form = null; document.getElementById("drawer-body").classList.remove("places-panel"); } });
-  if (!S.wifi) api("api/wifi").then((w) => { S.wifi = w; refreshPlaces(S); }).catch(() => {});
-  loadLinks(S).then(() => refreshPlaces(S));
-}
-export function refreshPlaces(S) { if (open) { S0 = S; render(document.getElementById("drawer-body")); } }
-
-function render(body) {
-  if (!body || !open) return;
-  const w = S0?.wifi;
-  // keep an open form intact: only the parts above it are re-rendered
-  const formEl = body.querySelector(".form");
-  const top = h("div");
+/** Draw the Wi-Fi page into body. rerender redraws the Settings page; an open form survives it. */
+export function renderWifi(S, body, rerender) {
+  S0 = S; again = rerender;
+  const w = S.wifi;
   if (!w) { body.replaceChildren(h("p", { class: "muted" }, "loading…")); return; }
-  body.classList.add('places-panel');
-  // a page names itself in the drawer's title; its back link returns to the list
-  document.getElementById('drawer-title').textContent = PAGE_TITLE[page] ?? 'Connections';
-  const scroll=body.scrollTop;
-  if(form) {
-    top.append(h('button',{type:'button',class:'places-back',onclick:()=>{stopScan();form=null;render(body);}},'← Networks'));
+  if (form) {
+    const formEl = body.querySelector(".form");
+    const back = h('button',{type:'button',class:'places-back',onclick:()=>{stopScan();form=null;render();}},'← Networks');
     if(formEl) {
-      body.replaceChildren(top,formEl);
+      body.replaceChildren(back,formEl);
       if(scanner && !formEl.contains(scanner.video)) formEl.querySelector('.scan-slot')?.replaceChildren(scanView());
     }
-    else body.replaceChildren(top,formView(body));
-  } else if (page) {
-    const again = () => render(body);
-    top.append(h('button',{type:'button',class:'places-back',onclick:()=>{page=null;here();render(body);}},'← Connections'));
-    top.classList.add('conn-page');
-    if (page === 'devices') top.append(devicesGroup(S0, again));
-    if (page === 'apps') top.append(appsGroup(S0, again));
-    if (page === 'assistants') top.append(assistantsGroup(S0, again));
-    if (page === 'wifi') {
-      const add = h('button',{type:'button',class:'btn primary places-add',disabled:w.networks.length>=w.max||null,onclick:()=>{
-        form={mode:'add',v:{ssid:'',psk:'',name:'',note:'',open:false,fallback:false}};render(body);body.scrollTop=0;body.querySelector('input')?.focus();
-      }},...(w.networks.length>=w.max?[`Full (${w.max} of ${w.max})`]:[h('span',{'aria-hidden':'true'},'+'),'Add network']));
-      top.append(w.networks.length
-        ? h('section',{class:'acct-group'},h('div',{class:'places-intro'},syncCard(w)),netList(w),add)
-        : h('section',{class:'empty-state'},wifiArt(),h('strong',null,'No networks yet'),h('p',null,'Add the Wi-Fi networks paperbot should join.'),add));
-    }
-    body.replaceChildren(top);
-  } else {
-    // The top level: one row per kind of connection, each opening its own page.
-    const go = (to) => () => { page = to; here(); render(body); body.scrollTop = 0; };
-    top.append(h('nav',{class:'conn-list','aria-label':'Connections'},
-      connRow('device', 'Devices', devicesLine(S0), go('devices')),
-      connRow('wifi', 'Wi-Fi', wifiLine(w), go('wifi')),
-      connRow('apps', 'Apps', appsLine(S0), go('apps')),
-      connRow('assistant', 'Assistants', assistantsLine(S0), go('assistants'))));
-    body.replaceChildren(top);
+    else body.replaceChildren(back,formView(body));
+    return;
   }
-  body.scrollTop=scroll;
+  const add = h('button',{type:'button',class:'btn primary places-add',disabled:w.networks.length>=w.max||null,onclick:()=>{
+    form={mode:'add',v:{ssid:'',psk:'',name:'',note:'',open:false,fallback:false}};render();body.scrollTop=0;body.querySelector('input')?.focus();
+  }},...(w.networks.length>=w.max?[`Full (${w.max} of ${w.max})`]:[h('span',{'aria-hidden':'true'},'+'),'Add network']));
+  body.replaceChildren(w.networks.length
+    ? h('section',{class:'acct-group'},h('div',{class:'places-intro'},syncCard(w)),netList(w),add)
+    : h('section',{class:'empty-state'},wifiArt(),h('strong',null,'No networks yet'),h('p',null,'Add the Wi-Fi networks paperbot should join.'),add));
 }
 
-const PAGE_TITLE = { devices: 'Devices', wifi: 'Wi-Fi', apps: 'Apps', assistants: 'Assistants' };
-const connRow = (icon, title, line, onclick) => h('button',{type:'button',class:'conn-row',onclick},
-  h('span',{class:'conn-row-icon'},ic(icon,20)),
-  h('span',{class:'conn-row-copy'},h('strong',null,title),h('span',null,line)),h('span',{class:'conn-row-arrow','aria-hidden':'true'},'›'));
-function devicesLine(S) {
-  const b = S?.boards;
-  if (!b) return 'loading…';
-  if (!b.length) return 'No board yet';
-  const seen = b[0].telemetry?.last_seen ?? b[0].seen_at;
-  return b.length === 1 ? `paperbot ${b[0].device ?? ''}`.trim() + (seen ? '' : ', not online yet') : `${b.length} boards`;
-}
-function wifiLine(w) {
-  const n = w.networks.length, dev = S0?.devices?.[0];
-  if (!n) return 'No networks yet';
-  return `${n} network${n === 1 ? '' : 's'}, ${dev?.wifi_rev != null && dev.wifi_rev >= w.rev ? 'up to date' : 'sync pending'}`;
-}
-function appsLine(S) {
-  const o = S?.openbelt;
-  if (!o) return 'loading…';
-  if (o.connected) return `OpenBelt, ${o.workspace || 'your workspace'}`;
-  return o.waiting ? `Not connected, ${o.waiting} app${o.waiting === 1 ? '' : 's'} waiting` : 'Not connected';
-}
-function assistantsLine(S) {
-  const a = S?.assistants;
-  if (!a) return 'loading…';
-  return a.length ? a.map((x) => x.name || 'Assistant').join(', ') : 'None yet';
-}
-
-// The address names the page, so a reload (or Connect coming back) opens it again.
-const here = () => history.replaceState(null, '', `${location.pathname}${location.search}#connections${page ? `/${page}` : ''}`);
+/** Leaving the page or closing Settings: stop the camera, drop a half-filled form. */
+export function closeWifi() { stopScan(); form = null; }
 
 // The Wi-Fi page's empty state: paperbot with its signal, drawn in the icons' line (currentColor).
 function wifiArt() {
@@ -139,7 +79,7 @@ function netList(w) {
 function edit(n, mode) {
   form = mode === "psk" ? { mode: "psk", id: n.id, ssid: n.ssid, v: { psk: "", open: false } }
     : { mode: "edit", id: n.id, v: { ssid: n.ssid, name: n.name, note: n.note } };
-  render(document.getElementById("drawer-body"));
+  render();
   document.querySelector(".form input")?.focus();
 }
 
@@ -182,7 +122,7 @@ function formView(body) {
   const err = h("p", { class: "err", role: "alert", style: { margin: 0 } });
   kids.push(err, h("div", { class: "row" },
     h("button", { class: "btn primary", type: "submit" }, f.mode === "add" ? "Add network" : f.mode === "psk" ? "Save password" : "Save changes"),
-    h("button", { class: "btn", type: "button", onclick: () => { stopScan(); form = null; render(body); } }, "Cancel")));
+    h("button", { class: "btn", type: "button", onclick: () => { stopScan(); form = null; render(); } }, "Cancel")));
   el.append(...kids);
   el.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -196,7 +136,7 @@ function formView(body) {
     if (dup && (v.psk || v.open)) { f.mode = "psk"; f.id = dup.id; }
     try {
       const w = f.mode === "add" ? await api("api/wifi", { method: "POST", body: payload }) : await api(`api/wifi/${encodeURIComponent(f.id)}`, { method: "PATCH", body: payload });
-      S0.wifi = w; stopScan(); form = null; render(body);
+      S0.wifi = w; stopScan(); form = null; render();
       toast(f.mode === "add" ? "Network added" : "Changes saved");
     } catch (x) { err.textContent = x.message; }
   });
@@ -214,18 +154,18 @@ function check(f) {
 }
 
 async function save(id, body, msg) {
-  try { S0.wifi = await api(`api/wifi/${encodeURIComponent(id)}`, { method: "PATCH", body }); render(document.getElementById("drawer-body")); if (msg) toast(msg); }
+  try { S0.wifi = await api(`api/wifi/${encodeURIComponent(id)}`, { method: "PATCH", body }); render(); if (msg) toast(msg); }
   catch (e) { toast(e.message, { bad: true }); }
 }
 async function reorder(normal, i, d) {
   const ids = normal.map((n) => n.id);
   [ids[i], ids[i + d]] = [ids[i + d], ids[i]];
-  try { S0.wifi = await api("api/wifi/order", { method: "POST", body: { ids } }); render(document.getElementById("drawer-body")); }
+  try { S0.wifi = await api("api/wifi/order", { method: "POST", body: { ids } }); render(); }
   catch (e) { toast(e.message, { bad: true }); }
 }
 async function remove(n) {
   if (!confirm(`Forget “${n.name || n.ssid}”? paperbot drops it the next time it syncs.`)) return;
-  try { S0.wifi = await api(`api/wifi/${encodeURIComponent(n.id)}`, { method: "DELETE" }); render(document.getElementById("drawer-body")); toast("forgotten."); }
+  try { S0.wifi = await api(`api/wifi/${encodeURIComponent(n.id)}`, { method: "DELETE" }); render(); toast("forgotten."); }
   catch (e) { toast(e.message, { bad: true }); }
 }
 
@@ -238,11 +178,11 @@ async function startScan() {
   if (!navigator.mediaDevices?.getUserMedia) { toast("no camera here: try “photo of a QR”", { bad: true }); return; }
   const video = h("video", { playsinline: true, muted: true, autoplay: true, "aria-label": "Camera preview" });
   scanner = { video, msg: h("p", null, "point the camera at the Wi-Fi QR code…"), stream: null, timer: 0 };
-  render(document.getElementById("drawer-body"));
+  render();
   try {
     scanner.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
     video.srcObject = scanner.stream; await video.play();
-  } catch (e) { stopScan(); toast(`camera unavailable (${e.name ?? e.message}). try “photo of a QR”`, { bad: true }); render(document.getElementById("drawer-body")); return; }
+  } catch (e) { stopScan(); toast(`camera unavailable (${e.name ?? e.message}). try “photo of a QR”`, { bad: true }); render(); return; }
   const detect = await detector();
   const cv = document.createElement("canvas"), g = cv.getContext("2d", { willReadFrequently: true });
   const tick = async () => {
@@ -288,7 +228,7 @@ function found(text) {
     : { mode: "add", v: { ssid: q.ssid, psk: q.psk, open: q.type === "nopass", name: form?.v?.name || "", note: form?.v?.note || "", fallback: !!form?.v?.fallback } };
   const body = document.getElementById("drawer-body");
   body.querySelector(".form")?.remove();
-  render(body);
+  render();
   toast(known ? `“${known.name || q.ssid}” is already on the list: saving updates its password.` : `found “${q.ssid}”. check it and save.`);
   return true;
 }

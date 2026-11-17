@@ -18,7 +18,7 @@ Async device contract ([`docs/device-api.md`](../docs/device-api.md)) + live web
 | `src/directory.ts` | `Directory` Durable Object: accounts (one Inbox per person), board tokens |
 | `src/mcp.ts` | MCP server (`POST /v1/mcp`) for a person's own Claude: list / read memos, deliver research |
 | `src/logic.ts` | Pure helpers: telemetry parsing, PATCH / status / Wi-Fi validation, battery trend, alerts |
-| `public/` | Web app (vanilla ES modules, no build): `app.js` inbox + Bolt + live socket, `bolt.js` 1-bit Bolt / device mirror (port of `firmware/core/src/pv_bolt.cpp`), `health.js`, `places.js` (Connections), `account.js` (Settings, devices, assistants, setup card), `auth-pages.js` (`/login`, `/consent`), `setup.html` + `setup/` (`/setup`: setup over Web Serial), `md.js` (escape-first Markdown), `wifiqr.js`, `vendor/jsQR.js` (Apache-2.0) |
+| `public/` | Web app (vanilla ES modules, no build): `app.js` inbox + Bolt + live socket, `bolt.js` 1-bit Bolt / device mirror (port of `firmware/core/src/pv_bolt.cpp`), `health.js`, `settings.js` (the Settings window: a sidebar of pages, a menu of its own on a phone), `account.js` (its pages: research, recording, devices, apps, assistants, account; the setup card), `places.js` (its Wi-Fi page), `auth-pages.js` (`/login`, `/consent`), `setup.html` + `setup/` (`/setup`: setup over Web Serial), `md.js` (escape-first Markdown), `wifiqr.js`, `vendor/jsQR.js` (Apache-2.0) |
 
 Deploy: `npx wrangler deploy` (from `server/`, the dev Worker). Secrets: `DEVICE_TOKEN`, `WIFI_KEY`,
 `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_SECRET`, `OWNER_EMAIL` (values in `.secrets`, gitignored: `DEV_TOKEN`, `DEV_WIFI_KEY`,
@@ -45,11 +45,11 @@ Sign-in is [Better Auth](https://better-auth.com) (`src/auth.ts`, users and sess
 - **Setup** (`/setup`): the page, signed in, calls `POST /v1/setup/claim {device}` (same origin), which mints a
   board token (`pb_d_…`, SHA-256 in the `Directory` DO) for that person's inbox and writes it to the board over
   Web Serial.
-- **Boards** (`/v1/*`): `DEVICE_TOKEN` (owner, inbox `default`) or a board token. Removing a board in Connections
+- **Boards** (`/v1/*`): `DEVICE_TOKEN` (owner, inbox `default`) or a board token. Removing a board in Settings → Devices
   revokes its token (other isolates cache tokens for up to 60 s).
 - **Assistants** (`/v1/mcp`): OAuth 2.1 (Better Auth MCP plugin): discovery (`/.well-known/oauth-protected-resource/v1/mcp`,
   RFC 9728), dynamic client registration, PKCE, consent on `/consent`. Access tokens are JWTs for `<origin>/v1/mcp`
-  (1 h); disconnecting in Connections deletes the consent and refresh tokens.
+  (1 h); disconnecting in Settings → Assistants deletes the consent and refresh tokens.
 - **`/admin/*`**: the owner's `DEVICE_TOKEN`. `POST /admin/auth-migrate` creates / updates the auth tables after a
   deploy that adds some.
 - **One Inbox per person**: `OWNER_EMAIL` signed in with a verified address (Google) → `default` (research

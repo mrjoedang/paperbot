@@ -340,7 +340,7 @@ export class WorkAgent extends Agent<Env> {
     for (let attempt = 0; ; attempt++) {
       if (!this.obMcp) {
         const a = await this.box().openbeltAccess(base, attempt > 0);
-        if (!a) throw new Error("OpenBelt is not connected (Connections, Apps)");
+        if (!a) throw new Error("OpenBelt is not connected (Settings, Apps)");
         this.obMcp = new Mcp(a.url, a.token);
       }
       try { return await this.obMcp.call(name, args); }

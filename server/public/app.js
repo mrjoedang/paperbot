@@ -6,8 +6,8 @@ import { renderMarkdown, shortUrl } from "./md.js";
 import { ago, dueInfo, usd, dur, clock, startOfDay } from "./util.js";
 import { BASE, h, ic, api, toast, cssVar, reducedMotion, openDrawer, closeDrawer, initDrawer, paintCrisp } from "./dom.js";
 import { openHealth, refreshHealth, setDeviceContent } from "./health.js";
-import { openPlaces, refreshPlaces } from "./places.js";
-import { openSettings, setupCard, loadLinks, cmd, ASK, signOut, connectOpenbelt } from "./account.js";
+import { openSettings, refreshSettings } from "./settings.js";
+import { setupCard, loadLinks, cmd, ASK, signOut, connectOpenbelt } from "./account.js";
 import { beltChanged, memoDone, setupBelt, showTab } from "./belt.js";
 
 // ---------- state ----------
@@ -111,7 +111,7 @@ function handle(ev) {
       for (const r of ev.records) noteSeen(r);
       S.ready = true;
       void first; void prev;
-      renderAll(); refreshHealth?.(S); refreshPlaces?.(S);
+      renderAll(); refreshHealth?.(S); refreshSettings(S);
       if (first) { appUpdates.onReady(); window.paperbotBoot?.ready(); }
       if (first && refreshedState) requestAnimationFrame(() => {
         inboxScroll = refreshedState.inboxScroll || 0;
@@ -156,12 +156,12 @@ function handle(ev) {
       S.devChanged = { batt: prev && prev.batt_mv !== ev.device.batt_mv, usb: prev && prev.usb !== ev.device.usb, fw: prev && prev.fw !== ev.device.fw };
       const newCrash = ev.device.alerts?.find((a) => a.code === "crash" && !(prev?.alerts ?? []).some((p) => p.code === "crash" && p.at === a.at));
       if (newCrash) mood("error", 12_000, crashLine(newCrash), { label: "show me", run: () => openHealth(S) });
-      renderSide(); refreshHealth?.(S); refreshPlaces?.(S);
+      renderSide(); refreshHealth?.(S); refreshSettings(S);
       break;
     }
     case "device_event": refreshHealth?.(S, true); break;
     case "budget": S.budget = ev.budget; renderSide(); break;
-    case "wifi": S.wifi = ev.wifi; refreshPlaces?.(S); updateHeaderBadges(); break;
+    case "wifi": S.wifi = ev.wifi; refreshSettings(S); updateHeaderBadges(); break;
     case "resync": if (ws?.readyState === 1) ws.send("snapshot"); break;
   }
 }
@@ -366,7 +366,7 @@ function section(cls, title, n, kids) {
   return h("section", { class: `sec ${cls}`, "aria-label": title }, h("div", { class: "sec-h" }, h("h2", null, title), h("span", { class: "n" }, n)), kids);
 }
 function emptyState() {
-  if (S.boards && !S.boards.length && !S.recs.size && !S.q && S.view !== "archived") return setupCard(S, () => openSettings(S));
+  if (S.boards && !S.boards.length && !S.recs.size && !S.q && S.view !== "archived") return setupCard(S, () => openSettings(S, "research"));
   const msg = S.q ? `nothing matches “${S.q}”.` : S.view === "archived" ? "the archive is empty." : S.kind !== "all" ? `no ${kindLabel(S.kind)} here.` : "all clear. nothing open.";
   return h("div", { class: "empty" }, h("p", null, msg), !S.q && S.view !== "archived" ? h("p", { class: "hint" }, "hold", ic("sun"), "on the device to add something") : null);
 }
@@ -617,7 +617,7 @@ function savedBlock(r) {
 
 /** A memo waiting for a connection: what's missing and a way to Settings → Connections → Apps, where the provider is named. */
 const connectInvite = (icon, title) => h("div", { class: "ob-invite" }, h("span", { class: "ob-invite-icon" }, ic(icon, 20)),
-  h("strong", null, title), h("a", { class: "btn", href: "#connections/apps" }, "Connect"));
+  h("strong", null, title), h("a", { class: "btn", href: "#settings/apps" }, "Connect"));
 
 /** One row of the memo page's result: icon, what it does, a line under it, ↗ (opens elsewhere) or → (here). A link (attrs.href) or a button. */
 function row(attrs, icon, title, line, oneLine = false) {
@@ -790,7 +790,7 @@ function workBlocks(r, expanded = false) {
   if (r.status === "paused_budget") out.push(h("p", { class: "err" }, "Paused: today's research budget is used up. Reprocess it tomorrow to try again."));
   if (r.status === "stopped") {
     out.push(h("p", { class: "err" }, /API key/.test(r.error ?? "") ? "Your API key was rejected." : `Stopped: ${r.error ?? "agent failed"}`));
-    if (/API key/.test(r.error ?? "")) out.push(h("div", { class: "err-action" }, h("button", { class: "btn", type: "button", onclick: (e) => { e.stopPropagation(); openSettings(S); } }, "Check your key in Settings")));
+    if (/API key/.test(r.error ?? "")) out.push(h("div", { class: "err-action" }, h("button", { class: "btn", type: "button", onclick: (e) => { e.stopPropagation(); openSettings(S, "research"); } }, "Check your key in Settings")));
   }
   return out;
 }
@@ -1282,7 +1282,7 @@ function updateHeaderBadges() {
   const dev = S.devices[0];
   document.getElementById("btn-health").classList.toggle("has-alert", !!dev?.alerts?.some((a) => a.level === "bad"));
   const nets = S.wifi?.networks ?? [];
-  document.getElementById("btn-places").classList.toggle("has-alert", nets.some((n) => n.needs_psk));
+  document.getElementById("btn-settings").classList.toggle("has-alert", nets.some((n) => n.needs_psk));
 }
 
 // Standard keyboard activation for focusable list rows.
@@ -1308,11 +1308,9 @@ function setupChrome() {
     }
   });
   document.getElementById("btn-health").prepend(ic("bolt", 20));
-  document.getElementById("btn-places").prepend(ic("wifi", 20));
   document.getElementById("btn-settings").prepend(ic("gear", 20));
   document.getElementById("btn-settings").onclick = () => { document.querySelector(".settings").open = false; openSettings(S); };
   document.getElementById("btn-health").onclick = () => openHealth(S);
-  document.getElementById("btn-places").onclick = () => openPlaces(S);
   if (BASE !== "/" || /test/.test(location.hostname)) document.getElementById("envtag").hidden = false;
   // Back from Connect OpenBelt with a problem (src/index.ts /api/openbelt/callback): say it once, then drop it from the address.
   const obError = new URLSearchParams(location.search).get("openbelt_error");
@@ -1368,7 +1366,7 @@ function routeHash(event) {
   }
   if (hsh === "list" || hsh === "apps") { routeItem(null, { animate: false }); closeDrawer(true); showTab(hsh); return; }
   if (!hsh) { showTab("memos"); routeItem(null, { animate }); }
-  if (hsh === "health") openHealth(S); else if (hsh === "settings") openSettings(S); else if (hsh === "connections" || hsh === "places") openPlaces(S); else if (/^connections\/(devices|wifi|apps|assistants)$/.test(hsh)) openPlaces(S, hsh.slice(12)); else closeDrawer(true);
+  if (hsh === "health") openHealth(S); else if (hsh === "settings" || hsh.startsWith("settings/")) openSettings(S, hsh.slice(9) || null); else closeDrawer(true);
 }
 
 // ticker: the replica animates only while the device would (sending / researching) or after a poke; times refresh

@@ -71,7 +71,7 @@ month (below).
   (`OPENBELT_URL`, openbelt.com for dev too) with OpenBelt's app tools over MCP (its `search` and `call`; a build
   may call only the app operations in `BUILD_OPERATIONS`) and no web tools
   (`server/src/openbelt.ts`, `agent.ts` build mode: 24 turns, 300 s, $0.25 per build).
-  - **Connect OpenBelt** (in setup's sign-in popup; later, Connections → Apps or the card on a waiting memo): paperbot registers itself as an
+  - **Connect OpenBelt** (in setup's sign-in popup; later, Settings → Apps or the card on a waiting memo): paperbot registers itself as an
     OAuth client and sends the person to OpenBelt's own sign-in (an email code; `login_hint` fills in their
     email). The tokens are stored sealed in their Inbox; OpenBelt never trusts paperbot to say who someone is.
     Disconnect (or deleting the account) signs paperbot out on OpenBelt; the apps stay theirs.

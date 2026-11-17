@@ -185,7 +185,8 @@ try {
   step("board shows the research result", wd, wd?.[0].slice(0, 120));
 
   // ---- 8. their own API key runs the next work memo (fake key: must fail at Anthropic, never fall back) ----
-  await page.goto(B + "/#settings");
+  await page.goto(B + "/#settings/research");
+  await page.click('[data-choice="key"]');
   await page.waitForSelector("#byok", { timeout: 10_000 });
   await page.fill("#byok", `sk-ant-test-${crypto.randomUUID().replace(/-/g, "")}`);
   const saved = page.waitForResponse((r) => r.url().endsWith("/api/research") && r.request().method() === "POST", { timeout: 15_000 }).catch(() => null);
@@ -204,19 +205,19 @@ try {
   step("key removed: back to the assistant", (await api("/api/research")).body?.mode === "assistant");
 
   // ---- 9. disconnect the assistant, remove the board, delete the account (through the UI) ----
-  await page.goto(B + "/#connections/assistants");
+  await page.goto(B + "/#settings/assistants");
   await page.click("text=Disconnect", { timeout: 10_000 });
   await until(async () => ((await api("/api/assistants")).body ?? []).length === 0, 10_000, 500);
   step("assistant disconnected", ((await api("/api/assistants")).body ?? []).length === 0);
   const after = await run("claude", ["mcp", "get", CONNECTOR], { cwd: CC, timeout: 60_000 }).then((x) => x.stdout, (e) => `${e.stdout ?? ""}${e.stderr ?? ""}`);
   step("Claude Code is cut off at once (its access token no longer works)", !/✓ Connected/.test(after), after.match(/Status:[^\n]*/)?.[0] ?? after.slice(0, 120));
   step("board token works before removal", (await boardGet(token)) === 200);
-  await page.goto(B + "/#connections/devices");
+  await page.goto(B + "/#settings/devices");
   await page.click(".acct-item >> text=Remove", { timeout: 10_000 });
   const gone = await until(async () => (await boardGet(token)) === 401, 75_000, 3000); // other isolates cache tokens up to 60 s
   step("removed board's token stops working", gone);
   if (!KEEP) {
-    await page.goto(B + "/#settings");
+    await page.goto(B + "/#settings/account");
     await page.click("text=Delete account", { timeout: 10_000 });
     await page.waitForURL(/\/login/, { timeout: 15_000 }).catch(() => {});
     const sess = await page.evaluate(async () => (await (await fetch("/api/auth/get-session")).json())?.user?.email ?? null);

@@ -421,7 +421,7 @@ export class Inbox extends DurableObject<Env> {
     if (!l) return null;
     let t = JSON.parse(await this.open(l.enc)) as { access: string; refresh: string | null };
     if (refreshed) {
-      // A sign-in OpenBelt no longer honours (unused for 30 days, or signed out there): forget it, so Connections says
+      // A sign-in OpenBelt no longer honours (unused for 30 days, or signed out there): forget it, so Settings → Apps says
       // so and app memos wait for Connect again instead of failing one after another.
       if (!t.refresh) { this.dropOpenbelt("no refresh token"); return null; }
       try { t = await refresh(base, { refresh: t.refresh, clientId: l.client_id }); }
