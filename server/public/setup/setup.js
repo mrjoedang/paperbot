@@ -391,6 +391,13 @@ const WIFI_ERR = {
 // BarcodeDetector. On a Mac a link opens Wi-Fi settings, where Known Networks → ⋯ → Copy Password puts it on the
 // clipboard (the Details… window has no password on macOS 26).
 const isMac = /mac/i.test(navigator.userAgentData?.platform || navigator.platform || "");
+// a phone or tablet (an iPad says it's a Mac, but has a touch screen)
+const handheld = navigator.userAgentData?.mobile || /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent) || (isMac && navigator.maxTouchPoints > 1);
+const NEEDS = [
+  [`<rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/>`, "A Mac or PC"],
+  [`<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>`, "Chrome, Edge or Firefox"],
+  [`<rect x="8" y="2" width="8" height="7" rx="2"/><path d="M10 9v3M14 9v3M12 12v10"/>`, "A USB-C cable that carries data"],
+];
 const WIFI_SETTINGS = "x-apple.systempreferences:com.apple.wifi-settings-extension";
 let pwHelp = false, helpOn = isMac ? "mac" : "iphone"; // the guide to copying the password, and which device it shows
 function parseWifiQr(t) {
@@ -480,9 +487,16 @@ const LIST_NAMES = { todo: "To-do", shopping: "Shopping", reminder: "Reminders",
 const savedCard = (it) => `<div class="saved-item"><div><b>${esc(it.title)}</b><span>${esc([LIST_NAMES[it.list] ?? it.list, it.due ? new Date(it.due).toLocaleString([], it.due.includes("T") ? { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" } : { weekday: "short", month: "short", day: "numeric" }) : ""].filter(Boolean).join(" · "))}</span></div>
 </div>`;
 const V = {
-  unsupported: () => `<h1>Open this in Chrome</h1>
-    <p class="sub">Setup talks to the device over USB. Use Chrome, Edge or Firefox on a Mac or PC. Safari and phones can’t.</p>
-    <div class="copy"><input id="here" readonly value="${esc(location.href)}"><button class="btn" data-do="copy">Copy</button></div>`,
+  // A phone or tablet can't set up at all: send the link to a computer. A computer only needs another browser.
+  unsupported: () => {
+    const need = `<ul class="need">${NEEDS.map(([icon, text]) => `<li><svg viewBox="0 0 24 24" aria-hidden="true">${icon}</svg>${text}</li>`).join("")}</ul>`;
+    if (!handheld) return `<h1>Open this in Chrome</h1>${need}
+      <div class="copy"><input id="here" readonly value="${esc(location.href)}"><button class="btn" data-do="copy">Copy</button></div>`;
+    return `<h1>Set up on a computer</h1>${need}${navigator.share
+      ? `<button class="btn" data-do="share"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M8 11H6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-2"/></svg>Send link</button>
+         <button class="link" data-do="copy">Copy link</button>`
+      : `<button class="btn" data-do="copy">Copy link</button>`}`;
+  },
   connect: (s) => s.connecting
     ? `<h1>Connecting</h1>${err(s)}<span class="waiting">${loader}</span>
        ${s.slow ? `<ul class="tips"><li>Press ⏻ on the device</li><li>Unplug it and plug it back in</li></ul>` : ""}`
@@ -657,6 +671,8 @@ function onClick(e) {
       .finally(() => { if (w) w.location.href = "/setup/signed-in"; });
   } else if (a === "copy") {
     navigator.clipboard?.writeText(location.href).then(() => { b.textContent = "Copied"; });
+  } else if (a === "share") {
+    navigator.share({ url: location.href }).catch(() => {}); // closing the share sheet is not an error
   } else act(a);
 }
 function onKey(e) {

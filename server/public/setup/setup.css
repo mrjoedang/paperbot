@@ -86,13 +86,18 @@ model-viewer { width: 100%; height: 100%; --poster-color: transparent; }
 .copy { display: flex; gap: 8px; }
 .copy input { flex: 1; min-width: 0; height: 46px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 0 14px; font-size: 15px; }
 .copy .btn { width: auto; }
+.need { margin: 0; padding: 6px 0; list-style: none; background: var(--surface); border-radius: 18px; text-align: left; }
+.need li { display: flex; align-items: center; gap: 14px; padding: 12px 18px; font-size: 16px; }
+.need li + li { border-top: 1px solid var(--line); }
+.need svg, .btn .ic { flex: none; width: 22px; height: 22px; fill: none; stroke: var(--ink-2); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.btn .ic { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; }
 /* Rhythm: heading, then its line of context close under it (12), then the step's content or action set apart (28),
    then quiet follow-ups (links, hints) between them (16). */
 .step > * + * { margin-top: 16px; }
 .step > h1 + .sub, .step > h1 + .ok, .step > h1 + .err { margin-top: 14px; }
 .step > h1 + .say { margin-top: 14px; }
-.step > .btn, .step > .card, .step > .copy, .step > .waiting { margin-top: 28px; }
-.step > .card + .btn, .step > .err + .btn { margin-top: 16px; }
+.step > .btn, .step > .card, .step > .copy, .step > .waiting, .step > .need { margin-top: 28px; }
+.step > .card + .btn, .step > .err + .btn, .step > .need + .btn, .step > .need + .copy { margin-top: 16px; }
 .step > .track { margin-top: 24px; }
 .step > .track + .sub, .step > .track + .err { margin-top: 18px; }
 .step > .sub + .mini { margin-top: 4px; }
