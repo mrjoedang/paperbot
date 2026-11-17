@@ -26,6 +26,9 @@ Body: the WAV file (16 kHz mono 16-bit PCM, `Content-Type: audio/wav`).
 | `400 / 413 / 415 / 422` | The file will never be accepted: the device moves it to `/REC_BAD` (not retried). |
 | `401 / 403 / 404 / 408 / 429 / 5xx`, timeout, broken JSON, 2xx without `status`/`kind` | Clip kept, retried with backoff (30 s, doubling, max 15 min). |
 
+The Worker answers `413` to a body over 19.2 MB (10 minutes of audio). It reads the whole body first, so the
+device gets the reply rather than a dropped connection it would retry.
+
 The device deletes the clip on any 2xx with a parseable body that has a `status` or a task
 (`kind` + `title`). A 2xx like `{}` is **not** a receipt.
 

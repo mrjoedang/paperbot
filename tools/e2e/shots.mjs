@@ -101,7 +101,19 @@ try {
     const b = document.getElementById("app-boot"); b.style.transition = "none"; b.classList.remove("is-ready"); b.querySelector(".boot-label").textContent = "Loading paperbot"; }); } });
   await shoot("settings", "/#settings", { ready: ".settings-nav" });
   await shoot("settings-wifi-empty", "/#settings/wifi", { ready: ".empty-state" });
-  await shoot("consent", "/consent?client_id=shots&scope=openid%20profile%20email%20offline_access%20memos", { ready: "#allow" });
+  // consent, the way an assistant reaches it: a registered client, then /authorize (which signs the query and redirects)
+  const consentPath = async (client_name, redirect) => {
+    const c = await inPage(async (b) => (await (await fetch("/api/auth/oauth2/register", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) })).json()),
+      { client_name, redirect_uris: [redirect], token_endpoint_auth_method: "none", grant_types: ["authorization_code", "refresh_token"], response_types: ["code"] });
+    const q = new URLSearchParams({ response_type: "code", client_id: c.client_id, redirect_uri: redirect, scope: "openid profile email offline_access memos", state: "shots",
+      code_challenge: "E9Melhoa2OwvFrEMTJguCQaoeEKu8eNKr1bMwmY_xRV_wN6s0yQUCpjwM0PyUBUCaa5-wRUwV-eeL5ZQ", code_challenge_method: "S256", resource: `${B}/v1/mcp` });
+    await page.goto(`${B}/api/auth/oauth2/authorize?${q}`);
+    const u = new URL(page.url());
+    if (u.pathname !== "/consent") throw new Error(`authorize went to ${u.pathname}`);
+    return u.pathname + u.search;
+  };
+  await shoot("consent", await consentPath("Claude", "https://claude.ai/api/mcp/auth_callback"), { ready: "#allow" });
+  await shoot("consent-unknown", await consentPath("Claude", "https://attacker.example/cb"), { ready: "#allow" });
 
   // ---- a linked board and memos in every state ----
   const tok = await inPage(async () => (await (await fetch("/v1/setup/claim", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ device: "5100c0ffee01" }) })).json()).token);

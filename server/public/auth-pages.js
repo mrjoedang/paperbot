@@ -122,9 +122,24 @@ async function loginPage() {
             btn("Create account", { id: "signup", onclick: () => go("/sign-up/email") }))))]);
 }
 
+// Where the assistant's sign-in sends people back: its own site (claude.ai, ChatGPT) or an app on this computer
+// (Claude Code, Codex: a loopback address). Anything else could be anyone, whatever name the app registered with.
+const ASSISTANT_HOSTS = ["claude.ai", "claude.com", "chatgpt.com"];
+function returnTo(uri) {
+  let u;
+  try { u = new URL(uri ?? ""); } catch { return { text: "an unknown address", known: false }; }
+  if (u.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(u.hostname)) return { text: "an app on this computer", known: true };
+  if (u.protocol !== "https:") return { text: `${u.protocol}//${u.host}`, known: false };
+  return { text: u.hostname, known: ASSISTANT_HOSTS.includes(u.hostname) };
+}
+
 async function consentPage() {
   const s = await session();
   if (!s?.user) { location.href = `/login${location.search}`; return; }
+  // The name is whatever the app registered with; the address it sends people back to is the part to trust.
+  const client = (await api(`/oauth2/public-client?client_id=${encodeURIComponent(qs.get("client_id") ?? "")}`)).body;
+  const name = String(client?.client_name ?? "").trim().slice(0, 60);
+  const back = returnTo(qs.get("redirect_uri"));
   const scopes = (qs.get("scope") ?? "").split(/\s+/).filter(Boolean);
   const msg = msgEl();
   const send = async (accept) => {
@@ -134,8 +149,11 @@ async function consentPage() {
   const can = ["Read your memos and their transcripts", "Send back research and mark memos done"];
   if (scopes.includes("offline_access")) can.push("Stay connected until you disconnect it in Connections");
   show(h("h2", { class: "auth-title" }, "Connect an assistant?"),
-    h("p", { class: "auth-lede" }, "An app is asking to use the paperbot of ", whoEl(s.user), ". It will be able to:"),
+    h("p", { class: "auth-lede" }, ...(name ? [h("b", { id: "client-name" }, name), " wants"] : ["An app wants"]), " to use the paperbot of ", whoEl(s.user), ". It will be able to:"),
     h("ul", { class: "auth-list" }, can.map((t) => h("li", {}, IC.check(), t))),
+    h("div", { class: `auth-return${back.known ? "" : " unknown"}`, id: "return-to" },
+      h("p", {}, "Sends you back to ", h("b", {}, back.text)),
+      !back.known && h("p", {}, "paperbot doesn't know this site. Allow only if you started connecting there.")),
     h("div", { class: "auth-actions pair" }, btn("Allow", { primary: true, id: "allow", onclick: () => send(true) }), btn("Deny", { id: "deny", onclick: () => send(false) })),
     msg);
 }

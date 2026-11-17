@@ -20,6 +20,10 @@ export { VoicePipeline } from "./pipeline";
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 const INLINE_TIMEOUT_MS = 20_000; // waitUntil gets ~30 s after the response; leave room for the fallback hand-off
 const MAX_REPLY = 2048;
+// The firmware records for as long as the button is held. 10 min of 16 kHz mono PCM16 is far beyond any memo, and the
+// whole clip (plus its base64 copy for Whisper) still fits in a Worker's memory.
+const MAX_UPLOAD_BYTES = 44 + 10 * 60 * 16000 * 2; // 19.2 MB
+const BAD_KEEP_BYTES = 4096; // of an unreadable upload: enough to see what it was
 
 // ---------- auth ----------
 function safeEqual(a: string, b: string): boolean {
@@ -99,35 +103,69 @@ function firmwareHeader(req: Request): string | null {
 async function handleUpload(req: Request, env: Env, ctx: ExecutionContext, id: string, acct: Acct): Promise<Response> {
   const t0 = Date.now();
   if (!ID_RE.test(id)) return json({ error: "bad id" }, 400); // never acceptable -> device sets it aside
+  // Too large: 413 is final for every firmware (the clip goes to /REC_BAD on the card, never retried). The body is
+  // read to the end first, so the board finishes sending and gets the reply instead of a reset it would retry.
+  if (Number(req.headers.get("content-length")) > MAX_UPLOAD_BYTES) return tooLarge(req, id, await readCapped(req, 0));
   const box = inbox(env, acct.inbox);
   // Headers are here, the body may still be streaming: live UI shows "incoming" now; telemetry rides along.
   const existing = (await box.arrive(id, parseTelemetry((h) => req.headers.get(h), new URL(req.url), "PUT"))) as Record<string, unknown> | null;
   if (existing) return json({ ...existing, duplicate: true }, 202);
 
-  const wav = new Uint8Array(await req.arrayBuffer());
+  const body = await readCapped(req, MAX_UPLOAD_BYTES);
+  if (!body.bytes) return tooLarge(req, id, body);
+  const wav = body.bytes;
   const fw = firmwareHeader(req);
   const test = env.TEST_HOOKS === "1" ? { fail: req.headers.get("x-test-fail") ?? "", text: req.headers.get("x-test-text") ?? "", agent: req.headers.get("x-test-agent") ?? "" } : null;
   const flags = test ? [test.fail && `fail=${test.fail}`, test.agent && `agent_${test.agent}`, test.text && `text=${encodeURIComponent(test.text)}`].filter(Boolean).join("&") : "";
   const info = wavInfo(wav);
   if (!info.ok) {
-    // Unreadable / non-WAV body: keep it for debugging, reply with a final "ignore" record so the device
+    // Unreadable / non-WAV body: keep its start for debugging, reply with a final "ignore" record so the device
     // deletes the clip instead of retrying forever (never a 4xx that would block the queue).
-    await env.AUDIO.put(objKey(acct.inbox, "bad", id, ".bin"), wav);
+    await env.AUDIO.put(objKey(acct.inbox, "bad", id, ".bin"), wav.subarray(0, BAD_KEEP_BYTES));
     const { inserted, rec } = await box.receive({ id, status: "done", kind: "ignore", title: "(unreadable audio)", due: null, bytes: wav.length, fw, noise_reason: `unreadable: ${info.why}`, done_at: Date.now(), via: "put" });
+    return json({ ...deviceView(rec), ...(inserted ? {} : { duplicate: true }) }, 202);
+  }
+  const seconds = +info.seconds.toFixed(2);
+  const over = await box.overCap(seconds);
+  if (over) { // a final error record; the audio is not kept
+    const { inserted, rec } = await box.receive({ id, status: "error", error: "daily limit", detail: over, done_at: Date.now(), bytes: wav.length, fw, seconds, via: "put" });
     return json({ ...deviceView(rec), ...(inserted ? {} : { duplicate: true }) }, 202);
   }
   const audio_key = objKey(acct.inbox, "audio", id, ".wav");
   await env.AUDIO.put(audio_key, wav, { httpMetadata: { contentType: "audio/wav" }, customMetadata: fw ? { fw } : undefined });
   // Audio is durable from here on -> the record exists -> 202.
-  const { inserted, rec } = await box.receive({ id, bytes: wav.length, audio_key, fw, seconds: +info.seconds.toFixed(2), test_flags: flags || null });
+  const { inserted, rec } = await box.receive({ id, bytes: wav.length, audio_key, fw, seconds, test_flags: flags || null });
   if (!inserted) return json({ ...deviceView(rec), duplicate: true }, 202);
-  if (rec.status !== "processing") return json(deviceView(rec), 202); // over the daily audio cap: stored, not transcribed
+  if (rec.status !== "processing") { // went over the cap since the check above (another upload): not kept either
+    ctx.waitUntil(env.AUDIO.delete(audio_key));
+    return json(deviceView(rec), 202);
+  }
   const cf = (req as any).cf ?? {};
   const place = [cf.city, cf.region, cf.country].filter((x) => typeof x === "string" && x).join(", ");
   if (place) ctx.waitUntil(box.setPlace(place).catch(() => {}));
   ctx.waitUntil(runInline(env, acct, id, rec.gen, flags));
   console.log(JSON.stringify({ ev: "put", id, bytes: wav.length, seconds: info.seconds, fw, ms: Date.now() - t0 }));
   return json({ id, status: "processing" }, 202);
+}
+
+/** The request body, or null bytes once it passes max (the rest is still read and dropped, never buffered). */
+async function readCapped(req: Request, max: number): Promise<{ bytes: Uint8Array | null; total: number }> {
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  if (req.body) for await (const c of req.body as unknown as AsyncIterable<Uint8Array>) {
+    total += c.byteLength;
+    if (total <= max) chunks.push(c);
+    else chunks.length = 0;
+  }
+  if (total > max) return { bytes: null, total };
+  const bytes = new Uint8Array(total);
+  let off = 0;
+  for (const c of chunks) { bytes.set(c, off); off += c.byteLength; }
+  return { bytes, total };
+}
+function tooLarge(req: Request, id: string, body: { total: number }): Response {
+  console.log(JSON.stringify({ ev: "put_too_large", id, bytes: body.total, fw: firmwareHeader(req) }));
+  return json({ error: `too large (max ${MAX_UPLOAD_BYTES} bytes)` }, 413);
 }
 
 const flag = (flags: string | null | undefined, k: string) => new URLSearchParams(flags ?? "").get(k) ?? undefined;
@@ -575,9 +613,8 @@ function sameOrigin(req: Request, url: URL): boolean {
 
 async function reprocess(env: Env, ctx: ExecutionContext, id: string, name = "default") {
   const box = inbox(env, name);
-  const refused = await box.reprocessRefused(id);
+  const { rec: r, refused } = await box.reprocess(id);
   if (refused) return json({ error: `Daily audio limit reached (${refused}). Try again tomorrow.` }, 429);
-  const r = await box.reprocess(id);
   if (!r) return json({ error: "not found" }, 404);
   if (!r.audio_key) return json({ error: "no audio to reprocess", ...deviceView(r) }, 409);
   ctx.waitUntil(runInline(env, { inbox: name, tz: await box.tz() }, id, r.gen, ""));

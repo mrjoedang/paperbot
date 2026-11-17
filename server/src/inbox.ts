@@ -34,6 +34,7 @@ export type Device = {
   health: ReturnType<typeof statusHealth> | null; trend: ReturnType<typeof batteryTrend>; alerts: ReturnType<typeof deviceAlerts>;
 };
 const DAY_MS = 86400_000;
+const REPROCESS_MIN_S = 60;
 const b64 = (u: Uint8Array) => btoa(String.fromCharCode(...u));
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 
@@ -110,6 +111,7 @@ export class Inbox extends DurableObject<Env> {
     this.sql.exec("CREATE INDEX IF NOT EXISTS records_status ON records(status)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS config (k TEXT PRIMARY KEY, v TEXT)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS events (at INTEGER, id TEXT, msg TEXT)");
+    this.sql.exec("CREATE TABLE IF NOT EXISTS reprocessed (at INTEGER NOT NULL, seconds REAL NOT NULL)"); // counted in usage()
     try { this.sql.exec("ALTER TABLE records ADD COLUMN agent_progress TEXT"); } catch {} // added with the live web app
     try { this.sql.exec("ALTER TABLE records ADD COLUMN items TEXT"); } catch {} // added with the router (saved items)
     this.sql.exec("CREATE TABLE IF NOT EXISTS agent_steps (id TEXT, at INTEGER, kind TEXT, text TEXT)");
@@ -305,11 +307,15 @@ export class Inbox extends DurableObject<Env> {
   }
   name(): string { return this.kv("inbox_name") ?? "default"; }
 
-  /** Audio transcribed in the last 24 h against the cap (Settings -> Recording). */
+  /** Audio transcribed in the last 24 h against the cap (Settings -> Recording): uploads, plus every reprocess. */
   usage() {
-    const used = Number(this.sql.exec("SELECT COALESCE(SUM(seconds), 0) AS s FROM records WHERE received_at > ? AND status != 'error'", Date.now() - DAY_MS).one().s);
+    const since = Date.now() - DAY_MS;
+    const used = Number(this.sql.exec("SELECT COALESCE(SUM(seconds), 0) AS s FROM records WHERE received_at > ? AND status != 'error'", since).one().s)
+      + Number(this.sql.exec("SELECT COALESCE(SUM(seconds), 0) AS s FROM reprocessed WHERE at > ?", since).one().s);
     return { audio_seconds_24h: Math.round(used), audio_cap_min: this.config().audio_cap_min };
   }
+  /** Why a clip of this length can't be transcribed now (null = it can). */
+  overCap(seconds: number): string | null { return this.overAudioCap(seconds); }
   private overAudioCap(extraSeconds: number): string | null {
     const cap = this.config().audio_cap_min;
     if (!(cap > 0)) return null;
@@ -677,10 +683,10 @@ export class Inbox extends DurableObject<Env> {
   receive(r: Partial<Rec> & { id: string }): { inserted: boolean; rec: Rec } {
     const now = Date.now();
     const row: Record<string, unknown> = { received_at: now, status: "processing", processing_since: now, ...r };
-    const keys = Object.keys(row);
     if (this.get(r.id)) return { inserted: false, rec: this.get(r.id)! };
     const over = row.status === "processing" && typeof r.seconds === "number" ? this.overAudioCap(r.seconds) : null;
-    if (over) Object.assign(row, { status: "error", error: "daily limit", detail: over, done_at: now });
+    if (over) Object.assign(row, { status: "error", error: "daily limit", detail: over, done_at: now, audio_key: null }); // the Worker deletes the audio
+    const keys = Object.keys(row);
     const n = this.sql.exec(`INSERT OR IGNORE INTO records (${keys.join(",")}) VALUES (${keys.map(() => "?").join(",")})`, ...keys.map((k) => row[k] as any)).rowsWritten;
     if (n) { this.log(r.id, `received ${r.status ?? "processing"} bytes=${r.bytes ?? 0} fw=${r.fw ?? "-"}`); this.changed(r.id); }
     return { inserted: n > 0, rec: this.get(r.id)! };
@@ -742,16 +748,17 @@ export class Inbox extends DurableObject<Env> {
     this.log(id, `workflow ${instance}`);
   }
 
-  /** Reprocessing transcribes again, so it counts against the audio cap too. null = allowed. */
-  reprocessRefused(id: string): string | null {
+  /** Re-run processing from the stored audio (new generation). Each run transcribes and routes again, so each one
+   *  counts against the daily audio cap: the clip's length, at least REPROCESS_MIN_S (the router call costs more than
+   *  a short clip's Whisper). Checked and counted before the first await, so parallel requests can't all pass. */
+  async reprocess(id: string): Promise<{ rec: Rec | null; refused?: string }> {
     const r = this.get(id);
-    if (!r) return null;
-    return this.overAudioCap(r.status === "error" ? r.seconds ?? 0 : 0);
-  }
-  /** Re-run processing from the stored audio (new generation). */
-  async reprocess(id: string): Promise<Rec | null> {
-    const r = this.get(id);
-    if (!r || !r.audio_key) return r;
+    if (!r || !r.audio_key) return { rec: r };
+    const seconds = Math.max(r.seconds ?? 0, REPROCESS_MIN_S);
+    const refused = this.overAudioCap(seconds);
+    if (refused) return { rec: r, refused };
+    this.sql.exec("DELETE FROM reprocessed WHERE at <= ?", Date.now() - DAY_MS);
+    this.sql.exec("INSERT INTO reprocessed VALUES (?, ?)", Date.now(), seconds);
     if (r.agent_state === "running") {
       try { await (await agentStub(this.env, this.name(), id)).stop("reprocess"); } catch {}
     }
@@ -762,7 +769,7 @@ export class Inbox extends DurableObject<Env> {
     this.sql.exec("DELETE FROM agent_steps WHERE id = ?", id);
     this.log(id, "reprocess");
     this.changed(id);
-    return this.get(id);
+    return { rec: this.get(id) };
   }
 
   list(all = false): Rec[] {

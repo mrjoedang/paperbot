@@ -59,7 +59,8 @@ month (below).
   (SHA-256 only) to accounts.
 - **Owner**: research included (server-side agent, budgets as before).
 - **Everyone else** (`GUEST_CONFIG` in `server/src/inbox.ts`): transcription capped at 30 audio
-  minutes per 24 h. Work memos are researched one of two ways (Settings → Research):
+  minutes per 24 h. Each reprocess counts again (the clip's length, at least a minute); a clip over the
+  cap gets a "daily limit" record and its audio is not kept. Work memos are researched one of two ways (Settings → Research):
   - **their own API key** (Anthropic): checked once, stored sealed in their Inbox, and put on each model
     call by the gateway proxy (`server/src/agent.ts`); if it is removed or rejected, research stops
     instead of falling back to the owner's billing. $5/day cap.
