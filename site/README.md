@@ -27,7 +27,7 @@ Static site for paperbot: `index.html`, `style.css`, `main.js`, no build step.
 - `assets/img/poster.webp`: still of the opening view (captured from the viewer, 1.4:1, full stage height). The page shows
   it at once and fades it out when the 3D device has drawn its first frame; the device's size follows the stage height,
   so the still lines up at any window size. Recapture it if the camera, model or opening screen changes.
-- `assets/img/`:, og:image (`og-v3.jpg`, 1200×630; bump the version in the file name when it changes, since Slack and iMessage cache previews), and the web app screenshots
+- `assets/img/`:, og:image (`og-v4.jpg`, 1200×630; bump the version in the file name when it changes, since Slack and iMessage cache previews), and the web app screenshots
   (`app-list-phone-v2.webp`: the List tab, in the "It lands in one quiet list" row): `make site-shots` against
   `sh tools/local-worker.sh` and a local OpenBelt shoots the real app with sample list items
   (`tools/e2e/site-shots.mjs`). Rerun it when the app's look changes, with a new version in the file name.
