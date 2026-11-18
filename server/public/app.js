@@ -438,6 +438,7 @@ function buildCard(r, expanded = false) {
   } else if (r.kind === "ignore" && r.noise_reason) el.append(h("p", { class: "transcript" }, `nothing usable (${r.noise_reason})`));
   if (r.kind === "answer" && r.summary) el.append(h("p", { class: "summary" }, hl(r.summary)));
   if (r.status === "error") el.append(h("p", { class: "err" }, `${r.error ?? "error"}${r.detail ? ` — ${String(r.detail).slice(0, 160)}` : ""}`));
+  if (r.status === "error" && r.error === "daily limit") el.append(raiseLimit());
   if (AGENT_KINDS.includes(r.kind) || r.agent_result || (r.agent_state && r.kind !== "save")) el.append(...workBlocks(r, expanded));
   if (expanded && r.audio_key) el.append(player(r).root);
   if (expanded) el.append(actions(r));
@@ -675,7 +676,9 @@ function buildItem(r) {
     page.append(section(researching ? "Research in progress" : "Report", "item-result",
       row({ onclick: () => openReport(r.id), "data-fk": "report" }, ic("note", 20), researching ? "View research progress" : "Read report", r.summary?.replace(/^\? /, "") || "Open the full report and sources")));
   }
-  if (r.status === "error") page.append(h("div", { class: "item-error", role: "status" }, h("strong", null, "This recording couldn't be processed"), h("p", null, r.error || "Try processing the recording again.")));
+  if (r.status === "error") page.append(h("div", { class: "item-error", role: "status" }, h("strong", null, "This recording couldn't be processed"),
+    h("p", null, r.error === "daily limit" ? `Today's limit is used up${r.detail ? ` (${r.detail})` : ""}.` : r.error || "Try processing the recording again."),
+    r.error === "daily limit" ? raiseLimit() : null));
   const source=h('details',{class:'item-source','data-disclosure':'source'},
     h('summary',null,h('span',null,ic('noise',16),'Recording'),h('span',{class:'item-source-chev','aria-hidden':'true'},ic('chevron-down',16))));
   if(r.audio_key) source.append(h('section',{class:'item-recording','aria-label':'Audio'},player(r).root));
@@ -793,6 +796,10 @@ function workBlocks(r, expanded = false) {
     if (/API key/.test(r.error ?? "")) out.push(h("div", { class: "err-action" }, h("button", { class: "btn", type: "button", onclick: (e) => { e.stopPropagation(); openSettings(S, "research"); } }, "Check your key in Settings")));
   }
   return out;
+}
+/** Under a memo that hit the daily limit: one click to the API key field (it raises the limits). */
+function raiseLimit() {
+  return h("div", { class: "err-action" }, h("button", { class: "btn", type: "button", onclick: (e) => { e.stopPropagation(); openSettings(S, "research", "key"); } }, "Add your API key"));
 }
 const STEP_TAG = { search: "search", read: "read", write: "write", think: "think", note: "note", error: "oops" };
 function logList(id, steps) {

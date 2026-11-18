@@ -15,6 +15,10 @@ export interface Env {
   DEVICE_TOKEN: string;
   WIFI_KEY: string; // secret: 32 random bytes, base64 (AES-GCM key for stored Wi-Fi passwords)
   GATEWAY_ID: string;
+  BYOK_GATEWAY_ID: string; // the AI Gateway for calls on a person's own API key (src/agent.ts)
+  ALERT_URL?: string; // secret: where alerts are POSTed ({subject, text}, Bearer ALERT_TOKEN); unset: alerts are only logged
+  ALERT_TOKEN?: string; // secret
+  ALERT_SPEND_USD: string; // what paperbot pays a day for everyone (the gateway's spend limit): alerts at 50% and 100%
   TZ: string; // user time zone for relative dates ("tomorrow at 3")
   WEB_SEARCH: string;
   SEARCH_PROVIDER: string;

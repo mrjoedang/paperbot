@@ -15,11 +15,12 @@ const wide = matchMedia("(min-width: 701px)");
 
 let open = false, page = null, shownBefore = null, S0 = null;
 
-export function openSettings(S, to = null) {
+export function openSettings(S, to = null, researchPick = null) {
   S0 = S;
   if (!PAGES[to]) to = null;
   if (!open) {
     delete S.researchPick;
+    if (researchPick) S.researchPick = researchPick;
     openDrawer("Settings", () => { open = true; }, { hash: to ? `settings/${to}` : "settings", onClose });
     document.querySelector(".drawer-card").classList.add("settings-card");
     loadMe(S).then(render);
@@ -93,7 +94,7 @@ function content(id) {
   const me = S0.me;
   if (["research", "recording", "account"].includes(id) && !me) return [h("p", { class: "muted" }, "loading…")];
   if (id === "research") return [researchGroup(S0, render)];
-  if (id === "recording") return [recordingGroup()];
+  if (id === "recording") return [recordingGroup(S0)];
   if (id === "account") return [accountGroup(S0, render)];
   if (id === "devices") return [devicesGroup(S0, render)];
   if (id === "apps") return [appsGroup(S0, render)];

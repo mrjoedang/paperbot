@@ -130,7 +130,9 @@ const CATALOG_IDS: Record<string, string> = {
 // route with the key in the provider's auth header instead of Unified Billing. pi's harness keeps only a model
 // reference (provider + id), so per-call options can't carry it: the agent resolves it here, per request.
 type OwnKey = () => Promise<string | null>;
-function unifiedBillingBinding(ai: Ai, ownKey: OwnKey = async () => null, onKeyRejected: (why: string) => void = () => {}): Ai {
+// Calls on the person's key go through their own gateway (BYOK_GATEWAY_ID): they don't count against paperbot's
+// gateway spend limit, so one heavy key user can't stop everyone's memos.
+function unifiedBillingBinding(ai: Ai, ownKey: OwnKey = async () => null, onKeyRejected: (why: string) => void = () => {}, byokGateway?: string): Ai {
   return new Proxy(ai as any, {
     get(t, p) {
       if (p !== "gateway") { const v = Reflect.get(t, p, t); return typeof v === "function" ? v.bind(t) : v; }
@@ -146,7 +148,8 @@ function unifiedBillingBinding(ai: Ai, ownKey: OwnKey = async () => null, onKeyR
               const own = await ownKey(); // throws when the memo needs a key that is gone: never falls back to the owner's billing
               if (own) {
                 const auth = req.provider === "anthropic" ? { "x-api-key": own } : { authorization: `Bearer ${own}` };
-                const res = await v.call(g, { ...req, headers: { ...(req.headers ?? {}), ...auth } }, opts);
+                const ownGateway = byokGateway ? t.gateway(byokGateway) : g;
+                const res = await ownGateway.run({ ...req, headers: { ...(req.headers ?? {}), ...auth } }, opts);
                 if (res instanceof Response && (res.status === 401 || res.status === 403)) {
                   onKeyRejected(`${req.provider} answered ${res.status}: ${(await res.clone().text().catch(() => "")).replace(/\s+/g, " ").slice(0, 160)}`);
                 }
@@ -196,7 +199,7 @@ const HEDGE = /\b(unverified|unconfirmed|not verified|could ?n[o']t (verify|conf
 type Meta = { op: string; rec: string; model: string; submitted_at: number; finished_at: number | null; status: string | null; stop_why: string | null; flags: string; cap: number };
 
 export class WorkAgent extends Agent<Env> {
-  ai = createAI({ binding: unifiedBillingBinding(this.env.AI, () => this.ownKey(), (why) => { this.keyRejected = why; this.log(`own key rejected: ${why}`); }), id: this.env.GATEWAY_ID });
+  ai = createAI({ binding: unifiedBillingBinding(this.env.AI, () => this.ownKey(), (why) => { this.keyRejected = why; this.log(`own key rejected: ${why}`); }, this.env.BYOK_GATEWAY_ID), id: this.env.GATEWAY_ID });
   /** Set when the provider refused the person's own key: the memo says so instead of "agent failed". */
   private keyRejected: string | null = null;
   private keyCache: { key: string; at: number } | null = null;

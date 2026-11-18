@@ -138,6 +138,8 @@ try {
       detail: "anthropic answered 401: invalid x-api-key. Check the key in Settings → Research.", agent_state: "finished", received_at: now - day - 30 * min,
       transcript: "Find out the current best practice for OTA firmware updates on the ESP32.", seconds: 5 },
     { id: "shot-note", kind: "save", title: "Bolt should wink when a memo is saved", items: [{ op: "add", list: "note", title: "Bolt should wink when a memo is saved", due: null, id: null, ok: true, why: null, app_url: "https://paperbot--test.openbelt.app/" }], received_at: now - day - 3 * 60 * min, transcript: "Idea: Bolt should wink when a memo is saved.", seconds: 3 },
+    { id: "shot-limit", status: "error", error: "daily limit", detail: "$0.51 of $0.50 free AI use in 24 h", agent_cost: 0.2, received_at: now - 30_000,
+      transcript: "What's the weather tomorrow?", seconds: 3 },
     { id: "shot-unsure", kind: "ignore", title: "Something about the garage", received_at: now - 2 * day, transcript: "Uh, the garage, the thing with the, never mind.", seconds: 4 },
     { id: "shot-done", kind: "save", title: "Water the plants", items: [{ op: "done", list: "todo", title: "Water the plants", due: null, id: "x", ok: true, why: null, app_url: "https://paperbot--test.openbelt.app/" }], received_at: now - 3 * day, transcript: "Water the plants.", seconds: 2 },
   ];
@@ -153,6 +155,10 @@ try {
   await shoot("item-reminder", "/#item/shot-reminder", { ready: ".item-view:not([hidden])" });
   await shoot("settings-devices", "/#settings/devices", { ready: ".acct-item" });
   await shoot("settings-menu", "/", { ready: "#settings-toggle", prep: async (p) => { await p.click("#settings-toggle"); } });
+  await shoot("item-daily-limit", "/#item/shot-limit", { ready: ".item-view:not([hidden])" });
+  await shoot("item-daily-limit-key", "/#item/shot-limit", { ready: ".item-error .btn", prep: async (p) => { await p.click(".item-error .btn"); await p.waitForSelector("#byok"); } });
+  await shoot("settings-recording", "/#settings/recording", { ready: ".meter" });
+  await shoot("settings-key-pick", "/#settings/research", { ready: '[data-choice="key"]', prep: async (p) => { await p.click('[data-choice="key"]'); await p.waitForSelector("#byok"); } });
   await inPage(async () => fetch("/api/research", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ provider: "anthropic", key: "sk-ant-test-shots0000000000000000000000003f9a" }) }));
   await shoot("settings-own-key", "/#settings/research", { ready: '[data-choice="key"].current' });
 

@@ -288,6 +288,7 @@ details.fold + details.fold { border-top: 1.5px solid var(--line-2); }
 .net .acts .act.warn { color: var(--red); }
 .form { display: grid; gap: 14px; border-top: 1.5px solid var(--ink); padding: 14px 0 0; margin-top: 16px; }
 .field { display: grid; gap: 4px; }
+.field-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .field label, .field .lbl { font: 12px/1.2 var(--f-pixel); text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); }
 .field input[type="text"], .field input[type="password"] { width: 100%; min-height: 46px; border: 1.5px solid var(--line-2); background: var(--paper-hi); padding: 8px 10px; font: 16px var(--f-mono); border-radius: 0; }
 .field input:focus { border-color: var(--ink); outline: none; }
