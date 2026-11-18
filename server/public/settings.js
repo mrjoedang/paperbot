@@ -6,7 +6,7 @@ import { loadMe, loadLinks, researchGroup, recordingGroup, accountGroup, devices
 import { renderWifi, closeWifi } from "./places.js";
 
 const PAGES = {
-  research: ["Research", "search"], recording: ["Recording", "mic"],
+  research: ["Research", "search"], recording: ["Usage", "mic"],
   devices: ["Devices", "device"], wifi: ["Wi-Fi", "wifi"], apps: ["Apps", "apps"], assistants: ["Assistants", "assistant"],
   account: ["Account", "user"],
 };

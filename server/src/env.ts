@@ -16,6 +16,8 @@ export interface Env {
   WIFI_KEY: string; // secret: 32 random bytes, base64 (AES-GCM key for stored Wi-Fi passwords)
   GATEWAY_ID: string;
   BYOK_GATEWAY_ID: string; // the AI Gateway for calls on a person's own API key (src/agent.ts)
+  STRIPE_SECRET_KEY?: string; // secret: prepaid credit through Stripe Checkout (src/credits.ts); unset: no packs sold
+  STRIPE_WEBHOOK_SECRET?: string; // secret: the signing secret of the /api/stripe/webhook endpoint
   ALERT_URL?: string; // secret: where alerts are POSTed ({subject, text}, Bearer ALERT_TOKEN); unset: alerts are only logged
   ALERT_TOKEN?: string; // secret
   ALERT_SPEND_USD: string; // what paperbot pays a day for everyone (the gateway's spend limit): alerts at 50% and 100%

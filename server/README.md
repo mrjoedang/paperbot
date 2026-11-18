@@ -56,6 +56,10 @@ Sign-in is [Better Auth](https://better-auth.com) (`src/auth.ts`, users and sess
   included); everyone else → `u:<user id>` (`GUEST_CONFIG`: 30 audio min and $0.50 of routing and answers / 24 h, 4× with their own key; research with their own API key,
   stored sealed in their Inbox and used by the gateway proxy per request, or by their own assistant over MCP,
   `src/mcp.ts`). The cron sweeper visits every inbox, then checks alerts (`src/alerts.ts`).
+- **Prepaid credit** (`src/credits.ts`): Stripe Checkout for CA$10 packs and its webhook (`/api/stripe/webhook`, before
+  sign-in); the ledger lives in the Inbox (`credits` table). Secrets `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`; dev uses
+  the Stripe sandbox ("paperbot sandbox"), production the live account. Webhook events: `checkout.session.completed`,
+  `charge.refunded`.
 - **Alerts** (`src/alerts.ts`): mails to the owner through `ALERT_URL` (secret, with `ALERT_TOKEN`): paperbot's AI
   spend over the last 24 h at 50% and 100% of `ALERT_SPEND_USD` (the gateway's spend limit), 30+ new accounts in an
   hour, and the AI Gateway refusing calls (spend or rate limit). Each at most once per few hours.

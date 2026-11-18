@@ -6,6 +6,7 @@ import { assistants, handleAuth, isOwner, migrate as authMigrate, revokeAssistan
 import { sha256hex } from "./directory";
 import { agentStub, directory as dirStub, inbox, objKey, type Env } from "./env";
 import { checkAlerts, onModelError, type Spend } from "./alerts";
+import { canBuy, checkout, countryOf, webhook } from "./credits";
 import { deviceView, webRecord, type Rec } from "./inbox";
 import { parseStatus, parseTelemetry, STATUS_MAX_BYTES, telemetrySig, validatePatch } from "./logic";
 import { handleMcp } from "./mcp";
@@ -421,7 +422,8 @@ async function handleWeb(req: Request, env: Env, url: URL, ctx: ExecutionContext
   if (mutate && path.startsWith("/api/") && !sameOrigin(req, url)) return json({ error: "cross-origin request" }, 403);
   // ---- account: who I am, my boards, my assistants, research, time zone, export, delete ----
   if (path === "/api/me" && req.method === "GET") {
-    return json({ email: who.email, owner: who.owner, tz: await box.tz(), usage: await box.usage(), research: await box.researchSettings() });
+    return json({ email: who.email, owner: who.owner, tz: await box.tz(), usage: await box.usage(), research: await box.researchSettings(),
+      can_buy: !who.owner && canBuy(env, countryOf(req, env)) });
   }
   if (path === "/api/boards" && req.method === "GET") {
     const devs = (await box.devices()) as any[];
@@ -442,6 +444,11 @@ async function handleWeb(req: Request, env: Env, url: URL, ctx: ExecutionContext
   if (path === "/api/assistants" && req.method === "GET") return json(await assistants(env, who.userId));
   bd = path.match(/^\/api\/assistants\/([A-Za-z0-9_-]{8,128})$/);
   if (bd && req.method === "DELETE") return json({ disconnected: bd[1], changes: await revokeAssistant(env, who.userId, bd[1]) });
+  if (path === "/api/credits/checkout" && req.method === "POST") {
+    if (who.owner) return json({ error: "The owner's account has no limits." }, 409);
+    if (!canBuy(env, countryOf(req, env))) return json({ error: "Credit isn't sold in your country yet. Add your own API key instead." }, 403);
+    return json({ url: await checkout(env, url.origin, name, who.email) });
+  }
   if (path === "/api/research") {
     if (req.method === "GET") return json(await box.researchSettings());
     if (req.method === "DELETE") return json(await box.setResearchKey(null));
@@ -695,6 +702,7 @@ export default {
     if (req.method === "GET" && /^\/[\w./-]+\.(css|js|woff2|png|svg|webmanifest|ico|json|glb|webp)$/.test(path) && !/^\/(api|audio|v1|admin)\//.test(path))
       return asset(env, req, url, path); // static files: public, the sign-in pages need them before there is a session
     if (path === "/v1/setup" || path.startsWith("/v1/setup/")) return handleSetup(req, env, url, path); // no token yet
+    if (path === "/api/stripe/webhook" && req.method === "POST") return webhook(req, env);
     if (path === "/v1/ping") return new Response(null, { status: 204, headers: { "cache-control": "no-store" } }); // the board's "wifi test"
     if (path === "/install") return Response.redirect(`${url.origin}/setup`, 301); // the old CLI installer's address
     // Connectors: an OAuth access token bound to this resource (401 + resource metadata otherwise).
