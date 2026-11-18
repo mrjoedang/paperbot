@@ -1,7 +1,8 @@
-// Alerts to the owner by email: what paperbot pays a day, sign-up spikes, and the AI Gateway refusing calls.
+// Alerts to the owner by email: each new account, what paperbot pays a day, sign-up spikes, and the AI Gateway refusing calls.
 // Sent as POST ALERT_URL {subject, text} with Bearer ALERT_TOKEN (a mail relay); without ALERT_URL they are only logged.
 // Each alert is sent at most once per its window (Directory.alertDue), so a cron that runs every minute can check freely.
 import { directory as dirStub, type Env } from "./env";
+import type { Account } from "./directory";
 
 const HOUR = 3600_000;
 /** New accounts in an hour that look like a spike (a launch day is fine; a script is not). */
@@ -21,8 +22,21 @@ export async function alert(env: Env, key: string, everyMs: number, subject: str
 
 export type Spend = { inbox: string; email: string | null; usd: number };
 
-/** Every minute, after the sweep: the last 24 h of spend against ALERT_SPEND_USD, and new accounts in the last hour. */
-export async function checkAlerts(env: Env, spend: Spend[], created: number[]) {
+/** Accounts made by test scripts (src/auth.ts: email sign-up on TEST_HOOKS deployments): no mail for them. */
+const TEST_EMAIL = /@[a-z0-9.-]+\.test$/i;
+/** A new account is mailed once if the sweep sees it this soon after it was made (the sweep runs every minute). */
+const NEW_FOR = 15 * 60_000;
+
+/** Every minute, after the sweep: each new account, the last 24 h of spend against ALERT_SPEND_USD, and new accounts in
+ *  the last hour. */
+export async function checkAlerts(env: Env, spend: Spend[], accounts: Account[]) {
+  const people = accounts.filter((a) => a.inbox !== "default" && !TEST_EMAIL.test(a.email));
+  for (const a of people.filter((a) => a.created > Date.now() - NEW_FOR)) {
+    const who = a.email.endsWith("@passkey.invalid") ? "someone with a passkey" : a.email;
+    await alert(env, `signup:${a.inbox}`, 365 * 24 * HOUR, `new sign-up: ${who}`,
+      `${who} made a paperbot account (${people.length} account${people.length === 1 ? "" : "s"} besides yours).`);
+  }
+  const created = accounts.map((a) => a.created);
   const cap = Number(env.ALERT_SPEND_USD ?? 0);
   const total = spend.reduce((a, s) => a + s.usd, 0);
   if (cap > 0) {

@@ -3,7 +3,7 @@
 // and a cron sweeper; work memos start a budgeted research agent (WorkAgent) without approval.
 
 import { assistants, handleAuth, isOwner, migrate as authMigrate, revokeAssistant, sessionUser, userById, withMcpOAuth, type SessionUser } from "./auth";
-import { sha256hex } from "./directory";
+import { sha256hex, type Account } from "./directory";
 import { agentStub, directory as dirStub, inbox, objKey, type Env } from "./env";
 import { checkAlerts, onModelError, type Spend } from "./alerts";
 import { canBuy, checkout, countryOf, webhook } from "./credits";
@@ -346,14 +346,14 @@ async function handleSetup(req: Request, env: Env, url: URL, path: string): Prom
 /** Every person's inbox (the owner's "default" always). */
 async function sweepAll(env: Env) {
   // The owner's inbox is swept even if the Directory can't be reached.
-  let accounts: { inbox: string; created: number }[] = [];
+  let accounts: Account[] = [];
   try { accounts = await dirStub(env).accounts(); } catch (e) { console.log(JSON.stringify({ ev: "sweep_directory_failed", error: String(e).slice(0, 200) })); }
   const names = new Set(["default", ...accounts.map((a) => a.inbox)]);
   const spend: Spend[] = [];
   for (const name of names) {
     try { spend.push(await sweep(env, name)); } catch (e) { console.log(JSON.stringify({ ev: "sweep_failed", inbox: name, error: String(e).slice(0, 200) })); }
   }
-  try { await checkAlerts(env, spend, accounts.map((a) => a.created)); } catch (e) { console.log(JSON.stringify({ ev: "alerts_failed", error: String(e).slice(0, 200) })); }
+  try { await checkAlerts(env, spend, accounts); } catch (e) { console.log(JSON.stringify({ ev: "alerts_failed", error: String(e).slice(0, 200) })); }
 }
 async function sweep(env: Env, name: string): Promise<Spend> {
   const box = inbox(env, name);
