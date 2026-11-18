@@ -41,7 +41,10 @@ const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 // research_included: 1 = work memos are researched here (owner; paid by the deployment), 0 = they wait
 // for the person's own Claude (MCP connector, src/mcp.ts). audio_cap_min: audio minutes per 24 h (0 = no cap).
 // free_builds_month: app builds a month on paperbot's account for someone without included research or their own key.
-export const DEFAULTS = { daily_cap_usd: 2, max_concurrent: 2, task_cap_usd: 0.15, research_included: 1, audio_cap_min: 0, free_builds_month: 20 };
+// house_cap_usd: what paperbot pays for routing and answers per 24 h (everyone but the owner; agents have their own caps).
+export const DEFAULTS = { daily_cap_usd: 2, max_concurrent: 2, task_cap_usd: 0.15, research_included: 1, audio_cap_min: 0, free_builds_month: 5, house_cap_usd: 0.5 };
+/** With their own API key, a person is not a throwaway account: their daily limits are this many times higher. */
+export const OWN_KEY_FACTOR = 4;
 /** Per-task hard cap of an app build: it reads OpenBelt's docs and checks the app in a browser, so it costs more than research. */
 export const BUILD_CAP_USD = 0.25;
 /** Everyone but the owner: their own Claude does the research, transcription is capped (docs/setup.md). */
@@ -307,20 +310,31 @@ export class Inbox extends DurableObject<Env> {
   }
   name(): string { return this.kv("inbox_name") ?? "default"; }
 
-  /** Audio transcribed in the last 24 h against the cap (Settings -> Recording): uploads, plus every reprocess. */
+  /** Today's use against the limits (Settings -> Recording), over the last 24 h: audio transcribed (uploads and every
+   *  reprocess), and what paperbot paid to route and answer memos. Research and app memos are left out: their agents
+   *  have their own caps (daily_cap_usd, free_builds_month). The owner has no limits. */
   usage() {
     const since = Date.now() - DAY_MS;
     const used = Number(this.sql.exec("SELECT COALESCE(SUM(seconds), 0) AS s FROM records WHERE received_at > ? AND status != 'error'", since).one().s)
       + Number(this.sql.exec("SELECT COALESCE(SUM(seconds), 0) AS s FROM reprocessed WHERE at > ?", since).one().s);
-    return { audio_seconds_24h: Math.round(used), audio_cap_min: this.config().audio_cap_min };
+    const house = Number(this.sql.exec("SELECT COALESCE(SUM(agent_cost), 0) AS s FROM records WHERE received_at > ? AND (kind IS NULL OR kind NOT IN ('research', 'app'))", since).one().s);
+    const c = this.config(), owner = this.name() === "default", f = this.usesOwnKey() ? OWN_KEY_FACTOR : 1;
+    return { audio_seconds_24h: Math.round(used), audio_cap_min: owner ? 0 : c.audio_cap_min * f,
+      house_usd_24h: +house.toFixed(4), house_cap_usd: owner ? 0 : c.house_cap_usd * f, own_key: f > 1 };
   }
   /** Why a clip of this length can't be transcribed now (null = it can). */
-  overCap(seconds: number): string | null { return this.overAudioCap(seconds); }
-  private overAudioCap(extraSeconds: number): string | null {
-    const cap = this.config().audio_cap_min;
-    if (!(cap > 0)) return null;
-    const used = this.usage().audio_seconds_24h;
-    return used + extraSeconds > cap * 60 ? `audio cap ${cap} min / 24 h (used ${used} s)` : null;
+  overCap(seconds: number): string | null {
+    const u = this.usage();
+    if (u.audio_cap_min > 0 && u.audio_seconds_24h + seconds > u.audio_cap_min * 60) return `${Math.round(u.audio_seconds_24h / 60)} of ${u.audio_cap_min} audio minutes in 24 h`;
+    if (u.house_cap_usd > 0 && u.house_usd_24h >= u.house_cap_usd) return `$${u.house_usd_24h.toFixed(2)} of $${u.house_cap_usd.toFixed(2)} free AI use in 24 h`;
+    return null;
+  }
+  /** Alerts (src/alerts.ts): what paperbot paid for this inbox in the last 24 h, agents included unless on their own key. */
+  houseSpend24h(): { inbox: string; email: string | null; usd: number } {
+    const since = Date.now() - DAY_MS;
+    const own = this.usesOwnKey() ? " AND (kind IS NULL OR kind NOT IN ('research', 'app'))" : "";
+    const usd = Number(this.sql.exec(`SELECT COALESCE(SUM(agent_cost), 0) AS s FROM records WHERE received_at > ?${own}`, since).one().s);
+    return { inbox: this.name(), email: this.kv("email") ?? null, usd: +usd.toFixed(4) };
   }
 
   // ---------- research with the person's own API key ----------
@@ -684,7 +698,7 @@ export class Inbox extends DurableObject<Env> {
     const now = Date.now();
     const row: Record<string, unknown> = { received_at: now, status: "processing", processing_since: now, ...r };
     if (this.get(r.id)) return { inserted: false, rec: this.get(r.id)! };
-    const over = row.status === "processing" && typeof r.seconds === "number" ? this.overAudioCap(r.seconds) : null;
+    const over = row.status === "processing" && typeof r.seconds === "number" ? this.overCap(r.seconds) : null;
     if (over) Object.assign(row, { status: "error", error: "daily limit", detail: over, done_at: now, audio_key: null }); // the Worker deletes the audio
     const keys = Object.keys(row);
     const n = this.sql.exec(`INSERT OR IGNORE INTO records (${keys.join(",")}) VALUES (${keys.map(() => "?").join(",")})`, ...keys.map((k) => row[k] as any)).rowsWritten;
@@ -755,7 +769,7 @@ export class Inbox extends DurableObject<Env> {
     const r = this.get(id);
     if (!r || !r.audio_key) return { rec: r };
     const seconds = Math.max(r.seconds ?? 0, REPROCESS_MIN_S);
-    const refused = this.overAudioCap(seconds);
+    const refused = this.overCap(seconds);
     if (refused) return { rec: r, refused };
     this.sql.exec("DELETE FROM reprocessed WHERE at <= ?", Date.now() - DAY_MS);
     this.sql.exec("INSERT INTO reprocessed VALUES (?, ?)", Date.now(), seconds);
@@ -815,6 +829,7 @@ export class Inbox extends DurableObject<Env> {
       processing: this.sql.exec("SELECT id, gen, wf_instance, attempts, processing_since, test_flags FROM records WHERE status = 'processing' AND processing_since < ?", now - 45_000).toArray() as unknown as Rec[],
       running: this.sql.exec("SELECT id, agent_started_at FROM records WHERE agent_state = 'running' AND agent_started_at < ?", now - 150_000).toArray() as unknown as Rec[],
       queued: this.sql.exec("SELECT count(*) AS n FROM records WHERE agent_state = 'queued'").one().n as number,
+      spend: this.houseSpend24h(),
     };
   }
 

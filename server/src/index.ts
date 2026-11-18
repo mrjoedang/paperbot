@@ -5,6 +5,7 @@
 import { assistants, handleAuth, isOwner, migrate as authMigrate, revokeAssistant, sessionUser, userById, withMcpOAuth, type SessionUser } from "./auth";
 import { sha256hex } from "./directory";
 import { agentStub, directory as dirStub, inbox, objKey, type Env } from "./env";
+import { checkAlerts, onModelError, type Spend } from "./alerts";
 import { deviceView, webRecord, type Rec } from "./inbox";
 import { parseStatus, parseTelemetry, STATUS_MAX_BYTES, telemetrySig, validatePatch } from "./logic";
 import { handleMcp } from "./mcp";
@@ -185,6 +186,7 @@ async function runInline(env: Env, acct: Acct, id: string, gen: number, flags: s
     console.log(JSON.stringify({ ev: "processed", id, kind: outcome.kind, ms: Date.now() - t0 }));
   } catch (e) {
     console.log(JSON.stringify({ ev: "inline_failed", id, error: String(e).slice(0, 200) }));
+    await onModelError(env, e).catch(() => {});
     if (flag(flags, "fail") === "stuck") return; // test: simulate an isolate dying before the hand-off (cron sweeper recovers)
     await startWorkflow(env, acct, id, gen, flags);
   }
@@ -343,14 +345,16 @@ async function handleSetup(req: Request, env: Env, url: URL, path: string): Prom
 /** Every person's inbox (the owner's "default" always). */
 async function sweepAll(env: Env) {
   // The owner's inbox is swept even if the Directory can't be reached.
-  let others: string[] = [];
-  try { others = (await dirStub(env).accounts()).map((a) => a.inbox); } catch (e) { console.log(JSON.stringify({ ev: "sweep_directory_failed", error: String(e).slice(0, 200) })); }
-  const names = new Set(["default", ...others]);
+  let accounts: { inbox: string; created: number }[] = [];
+  try { accounts = await dirStub(env).accounts(); } catch (e) { console.log(JSON.stringify({ ev: "sweep_directory_failed", error: String(e).slice(0, 200) })); }
+  const names = new Set(["default", ...accounts.map((a) => a.inbox)]);
+  const spend: Spend[] = [];
   for (const name of names) {
-    try { await sweep(env, name); } catch (e) { console.log(JSON.stringify({ ev: "sweep_failed", inbox: name, error: String(e).slice(0, 200) })); }
+    try { spend.push(await sweep(env, name)); } catch (e) { console.log(JSON.stringify({ ev: "sweep_failed", inbox: name, error: String(e).slice(0, 200) })); }
   }
+  try { await checkAlerts(env, spend, accounts.map((a) => a.created)); } catch (e) { console.log(JSON.stringify({ ev: "alerts_failed", error: String(e).slice(0, 200) })); }
 }
-async function sweep(env: Env, name: string) {
+async function sweep(env: Env, name: string): Promise<Spend> {
   const box = inbox(env, name);
   const acct: Acct = { inbox: name, tz: await box.tz() };
   const s = await box.stale(Date.now());
@@ -372,6 +376,7 @@ async function sweep(env: Env, name: string) {
     try { await (await agentStub(env, name, r.id)).status(); } catch (e) { console.log(`poke ${r.id} failed ${e}`); }
   }
   if (s.queued) await box.pump();
+  return s.spend;
 }
 
 // ---------- web app ----------
@@ -449,8 +454,12 @@ async function handleWeb(req: Request, env: Env, url: URL, ctx: ExecutionContext
       if (env.TEST_HOOKS === "1" && key.startsWith("sk-ant-test-")) return json(await box.setResearchKey(key));
       const t = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
         body: JSON.stringify({ model: "claude-haiku-5-5", max_tokens: 1, messages: [{ role: "user", content: "ok" }] }) });
-      if (t.status === 401 || t.status === 403) return json({ error: "Anthropic rejected this key. Check it in console.anthropic.com." }, 400);
-      if (t.status === 400 && /credit/i.test(await t.text())) return json({ error: "This key's account has no credit left. Add credit in console.anthropic.com." }, 400);
+      // Anthropic's errors: 401/403 bad or revoked key, 400 with "credit" (no credit) or "limit" (a workspace spend limit), 402 billing.
+      const body = t.ok ? "" : await t.text().catch(() => "");
+      if (t.status === 401 || t.status === 403) return json({ error: "Anthropic rejected this key. Copy it again from platform.claude.com/settings/keys." }, 400);
+      if (t.status === 402 || (t.status === 400 && /credit/i.test(body))) return json({ error: "This key's account has no API credit. Add credit at platform.claude.com/settings/billing (a Claude subscription doesn't include it)." }, 400);
+      if (t.status === 400 && /limit/i.test(body)) return json({ error: "This key's workspace has reached its spend limit. Raise it at platform.claude.com/settings/spend-limits." }, 400);
+      if (t.status === 429) return json({ error: "Anthropic is rate-limiting this key. Try again in a minute." }, 400);
       if (!t.ok && t.status !== 400) return json({ error: `Anthropic answered ${t.status}. Try again in a minute.` }, 502);
       return json(await box.setResearchKey(key));
     }
@@ -614,7 +623,7 @@ function sameOrigin(req: Request, url: URL): boolean {
 async function reprocess(env: Env, ctx: ExecutionContext, id: string, name = "default") {
   const box = inbox(env, name);
   const { rec: r, refused } = await box.reprocess(id);
-  if (refused) return json({ error: `Daily audio limit reached (${refused}). Try again tomorrow.` }, 429);
+  if (refused) return json({ error: `Daily limit reached (${refused}). Add your API key in Settings to raise it, or try again tomorrow.` }, 429);
   if (!r) return json({ error: "not found" }, 404);
   if (!r.audio_key) return json({ error: "no audio to reprocess", ...deviceView(r) }, 409);
   ctx.waitUntil(runInline(env, { inbox: name, tz: await box.tz() }, id, r.gen, ""));

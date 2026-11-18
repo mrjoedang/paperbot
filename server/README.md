@@ -53,9 +53,12 @@ Sign-in is [Better Auth](https://better-auth.com) (`src/auth.ts`, users and sess
 - **`/admin/*`**: the owner's `DEVICE_TOKEN`. `POST /admin/auth-migrate` creates / updates the auth tables after a
   deploy that adds some.
 - **One Inbox per person**: `OWNER_EMAIL` signed in with a verified address (Google) → `default` (research
-  included); everyone else → `u:<user id>` (`GUEST_CONFIG`: 30 audio min / 24 h; research with their own API key,
+  included); everyone else → `u:<user id>` (`GUEST_CONFIG`: 30 audio min and $0.50 of routing and answers / 24 h, 4× with their own key; research with their own API key,
   stored sealed in their Inbox and used by the gateway proxy per request, or by their own assistant over MCP,
-  `src/mcp.ts`). The cron sweeper visits every inbox.
+  `src/mcp.ts`). The cron sweeper visits every inbox, then checks alerts (`src/alerts.ts`).
+- **Alerts** (`src/alerts.ts`): mails to the owner through `ALERT_URL` (secret, with `ALERT_TOKEN`): paperbot's AI
+  spend over the last 24 h at 50% and 100% of `ALERT_SPEND_USD` (the gateway's spend limit), 30+ new accounts in an
+  hour, and the AI Gateway refusing calls (spend or rate limit). Each at most once per few hours.
 - **`TEST_HOOKS=1` (dev only)**: email + password sign-in, fake `sk-ant-test-…` keys saved unchecked, `X-Test-*`
   upload headers, `X-Test-At` on `/v1/status`, `/admin/test/{seed,record,purge,devices,drop}`.
 

@@ -58,12 +58,14 @@ month (below).
   keeps `default`, everyone else gets `u:<user id>`. The **Directory** Durable Object maps board tokens
   (SHA-256 only) to accounts.
 - **Owner**: research included (server-side agent, budgets as before).
-- **Everyone else** (`GUEST_CONFIG` in `server/src/inbox.ts`): transcription capped at 30 audio
-  minutes per 24 h. Each reprocess counts again (the clip's length, at least a minute); a clip over the
-  cap gets a "daily limit" record and its audio is not kept. Work memos are researched one of two ways (Settings → Research):
+- **Everyone else** (`GUEST_CONFIG` and `DEFAULTS` in `server/src/inbox.ts`), per 24 h: 30 audio minutes, and
+  $0.50 of routing and answers on paperbot's account (`house_cap_usd`, about 40 web answers). Each reprocess counts
+  again (the clip's length, at least a minute); a clip over either cap gets a "daily limit" record, its audio is not
+  kept, and the web app offers "Add your API key". With their own key both caps are 4× higher (`OWN_KEY_FACTOR`). Work memos are researched one of two ways (Settings → Research):
   - **their own API key** (Anthropic): checked once, stored sealed in their Inbox, and put on each model
     call by the gateway proxy (`server/src/agent.ts`); if it is removed or rejected, research stops
-    instead of falling back to the owner's billing. $5/day cap.
+    instead of falling back to the owner's billing. $5/day cap. Those calls go through their own AI Gateway
+    (`BYOK_GATEWAY_ID`), so they don't count against paperbot's gateway spend limit.
   - **their own assistant** (Claude Code, claude.ai, ChatGPT connectors): OAuth to `POST /v1/mcp`; it calls
     `list_memos` / `get_memo` / `complete_research` / `update_memo` (`server/src/mcp.ts`). The board shows
     RESEARCHING until the result arrives, then DONE + summary.
@@ -82,7 +84,7 @@ month (below).
     no copy. Test: `node tools/e2e/belt.mjs --openbelt <workspace URL>` against a local OpenBelt (the script says how).
   - Until it is connected, an app memo waits (`agent_state = needs_openbelt`; the board shows RESEARCHING) and
     builds as soon as it is.
-  - Who pays: included research (owner), their own key, or one of `free_builds_month` (20) free builds a
+  - Who pays: included research (owner), their own key, or one of `free_builds_month` (5) free builds a
     month on paperbot's account; with none left it goes to their own assistant like research.
 - Audio and reports of other accounts are stored under `audio/u:<user id>/…` (the owner's keys are
   unchanged). Settings → Account: download my data, delete account (boards revoked, R2 objects, inbox and

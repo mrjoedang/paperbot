@@ -34,6 +34,7 @@ export class Directory extends DurableObject<Env> {
       }
     }
     this.sql.exec(`CREATE TABLE IF NOT EXISTS accounts (inbox TEXT PRIMARY KEY, user_id TEXT UNIQUE NOT NULL, email TEXT NOT NULL, tz TEXT, created INTEGER NOT NULL)`);
+    this.sql.exec("CREATE TABLE IF NOT EXISTS alerts (key TEXT PRIMARY KEY, at INTEGER NOT NULL)"); // src/alerts.ts: when each was last sent
     this.sql.exec(`CREATE TABLE IF NOT EXISTS tokens (hash TEXT PRIMARY KEY, inbox TEXT NOT NULL, device TEXT, created INTEGER NOT NULL, seen_at INTEGER, fw TEXT,
       revoked INTEGER NOT NULL DEFAULT 0)`);
   }
@@ -49,6 +50,13 @@ export class Directory extends DurableObject<Env> {
     const inbox = owner && !this.sql.exec("SELECT 1 FROM accounts WHERE inbox = 'default'").toArray().length ? "default" : `u:${userId}`;
     this.sql.exec("INSERT INTO accounts (inbox, user_id, email, tz, created) VALUES (?, ?, ?, NULL, ?)", inbox, userId, email, Date.now());
     return this.sql.exec("SELECT * FROM accounts WHERE inbox = ?", inbox).one() as unknown as Account;
+  }
+  /** Claims an alert: true (and noted) when `key` wasn't sent in the last `everyMs`. One writer, so no double mails. */
+  alertDue(key: string, everyMs: number): boolean {
+    const last = this.sql.exec("SELECT at FROM alerts WHERE key = ?", key).toArray()[0]?.at as number | undefined;
+    if (last !== undefined && Date.now() - last < everyMs) return false;
+    this.sql.exec("INSERT OR REPLACE INTO alerts VALUES (?, ?)", key, Date.now());
+    return true;
   }
   accounts(): Account[] { return this.sql.exec("SELECT * FROM accounts ORDER BY created").toArray() as unknown as Account[]; }
   setTz(inbox: string, tz: string) { this.sql.exec("UPDATE accounts SET tz = ? WHERE inbox = ?", tz, inbox); }

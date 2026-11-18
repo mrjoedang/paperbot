@@ -16,6 +16,7 @@ export function cmd(text) {
   } }, "Copy");
   return h("div", { class: "cmd" }, h("code", null, text), b);
 }
+const KEYS_URL = "https://platform.claude.com/settings/keys";
 const group = (title, ...kids) => h("section", { class: "acct-group" }, h("h3", null, title), ...kids);
 const p = (...kids) => h("p", { class: "acct-p" }, ...kids);
 const fmtDate = (t) => (t ? new Date(typeof t === "number" ? t : Date.parse(t)).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "");
@@ -45,7 +46,7 @@ export function researchGroup(S, rerender) {
   const opts = h("div", { class: "opts", role: "radiogroup", "aria-label": "How memos are researched" },
     r.mode === "included" ? opt("included", "Included", "Research runs on paperbot's own account.") : null,
     opt("assistant", "Ask my assistant", "Free with Claude or ChatGPT. Memos wait until you ask."),
-    opt("key", "Use my API key", "Memos are researched as you record them."),
+    opt("key", "Use my API key", "Memos are researched as you record them, and your daily limits are 4× higher."),
     opt("chatgpt", "Use my ChatGPT plan", "On your Plus or Pro allowance.", true));
 
   const removeKey = () => h("button", { class: "btn", type: "button", onclick: async (e) => {
@@ -66,9 +67,10 @@ export function researchGroup(S, rerender) {
       catch (e) { res.textContent = e.message; res.className = "acct-result bad"; save.disabled = false; save.classList.remove("loading"); }
     } }, r.mode === "key" ? "Replace key" : "Save and check key");
     more = h("section", { class: "settings-card-box" },
-      h("div", { class: "field" }, h("label", { for: "byok" }, "Anthropic API key"), key),
+      h("div", { class: "field" }, h("div", { class: "field-head" }, h("label", { for: "byok" }, "Anthropic API key"),
+        h("a", { class: "link-inline", href: KEYS_URL, target: "_blank", rel: "noopener noreferrer" }, "Get a key")), key),
       h("div", { class: "row" }, save, r.mode === "key" ? removeKey() : null, res),
-      h("p", { class: "muted small" }, "Stored encrypted. Research stops at $5 a day."));
+      h("p", { class: "muted small" }, "Uses API credit, not a Claude plan. Up to $0.15 a memo and $5 a day. Stored encrypted."));
   } else if (pick === "assistant") {
     const tab = S.researchTab ?? "cc";
     const tabs = [["cc", "Claude Code"], ["web", "claude.ai"], ["gpt", "ChatGPT"]];
@@ -84,14 +86,19 @@ export function researchGroup(S, rerender) {
   return group("Research", opts, more);
 }
 
-export function recordingGroup() {
+export function recordingGroup(S) {
   const u = me.usage ?? {}, cap = u.audio_cap_min ?? 0, used = Math.round((u.audio_seconds_24h ?? 0) / 60);
-  if (!(cap > 0)) return group("Recording", p("Transcription has no daily limit on this account."));
-  const pct = Math.min(100, (used / cap) * 100);
+  const usd = u.house_cap_usd ?? 0;
+  if (!(cap > 0) && !(usd > 0)) return group("Recording", p("No daily limits on this account."));
+  const meter = (label, now, max, text) => {
+    const pct = Math.min(100, (now / max) * 100);
+    return [h("div", { class: `meter${pct > 85 ? " hot" : ""}`, role: "meter", "aria-label": label, "aria-valuemin": "0", "aria-valuemax": String(max), "aria-valuenow": String(now) },
+      h("span", { class: "fill", style: { width: `${pct}%` } })), h("p", { class: "muted small" }, text)];
+  };
   return group("Recording",
-    h("div", { class: `meter${pct > 85 ? " hot" : ""}`, role: "meter", "aria-label": "Audio transcribed in the last 24 hours", "aria-valuemin": "0", "aria-valuemax": String(cap), "aria-valuenow": String(used) },
-      h("span", { class: "fill", style: { width: `${pct}%` } })),
-    h("p", { class: "muted small" }, `${used} of ${cap} minutes in the last 24 hours.`));
+    ...(cap > 0 ? meter("Audio transcribed in the last 24 hours", used, cap, `${used} of ${cap} minutes in the last 24 hours.`) : []),
+    ...(usd > 0 ? meter("Answers in the last 24 hours", u.house_usd_24h ?? 0, usd, `${Math.min(100, Math.round(((u.house_usd_24h ?? 0) / usd) * 100))}% of today's answers used.`) : []),
+    u.own_key ? null : h("a", { class: "btn", href: "#settings/research", onclick: () => { S.researchPick = "key"; } }, "Raise limits with your API key"));
 }
 
 export function accountGroup(S, rerender) {
