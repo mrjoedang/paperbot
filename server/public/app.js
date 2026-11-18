@@ -7,7 +7,7 @@ import { ago, dueInfo, usd, dur, clock, startOfDay } from "./util.js";
 import { BASE, h, ic, api, toast, cssVar, reducedMotion, openDrawer, closeDrawer, initDrawer, paintCrisp } from "./dom.js";
 import { openHealth, refreshHealth, setDeviceContent } from "./health.js";
 import { openSettings, refreshSettings } from "./settings.js";
-import { setupCard, loadLinks, cmd, ASK, signOut, connectOpenbelt } from "./account.js";
+import { setupCard, loadLinks, loadMe, buyCredit, cmd, ASK, signOut, connectOpenbelt } from "./account.js";
 import { beltChanged, memoDone, setupBelt, showTab } from "./belt.js";
 
 // ---------- state ----------
@@ -16,6 +16,8 @@ const S = {
   view: "open", kind: "all", noise: false, q: "", expanded: new Set(), showAll: false, showDone: false,
   incoming: new Map(), newSteps: new Set(), skew: 0, rtt: null,
 };
+/** The account (whether credit is sold here: can_buy), for the buttons under a memo over the limit. */
+const meReady = loadMe(S);
 // A memo's kind is what the router did with it (server/src/pipeline.ts); a saved item lives in the person's OpenBelt list.
 const KINDS = [["all", "All", "list"], ["save", "Saved", "todo"], ["answer", "Answers", "assistant"], ["research", "Research", "work"], ["app", "Apps", "apps"]];
 const KIND_ICON = { save: "todo", answer: "assistant", research: "work", app: "apps", ignore: "noise" };
@@ -42,7 +44,10 @@ const wsUrl = () => `${location.protocol === "https:" ? "wss" : "ws"}://${locati
 
 function connect() {
   clearTimeout(reconnectTimer);
-  try { ws = new WebSocket(wsUrl()); } catch { scheduleReconnect(); return; }
+  try { ws = new WebSocket(wsUrl()); } catch { scheduleReconnect();
+
+// Back from Stripe Checkout: the webhook adds the credit within seconds (the "budget" event then refreshes the balance).
+if (new URLSearchParams(location.search).has("paid")) { toast("Payment received. Thanks!"); history.replaceState(null, "", location.pathname + location.hash); } return; }
   const sock = ws;
   let opened = false;
   sock.onopen = () => {
@@ -160,7 +165,7 @@ function handle(ev) {
       break;
     }
     case "device_event": refreshHealth?.(S, true); break;
-    case "budget": S.budget = ev.budget; renderSide(); break;
+    case "budget": S.budget = ev.budget; renderSide(); if (S.me) loadMe(S).then(() => refreshSettings(S)); break; // credit added or spent
     case "wifi": S.wifi = ev.wifi; refreshSettings(S); updateHeaderBadges(); break;
     case "resync": if (ws?.readyState === 1) ws.send("snapshot"); break;
   }
@@ -797,9 +802,12 @@ function workBlocks(r, expanded = false) {
   }
   return out;
 }
-/** Under a memo that hit the daily limit: one click to the API key field (it raises the limits). */
+/** Under a memo that hit the daily limit: buy credit (where it's sold), or the API key field. Both raise the limits. */
 function raiseLimit() {
-  return h("div", { class: "err-action" }, h("button", { class: "btn", type: "button", onclick: (e) => { e.stopPropagation(); openSettings(S, "research", "key"); } }, "Add your API key"));
+  const row = h("div", { class: "err-action row" },
+    h("button", { class: "btn", type: "button", onclick: (e) => { e.stopPropagation(); openSettings(S, "research", "key"); } }, "Add your API key"));
+  meReady.then(() => { if (S.me?.can_buy) row.prepend(buyCredit("btn primary")); });
+  return row;
 }
 const STEP_TAG = { search: "search", read: "read", write: "write", think: "think", note: "note", error: "oops" };
 function logList(id, steps) {

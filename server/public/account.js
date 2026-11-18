@@ -89,16 +89,32 @@ export function researchGroup(S, rerender) {
 export function recordingGroup(S) {
   const u = me.usage ?? {}, cap = u.audio_cap_min ?? 0, used = Math.round((u.audio_seconds_24h ?? 0) / 60);
   const usd = u.house_cap_usd ?? 0;
-  if (!(cap > 0) && !(usd > 0)) return group("Recording", p("No daily limits on this account."));
+  if (!(cap > 0) && !(usd > 0)) return group("Usage", p("No daily limits on this account."));
   const meter = (label, now, max, text) => {
     const pct = Math.min(100, (now / max) * 100);
     return [h("div", { class: `meter${pct > 85 ? " hot" : ""}`, role: "meter", "aria-label": label, "aria-valuemin": "0", "aria-valuemax": String(max), "aria-valuenow": String(now) },
       h("span", { class: "fill", style: { width: `${pct}%` } })), h("p", { class: "muted small" }, text)];
   };
-  return group("Recording",
+  const credit = u.credit_usd ?? 0;
+  return group("Usage",
     ...(cap > 0 ? meter("Audio transcribed in the last 24 hours", used, cap, `${used} of ${cap} minutes in the last 24 hours.`) : []),
-    ...(usd > 0 ? meter("Answers in the last 24 hours", u.house_usd_24h ?? 0, usd, `${Math.min(100, Math.round(((u.house_usd_24h ?? 0) / usd) * 100))}% of today's answers used.`) : []),
-    u.own_key ? null : h("a", { class: "btn", href: "#settings/research", onclick: () => { S.researchPick = "key"; } }, "Raise limits with your API key"));
+    ...(usd > 0 ? meter("Answers in the last 24 hours", u.house_usd_24h ?? 0, usd, `${Math.min(100, Math.round(((u.house_usd_24h ?? 0) / usd) * 100))}% of today's free answers used.`) : []),
+    me.can_buy || credit > 0 ? h("div", { class: "credit" },
+      h("div", null, h("b", { class: "credit-usd" }, `$${Math.max(0, credit).toFixed(2)}`), h("span", { class: "muted" }, " credit")),
+      h("p", { class: "muted small" }, "Pays for memos past the free allowance, research and apps."),
+      me.can_buy ? buyCredit("btn primary") : null) : null,
+    u.own_key ? null : h("a", { class: "btn", href: "#settings/research", onclick: () => { S.researchPick = "key"; } }, "Use your own API key"));
+}
+
+/** "Add $10": Stripe Checkout (card, Apple Pay, Google Pay, Link), then back to Settings → Usage. */
+export function buyCredit(cls = "btn primary") {
+  return h("button", { class: cls, type: "button", onclick: async (e) => {
+    e.stopPropagation();
+    const b = e.currentTarget;
+    b.classList.add("loading"); b.disabled = true;
+    try { location.href = (await api("api/credits/checkout", { method: "POST" })).url; }
+    catch (x) { toast(x.message, { bad: true }); b.classList.remove("loading"); b.disabled = false; }
+  } }, "Add $10");
 }
 
 export function accountGroup(S, rerender) {

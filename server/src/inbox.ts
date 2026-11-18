@@ -114,6 +114,7 @@ export class Inbox extends DurableObject<Env> {
     this.sql.exec("CREATE INDEX IF NOT EXISTS records_status ON records(status)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS config (k TEXT PRIMARY KEY, v TEXT)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS events (at INTEGER, id TEXT, msg TEXT)");
+    this.sql.exec("CREATE TABLE IF NOT EXISTS credits (id TEXT PRIMARY KEY, at INTEGER NOT NULL, usd REAL NOT NULL, note TEXT)"); // prepaid credit: + bought, - spent
     this.sql.exec("CREATE TABLE IF NOT EXISTS reprocessed (at INTEGER NOT NULL, seconds REAL NOT NULL)"); // counted in usage()
     try { this.sql.exec("ALTER TABLE records ADD COLUMN agent_progress TEXT"); } catch {} // added with the live web app
     try { this.sql.exec("ALTER TABLE records ADD COLUMN items TEXT"); } catch {} // added with the router (saved items)
@@ -318,17 +319,35 @@ export class Inbox extends DurableObject<Env> {
     const used = Number(this.sql.exec("SELECT COALESCE(SUM(seconds), 0) AS s FROM records WHERE received_at > ? AND status != 'error'", since).one().s)
       + Number(this.sql.exec("SELECT COALESCE(SUM(seconds), 0) AS s FROM reprocessed WHERE at > ?", since).one().s);
     const house = Number(this.sql.exec("SELECT COALESCE(SUM(agent_cost), 0) AS s FROM records WHERE received_at > ? AND (kind IS NULL OR kind NOT IN ('research', 'app'))", since).one().s);
-    const c = this.config(), owner = this.name() === "default", f = this.usesOwnKey() ? OWN_KEY_FACTOR : 1;
-    return { audio_seconds_24h: Math.round(used), audio_cap_min: owner ? 0 : c.audio_cap_min * f,
-      house_usd_24h: +house.toFixed(4), house_cap_usd: owner ? 0 : c.house_cap_usd * f, own_key: f > 1 };
+    const c = this.config(), owner = this.name() === "default", credit = this.creditBalance(), ownKey = this.usesOwnKey();
+    // An own key raises both limits; credit raises the audio limit, and pays for everything past the free allowance.
+    const fAudio = ownKey || credit > 0 ? OWN_KEY_FACTOR : 1, fHouse = ownKey ? OWN_KEY_FACTOR : 1;
+    return { audio_seconds_24h: Math.round(used), audio_cap_min: owner ? 0 : c.audio_cap_min * fAudio,
+      house_usd_24h: +house.toFixed(4), house_cap_usd: owner ? 0 : c.house_cap_usd * fHouse, own_key: ownKey, credit_usd: credit };
   }
   /** Why a clip of this length can't be transcribed now (null = it can). */
   overCap(seconds: number): string | null {
     const u = this.usage();
     if (u.audio_cap_min > 0 && u.audio_seconds_24h + seconds > u.audio_cap_min * 60) return `${Math.round(u.audio_seconds_24h / 60)} of ${u.audio_cap_min} audio minutes in 24 h`;
-    if (u.house_cap_usd > 0 && u.house_usd_24h >= u.house_cap_usd) return `$${u.house_usd_24h.toFixed(2)} of $${u.house_cap_usd.toFixed(2)} free AI use in 24 h`;
+    if (u.house_cap_usd > 0 && u.house_usd_24h >= u.house_cap_usd && u.credit_usd <= 0) return `$${u.house_usd_24h.toFixed(2)} of $${u.house_cap_usd.toFixed(2)} free AI use in 24 h`;
     return null;
   }
+  // ---------- prepaid credit (src/credits.ts) ----------
+  // One ledger row per event: + a pack bought, - a memo past the free allowance, - an agent (its cap while it runs, then its
+  // cost), - a refund. Ids make each one idempotent: Stripe retries webhooks, and a memo or agent is charged once.
+  creditBalance(): number { return +Number(this.sql.exec("SELECT COALESCE(SUM(usd), 0) AS s FROM credits").one().s).toFixed(4); }
+  addCredit(id: string, usd: number, note: string) {
+    const added = this.sql.exec("INSERT OR IGNORE INTO credits VALUES (?, ?, ?, ?)", id, Date.now(), usd, note).rowsWritten > 0;
+    if (added) { this.emitBudget(); this.ctx.waitUntil(this.pump()); }
+    return { added, balance: this.creditBalance() };
+  }
+  setCredit(id: string, usd: number, note: string) {
+    this.sql.exec("INSERT OR REPLACE INTO credits VALUES (?, ?, ?, ?)", id, Date.now(), usd, note);
+    this.emitBudget();
+    return { balance: this.creditBalance() };
+  }
+  /** Agents run on credit for someone with no included research and no key of their own. */
+  private onCredit(): boolean { return this.name() !== "default" && !this.config().research_included && !this.usesOwnKey(); }
   /** Alerts (src/alerts.ts): what paperbot paid for this inbox in the last 24 h, agents included unless on their own key. */
   houseSpend24h(): { inbox: string; email: string | null; usd: number } {
     const since = Date.now() - DAY_MS;
@@ -722,6 +741,9 @@ export class Inbox extends DurableObject<Env> {
     const r = this.get(id);
     if (!r || r.gen !== gen || r.status !== "processing") return r;
     const work = AGENT_ACTIONS.includes(o.kind);
+    // Past the free allowance, the memo is paid from credit (overCap let it through because there was some).
+    const u = this.usage();
+    if (u.house_cap_usd > 0 && u.house_usd_24h >= u.house_cap_usd && o.usd > 0) this.sql.exec("INSERT OR IGNORE INTO credits VALUES (?, ?, ?, ?)", `memo:${id}:${gen}`, Date.now(), -o.usd, "memo");
     const waits = o.kind === "save" && !!o.items?.some((i) => i.why === "not connected");
     // The router's (and an answer's) model cost counts against today's budget like an agent's.
     this.sql.exec(
@@ -899,11 +921,11 @@ export class Inbox extends DurableObject<Env> {
     const c = this.config();
     if (r.kind === "app") {
       if (!this.openbeltLink()) return this.needsOpenbelt(id);
-      if (c.research_included || this.usesOwnKey() || this.freeBuildsLeft() > 0) return this.admit(id);
+      if (c.research_included || this.usesOwnKey() || this.freeBuildsLeft() > 0 || this.creditBalance() > 0) return this.admit(id);
       this.log(id, `free builds used up (${c.free_builds_month} a month)`);
       return this.external(id);
     }
-    if (c.research_included || this.usesOwnKey()) this.admit(id);
+    if (c.research_included || this.usesOwnKey() || this.creditBalance() > 0) this.admit(id);
     else this.external(id);
   }
   private needsOpenbelt(id: string) {
@@ -926,16 +948,18 @@ export class Inbox extends DurableObject<Env> {
       if (!next) return;
       const s = this.spend();
       const build = next.kind === "app";
-      // A free build is counted against free_builds_month, not the daily cap (guests have none).
-      const free = build && !s.research_included && !this.usesOwnKey();
+      // Who pays: a free build (counted against free_builds_month), else prepaid credit, else the daily cap (owner, own key).
+      const onCredit = this.onCredit();
+      const free = build && onCredit && this.freeBuildsLeft() > 0;
+      const credit = onCredit && !free;
       const cap = build ? Math.max(s.task_cap_usd, BUILD_CAP_USD) : s.task_cap_usd;
-      if (free && this.freeBuildsLeft() <= 0) {
-        this.log(next.id, "free builds used up: for your assistant");
+      if (credit && this.creditBalance() < cap) { // its cap is held from credit while it runs
+        this.log(next.id, `not enough credit ($${this.creditBalance()} < $${cap}): for your assistant`);
         this.external(next.id);
         this.changed(next.id);
         continue;
       }
-      if (!free && s.spent_usd + cap * (s.running + 1) > s.daily_cap_usd + 1e-9) {
+      if (!onCredit && s.spent_usd + cap * (s.running + 1) > s.daily_cap_usd + 1e-9) {
         this.sql.exec("UPDATE records SET status = 'paused_budget', agent_state = NULL, error = 'daily budget' WHERE id = ?", next.id);
         this.log(next.id, `paused_budget: spent ${s.spent_usd} + ${s.running + 1} x ${s.task_cap_usd} > ${s.daily_cap_usd}`);
         this.changed(next.id);
@@ -952,6 +976,7 @@ export class Inbox extends DurableObject<Env> {
         const agent = await agentStub(this.env, this.name(), next.id);
         await agent.start(next.id, next.transcript ?? "", next.title ?? "", { taskCapUsd: cap, flags: next.test_flags ?? "", inbox: this.name(), ownKey: this.usesOwnKey(), mode: build ? "build" : "research" });
         if (free) this.setKv(this.freeKey(), String(this.freeBuildsUsed() + 1)); // counted once it really runs
+        if (credit) this.sql.exec("INSERT OR REPLACE INTO credits VALUES (?, ?, ?, ?)", `agent:${next.id}:${this.get(next.id)?.gen ?? 0}`, Date.now(), -cap, `${build ? "build" : "research"} (held)`);
       } catch (e) {
         if (build && !this.openbeltLink()) { // OpenBelt's sign-in was gone (expired, disconnected): wait for Connect again
           this.needsOpenbelt(next.id);
@@ -977,6 +1002,8 @@ export class Inbox extends DurableObject<Env> {
       status, summary, p.error ?? null, p.detail ?? null, Date.now(), p.cost, p.outcome, p.model, p.result ? JSON.stringify(p.result) : null, id,
     );
     this.log(id, `agent ${p.outcome} cost=$${p.cost.toFixed(4)} ${p.error ?? ""} ${summary ?? ""}`);
+    // On credit: the held cap becomes the real cost.
+    this.sql.exec("UPDATE credits SET usd = ?, note = ? WHERE id = ?", -p.cost, r.kind === "app" ? "build" : "research", `agent:${id}:${r.gen}`);
     this.addStep(id, { at: Date.now(), kind: p.outcome === "stopped" ? "error" : "note", text: p.outcome === "stopped" ? `stopped: ${p.error ?? "?"}` : "report ready" });
     this.changed(id);
     this.emitBudget();

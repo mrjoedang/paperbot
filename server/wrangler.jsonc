@@ -46,7 +46,8 @@
     // dev builds on OpenBelt production too.
     "OPENBELT_URL": "https://openbelt.com"
   },
-  // Secrets: ALERT_URL and ALERT_TOKEN (alert mails, src/alerts.ts), DEVICE_TOKEN (owner board + /admin), WIFI_KEY, BETTER_AUTH_SECRET, GOOGLE_CLIENT_SECRET, OWNER_EMAIL
+  // Secrets: STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET (prepaid credit, src/credits.ts; the sandbox's test keys here),
+  // ALERT_URL and ALERT_TOKEN (alert mails, src/alerts.ts), DEVICE_TOKEN (owner board + /admin), WIFI_KEY, BETTER_AUTH_SECRET, GOOGLE_CLIENT_SECRET, OWNER_EMAIL
   // (the owner, signed in with Google: inbox "default", research included; everyone else brings their own).
 
   "env": {
@@ -85,7 +86,7 @@
         "APP_ORIGIN": "https://app.paperbot.ca",
         "OPENBELT_URL": "https://openbelt.com"
       }
-      // Secrets (--env production): ALERT_URL, ALERT_TOKEN, DEVICE_TOKEN (the production board token, ../.secrets.env), WIFI_KEY
+      // Secrets (--env production): STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET (live keys), ALERT_URL, ALERT_TOKEN, DEVICE_TOKEN (the production board token, ../.secrets.env), WIFI_KEY
       // (../.secrets.env PAPERBOT_WIFI_KEY), BETTER_AUTH_SECRET, GOOGLE_CLIENT_SECRET, OWNER_EMAIL (../.secrets.env).
     }
   }

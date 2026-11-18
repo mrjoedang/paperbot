@@ -61,7 +61,13 @@ month (below).
 - **Everyone else** (`GUEST_CONFIG` and `DEFAULTS` in `server/src/inbox.ts`), per 24 h: 30 audio minutes, and
   $0.50 of routing and answers on paperbot's account (`house_cap_usd`, about 40 web answers). Each reprocess counts
   again (the clip's length, at least a minute); a clip over either cap gets a "daily limit" record, its audio is not
-  kept, and the web app offers "Add your API key". With their own key both caps are 4× higher (`OWN_KEY_FACTOR`). Work memos are researched one of two ways (Settings → Research):
+  kept, and the web app offers "Add your API key". With their own key both caps are 4× higher (`OWN_KEY_FACTOR`).
+  - **Prepaid credit** (`server/src/credits.ts`): "Add $10" opens Stripe Checkout (card, Apple Pay, Google Pay, Link; no
+    pay-later methods). Stripe's webhook (`POST /api/stripe/webhook`, signature checked) adds CA$10 to a ledger in the
+    person's Inbox, once per Checkout session; a refund takes it off again. Credit pays for memos past the free
+    allowance, and for research and app builds (an agent holds its cost cap while it runs, then its real cost). It also
+    raises the audio cap 4×. Not sold in the EU, EEA, UK or Switzerland (VAT from the first sale): the buttons are
+    hidden there. Test: `node tools/e2e/credits.mjs` (Stripe sandbox, test card). Work memos are researched one of two ways (Settings → Research):
   - **their own API key** (Anthropic): checked once, stored sealed in their Inbox, and put on each model
     call by the gateway proxy (`server/src/agent.ts`); if it is removed or rejected, research stops
     instead of falling back to the owner's billing. $5/day cap. Those calls go through their own AI Gateway
